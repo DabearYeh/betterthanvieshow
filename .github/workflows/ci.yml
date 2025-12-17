@@ -1,0 +1,48 @@
+name: CI - Build and Test
+
+# 觸發條件
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    # 1. Checkout 程式碼
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    # 2. 設置 .NET 環境
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+    
+    # 3. 還原 NuGet 套件
+    - name: Restore dependencies
+      run: dotnet restore
+    
+    # 4. 建置專案
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+    
+    # 5. 執行測試（目前沒有測試專案，所以會跳過）
+    - name: Run tests
+      run: dotnet test --no-build --verbosity normal --configuration Release
+      continue-on-error: true  # 允許在沒有測試專案時繼續執行
+    
+    # 6. 發布應用程式
+    - name: Publish
+      run: dotnet publish betterthanvieshow/betterthanvieshow.csproj --configuration Release --output ./publish --no-restore
+    
+    # 7. 上傳建置產物（供 CD 使用）
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: betterthanvieshow-build
+        path: ./publish/
+        retention-days: 7

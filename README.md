@@ -1,6 +1,9 @@
 # 電影院訂票系統 (BetterThanVieShow)
 
-> 一個全功能的電影院訂票與管理系統，支援線上訂票、座位選擇、QR Code 驗票及完整的後台管理功能。
+![CI Status](https://github.com/yourusername/betterthanvieshow/actions/workflows/ci.yml/badge.svg)
+![CD Status](https://github.com/yourusername/betterthanvieshow/actions/workflows/cd.yml/badge.svg)
+
+> 一個全功能的電影院訂票與管理系統,支援線上訂票、座位選擇、QR Code 驗票及完整的後台管理功能。
 
 ## 📋 目錄
 
@@ -12,6 +15,7 @@
 - [資料模型](#資料模型)
 - [核心功能](#核心功能)
 - [專案結構](#專案結構)
+- [CI/CD](#cicd)
 - [開發指南](#開發指南)
 - [API 文件](#api-文件)
 - [測試](#測試)
@@ -302,6 +306,64 @@ betterthanvieshow/
 ├── betterthanvieshow.sln       # Visual Studio 方案檔
 └── README.md                   # 專案說明文件
 ```
+
+## 🔄 CI/CD
+
+本專案使用 GitHub Actions 實現持續整合與持續部署。
+
+### CI - 持續整合
+
+**觸發條件：**
+- Push 到 `main` 或 `develop` 分支
+- Pull Request 到 `main` 分支
+
+**工作流程：**
+1. ✅ Checkout 程式碼
+2. ✅ 設置 .NET 9.0 環境
+3. ✅ 還原 NuGet 套件
+4. ✅ 建置專案（Release 配置）
+5. ✅ 執行測試（目前無測試專案會跳過）
+6. ✅ 發布應用程式
+7. ✅ 上傳建置產物（供部署使用）
+
+### CD - 持續部署
+
+**觸發條件：**
+- CI workflow 成功完成
+- 只在 `main` 分支觸發
+
+**部署方式：**
+- 使用 Self-Hosted Runner（安裝在 Azure VM 上）
+- 部署完全在 VM 內部執行，無需開放外部端口
+
+**部署目標：**
+- Azure VM（Demo/Staging 環境）
+
+**工作流程：**
+1. 下載 CI 建置的產物
+2. 停止 IIS Application Pool
+3. 備份當前版本（保留最近 5 個）
+4. 複製檔案到 IIS 網站目錄
+5. 啟動 IIS Application Pool
+6. 清理暫存檔案
+
+### Self-Hosted Runner 設置
+
+請參考 [Self-Hosted Runner 安裝指南](docs/SELF_HOSTED_RUNNER_SETUP.md) 在 Azure VM 上安裝 Runner。
+
+### 必要的 GitHub Secrets
+
+在 GitHub Repository Settings → Secrets and variables → Actions 中設置：
+
+**IIS 部署相關：**
+- `IIS_SITE_PATH` - IIS 網站實體路徑（例如：`C:\inetpub\wwwroot\betterthanvieshow`）
+- `IIS_APP_POOL_NAME` - Application Pool 名稱（例如：`betterthanvieshow`）
+
+### Workflow 文件
+
+- `.github/workflows/ci.yml` - 持續整合 workflow
+- `.github/workflows/cd.yml` - 持續部署 workflow（Self-Hosted Runner）
+- `docs/SELF_HOSTED_RUNNER_SETUP.md` - Runner 安裝指南
 
 ## 🔧 開發指南
 

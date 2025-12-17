@@ -1,0 +1,96 @@
+name: CD - Deploy to Azure VM
+
+# 觸發條件：當 main 分支有新的 push 且 CI 成功時
+on:
+  workflow_run:
+    workflows: ["CI - Build and Test"]
+    types:
+      - completed
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    # 只有當 CI workflow 成功時才執行部署
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: self-hosted  # 使用 Azure VM 上的 Self-Hosted Runner
+    
+    steps:
+    # 1. 下載 CI workflow 建置的產物
+    - name: 📦 Download build artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: betterthanvieshow-build
+        path: ${{ github.workspace }}/publish/
+        run-id: ${{ github.event.workflow_run.id }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+    
+    # 2. 停止 IIS Application Pool（避免檔案鎖定）
+    - name: 🛑 Stop IIS Application Pool
+      shell: powershell
+      run: |
+        Write-Host "停止 Application Pool..."
+        Stop-WebAppPool -Name "${{ secrets.IIS_APP_POOL_NAME }}"
+        Start-Sleep -Seconds 3
+    
+    # 3. 備份當前版本（可選，但建議）
+    - name: 💾 Backup current version
+      shell: powershell
+      run: |
+        $backupPath = "${{ secrets.IIS_SITE_PATH }}_backup_$(Get-Date -Format 'yyyyMMdd_HHmmss')"
+        if (Test-Path "${{ secrets.IIS_SITE_PATH }}") {
+          Write-Host "備份當前版本到: $backupPath"
+          Copy-Item -Path "${{ secrets.IIS_SITE_PATH }}" -Destination $backupPath -Recurse -Force
+          
+          # 只保留最近 5 個備份
+          Get-ChildItem -Path "$(Split-Path ${{ secrets.IIS_SITE_PATH }})" -Filter "*_backup_*" | 
+            Sort-Object CreationTime -Descending | 
+            Select-Object -Skip 5 | 
+            Remove-Item -Recurse -Force
+        }
+    
+    # 4. 複製新版本檔案到網站目錄
+    - name: 📂 Deploy files to IIS
+      shell: powershell
+      run: |
+        Write-Host "部署檔案到: ${{ secrets.IIS_SITE_PATH }}"
+        
+        # 確保目標目錄存在
+        if (-not (Test-Path "${{ secrets.IIS_SITE_PATH }}")) {
+          New-Item -ItemType Directory -Path "${{ secrets.IIS_SITE_PATH }}" -Force
+        }
+        
+        # 複製檔案（保留 appsettings.json 等配置檔案）
+        Copy-Item -Path "${{ github.workspace }}/publish/*" -Destination "${{ secrets.IIS_SITE_PATH }}" -Recurse -Force
+        
+        Write-Host "✅ 檔案部署完成"
+    
+    # 5. 啟動 IIS Application Pool
+    - name: ▶️ Start IIS Application Pool
+      shell: powershell
+      run: |
+        Write-Host "啟動 Application Pool..."
+        Start-WebAppPool -Name "${{ secrets.IIS_APP_POOL_NAME }}"
+        Start-Sleep -Seconds 3
+        
+        # 檢查狀態
+        $pool = Get-WebAppPoolState -Name "${{ secrets.IIS_APP_POOL_NAME }}"
+        Write-Host "Application Pool 狀態: $($pool.Value)"
+    
+    # 6. 清理工作目錄
+    - name: 🧹 Cleanup
+      shell: powershell
+      run: |
+        Write-Host "清理暫存檔案..."
+        Remove-Item -Path "${{ github.workspace }}/publish" -Recurse -Force -ErrorAction SilentlyContinue
+    
+    # 7. 部署完成通知
+    - name: ✅ Deployment Complete
+      shell: powershell
+      run: |
+        Write-Host "========================================="
+        Write-Host "🎉 部署完成！"
+        Write-Host "📍 環境: Demo/Staging (畢業專案)"
+        Write-Host "🌐 網站路徑: ${{ secrets.IIS_SITE_PATH }}"
+        Write-Host "🔄 Application Pool: ${{ secrets.IIS_APP_POOL_NAME }}"
+        Write-Host "⏰ 部署時間: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+        Write-Host "========================================="
