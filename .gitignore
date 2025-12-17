@@ -132,6 +132,7 @@ Thumbs.db
 .LSOverride
 
 # Custom project files
+appsettings.json
 appsettings.local.json
 appsettings.*.local.json
 appsettings.Development.json
