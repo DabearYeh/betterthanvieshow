@@ -18,7 +18,7 @@ Table Theater {
   floor int [note: '所在樓層']
   row_count int [note: '排數，必須 > 0']
   column_count int [note: '列數，必須 > 0']
-  total_seats int [note: '座位總數，必須 > 0。規則：影廳不能刪除']
+  total_seats int [note: '座位總數，必須 > 0。規則：影廳只有在沒有關聯場次時才能刪除']
   
   Note: '影廳：播放電影的場所，每個影廳有固定座位配置。票價與影廳類型綁定：一般數位 300元、4DX 380元、IMAX 380元。座位配置方式：先選排數和列數生成網格，逐格自訂為具體座位類型（一般座、殘障座、走道等）。關聯：Theater 1:N Seat, Theater 1:N MovieShowTime。跨屬性不變條件：total_seats 必須等於該影廳實際的有效 Seat 數量（一般座 + 殘障座）；row_count * column_count >= total_seats（網格大小必須足以容納所有座位）'
 }
@@ -49,7 +49,7 @@ Table Movie {
   end_date string [note: '電影下映日期，格式 YYYY-MM-DD。規則：end_date >= release_date；場次排片日期必須在 [release_date, end_date] 範圍內']
   can_carousel bool [note: '是否加入輪播']
   
-  Note: '電影：系統中的電影資訊。上映狀態動態計算（無 release_status 欄位）：即將上映 (release_date > 今天)、正在上映 (release_date <= 今天 <= end_date)、已下映 (end_date < 今天)。電影可標籤為：本週前十（週內銷售最多前10部）、即將上映。重映策略：若電影下映後需重映，建立新電影記錄（如「電影名 - 重映版」），而不修改原電影的 release_date / end_date。關聯：Movie 1:N MovieShowTime'
+  Note: '電影：系統中的電影資訊。上映狀態動態計算（無 release_status 欄位）：即將上映 (release_date > 今天)、正在上映 (release_date <= 今天 <= end_date)、已下映 (end_date < 今天)。電影可標籤為：本週前十（週內銷售最多前10部）、即將上映。重映策略：若電影下映後需重映，建立新電影記錄（如「電影名 - 重映版」），而不修改原電影的 release_date / end_date。刪除規則：電影不能被刪除，僅能透過上架/下架控制顯示狀態。關聯：Movie 1:N MovieShowTime'
 }
 
 Table MovieShowTime {
@@ -59,7 +59,7 @@ Table MovieShowTime {
   show_date string [note: '放映日期，格式 YYYY-MM-DD。規則：show_date 必須在 [Movie.release_date, Movie.end_date] 範圍內']
   start_time string [note: '開始時間，格式 HH:MM。規則：場次結束時間由 start_time + Movie.duration 動態計算，不存 DB']
   
-  Note: '場次：電影排片的具體時段。同一影廳在同一時段只能播放一部電影。排片日期限制：show_date 必須在 [Movie.release_date, Movie.end_date] 範圍內。場次結束時間通過應用層計算：end_time = start_time + Movie.duration（分鐘）。時間衝突檢查：同一影廳同一日期的場次，[start_time, start_time+duration) 不可重疊。關聯：MovieShowTime N:1 Movie, MovieShowTime N:1 Theater, MovieShowTime 1:N Ticket。跨屬性不變條件：show_date >= Movie.release_date AND show_date <= Movie.end_date；同 theater_id 在同 show_date 的時間不可重疊'
+  Note: '場次：電影排片的具體時段。同一影廳在同一時段只能播放一部電影。排片日期限制：show_date 必須在 [Movie.release_date, Movie.end_date] 範圍內。場次結束時間通過應用層計算：end_time = start_time + Movie.duration（分鐘）。時間衝突檢查：同一影廳同一日期的場次，[start_time, start_time+duration) 不可重疊。刪除規則：場次不能被刪除。關聯：MovieShowTime N:1 Movie, MovieShowTime N:1 Theater, MovieShowTime 1:N Ticket。跨屬性不變條件：show_date >= Movie.release_date AND show_date <= Movie.end_date；同 theater_id 在同 show_date 的時間不可重疊'
 }
 
 Table Order {
