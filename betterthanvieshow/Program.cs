@@ -46,6 +46,9 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+builder.Services.AddScoped<ITheaterRepository, TheaterRepository>();
+builder.Services.AddScoped<ITheaterService, TheaterService>();
+
 
 // 配置 CORS
 builder.Services.AddCors(options =>

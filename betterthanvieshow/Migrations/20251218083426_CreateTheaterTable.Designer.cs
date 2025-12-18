@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using betterthanvieshow.Data;
 
@@ -11,9 +12,11 @@ using betterthanvieshow.Data;
 namespace betterthanvieshow.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251218083426_CreateTheaterTable")]
+    partial class CreateTheaterTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,42 +24,6 @@ namespace betterthanvieshow.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("betterthanvieshow.Models.Entities.Seat", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ColumnNumber")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsValid")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("RowName")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<string>("SeatType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("TheaterId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TheaterId", "RowName", "ColumnNumber")
-                        .IsUnique()
-                        .HasDatabaseName("IX_Seat_Theater_Row_Column");
-
-                    b.ToTable("Seat");
-                });
 
             modelBuilder.Entity("betterthanvieshow.Models.Entities.Theater", b =>
                 {
@@ -145,17 +112,6 @@ namespace betterthanvieshow.Migrations
                         {
                             t.HasCheckConstraint("CHK_User_Role", "[Role] IN ('Customer', 'Admin')");
                         });
-                });
-
-            modelBuilder.Entity("betterthanvieshow.Models.Entities.Seat", b =>
-                {
-                    b.HasOne("betterthanvieshow.Models.Entities.Theater", "Theater")
-                        .WithMany()
-                        .HasForeignKey("TheaterId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Theater");
                 });
 #pragma warning restore 612, 618
         }
