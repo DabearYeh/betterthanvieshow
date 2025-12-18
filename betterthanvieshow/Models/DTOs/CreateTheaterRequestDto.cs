@@ -1,0 +1,42 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace betterthanvieshow.Models.DTOs;
+
+/// <summary>
+/// 建立影廳請求 DTO
+/// </summary>
+public class CreateTheaterRequestDto
+{
+    /// <summary>
+    /// 影廳名稱
+    /// </summary>
+    [Required(ErrorMessage = "影廳名稱為必填")]
+    [MaxLength(100, ErrorMessage = "影廳名稱長度不可超過 100 字元")]
+    public string Name { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 影廳類型：一般數位、4DX、IMAX
+    /// </summary>
+    [Required(ErrorMessage = "影廳類型為必填")]
+    public string Type { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 所在樓層
+    /// </summary>
+    [Required(ErrorMessage = "樓層為必填")]
+    public int Floor { get; set; }
+
+    /// <summary>
+    /// 排數，必須 > 0
+    /// </summary>
+    [Required(ErrorMessage = "排數為必填")]
+    [Range(1, int.MaxValue, ErrorMessage = "排數必須大於 0")]
+    public int RowCount { get; set; }
+
+    /// <summary>
+    /// 列數，必須 > 0
+    /// </summary>
+    [Required(ErrorMessage = "列數為必填")]
+    [Range(1, int.MaxValue, ErrorMessage = "列數必須大於 0")]
+    public int ColumnCount { get; set; }
+}

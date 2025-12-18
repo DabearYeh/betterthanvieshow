@@ -45,4 +45,47 @@ public class TheatersController : ControllerBase
 
         return Ok(result);
     }
+
+    /// <summary>
+    /// 建立新影廳
+    /// </summary>
+    /// <param name="request">建立影廳請求</param>
+    /// <returns>建立結果</returns>
+    [HttpPost]
+    [ProducesResponseType(typeof(ApiResponse<TheaterResponseDto>), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ApiResponse<TheaterResponseDto>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ApiResponse<TheaterResponseDto>), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> CreateTheater([FromBody] CreateTheaterRequestDto request)
+    {
+        // 檢查模型驗證
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
+                );
+
+            return BadRequest(ApiResponse<TheaterResponseDto>.FailureResponse(
+                "驗證失敗",
+                errors
+            ));
+        }
+
+        var result = await _theaterService.CreateTheaterAsync(request);
+
+        if (!result.Success)
+        {
+            return StatusCode(500, result);
+        }
+
+        return CreatedAtAction(
+            nameof(GetAllTheaters),
+            new { id = result.Data?.Id },
+            result
+        );
+    }
 }

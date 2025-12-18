@@ -13,4 +13,11 @@ public interface ITheaterService
     /// </summary>
     /// <returns>影廳列表回應</returns>
     Task<ApiResponse<List<TheaterResponseDto>>> GetAllTheatersAsync();
+
+    /// <summary>
+    /// 建立新影廳
+    /// </summary>
+    /// <param name="request">建立影廳請求</param>
+    /// <returns>建立結果</returns>
+    Task<ApiResponse<TheaterResponseDto>> CreateTheaterAsync(CreateTheaterRequestDto request);
 }

@@ -28,4 +28,16 @@ public class TheaterRepository : ITheaterRepository
             .ThenBy(t => t.Name)
             .ToListAsync();
     }
+
+    /// <summary>
+    /// 建立新影廳
+    /// </summary>
+    /// <param name="theater">影廳實體</param>
+    /// <returns>建立成功的影廳實體</returns>
+    public async Task<Theater> CreateAsync(Theater theater)
+    {
+        await _context.Theaters.AddAsync(theater);
+        await _context.SaveChangesAsync();
+        return theater;
+    }
 }
