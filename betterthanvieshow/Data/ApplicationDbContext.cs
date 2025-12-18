@@ -18,6 +18,12 @@ public class ApplicationDbContext : DbContext
     /// </summary>
     public DbSet<User> Users { get; set; }
 
+    /// <summary>
+    /// 影廳資料集
+    /// </summary>
+    public DbSet<Theater> Theaters { get; set; }
+
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -47,5 +53,31 @@ public class ApplicationDbContext : DbContext
                 "[Role] IN ('Customer', 'Admin')"
             ));
         });
+
+        // Theater 實體配置
+        modelBuilder.Entity<Theater>(entity =>
+        {
+            // 主鍵
+            entity.HasKey(e => e.Id);
+
+            // 檢查約束：排數必須大於 0
+            entity.ToTable(t => t.HasCheckConstraint(
+                "CHK_Theater_RowCount",
+                "[RowCount] > 0"
+            ));
+
+            // 檢查約束：列數必須大於 0
+            entity.ToTable(t => t.HasCheckConstraint(
+                "CHK_Theater_ColumnCount",
+                "[ColumnCount] > 0"
+            ));
+
+            // 檢查約束：座位總數必須大於 0
+            entity.ToTable(t => t.HasCheckConstraint(
+                "CHK_Theater_TotalSeats",
+                "[TotalSeats] > 0"
+            ));
+        });
+
     }
 }
