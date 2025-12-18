@@ -39,4 +39,11 @@ public class CreateTheaterRequestDto
     [Required(ErrorMessage = "列數為必填")]
     [Range(1, int.MaxValue, ErrorMessage = "列數必須大於 0")]
     public int ColumnCount { get; set; }
+
+    /// <summary>
+    /// 座位配置（二維陣列）
+    /// 每個元素代表座位類型：一般座位、殘障座位、走道、Empty
+    /// </summary>
+    [Required(ErrorMessage = "座位配置為必填")]
+    public List<List<string>> Seats { get; set; } = new();
 }

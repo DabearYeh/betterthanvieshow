@@ -23,6 +23,11 @@ public class ApplicationDbContext : DbContext
     /// </summary>
     public DbSet<Theater> Theaters { get; set; }
 
+    /// <summary>
+    /// 座位資料集
+    /// </summary>
+    public DbSet<Seat> Seats { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -77,6 +82,24 @@ public class ApplicationDbContext : DbContext
                 "CHK_Theater_TotalSeats",
                 "[TotalSeats] > 0"
             ));
+        });
+
+        // Seat 實體配置
+        modelBuilder.Entity<Seat>(entity =>
+        {
+            // 主鍵
+            entity.HasKey(e => e.Id);
+
+            // 外鍵設定
+            entity.HasOne(e => e.Theater)
+                .WithMany()
+                .HasForeignKey(e => e.TheaterId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // 唯一約束：同一影廳內 (RowName, ColumnNumber) 必須唯一
+            entity.HasIndex(e => new { e.TheaterId, e.RowName, e.ColumnNumber })
+                .IsUnique()
+                .HasDatabaseName("IX_Seat_Theater_Row_Column");
         });
 
     }

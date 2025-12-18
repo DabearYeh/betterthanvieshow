@@ -66,7 +66,25 @@ public class TheaterService : ITheaterService
     {
         try
         {
-            // 建立 Theater 實體
+            // 驗證座位陣列尺寸
+            if (request.Seats.Count != request.RowCount)
+            {
+                return ApiResponse<TheaterResponseDto>.FailureResponse(
+                    $"座位陣列排數 ({request.Seats.Count}) 與 RowCount ({request.RowCount}) 不符"
+                );
+            }
+
+            foreach (var row in request.Seats)
+            {
+                if (row.Count != request.ColumnCount)
+                {
+                    return ApiResponse<TheaterResponseDto>.FailureResponse(
+                        $"座位陣列列數與 ColumnCount ({request.ColumnCount}) 不符"
+                    );
+                }
+            }
+
+            // 建立 Theater 實體（先不設 TotalSeats，後面再設定）
             var theater = new Theater
             {
                 Name = request.Name,
@@ -74,22 +92,59 @@ public class TheaterService : ITheaterService
                 Floor = request.Floor,
                 RowCount = request.RowCount,
                 ColumnCount = request.ColumnCount,
-                TotalSeats = request.RowCount * request.ColumnCount  // 初始座位總數
+                TotalSeats = 0  // 暫時設為 0，後面計算
             };
 
-            // 儲存到資料庫
+            // 儲存 Theater 到資料庫以取得 ID
             var createdTheater = await _theaterRepository.CreateAsync(theater);
+
+            // 建立座位並計算 TotalSeats
+            var seats = new List<Seat>();
+            int actualSeatCount = 0;
+
+            for (int row = 0; row < request.RowCount; row++)
+            {
+                string rowName = ((char)('A' + row)).ToString(); // A, B, C...
+
+                for (int col = 0; col < request.ColumnCount; col++)
+                {
+                    string seatType = request.Seats[row][col];
+                    
+                    var seat = new Seat
+                    {
+                        TheaterId = createdTheater.Id,
+                        RowName = rowName,
+                        ColumnNumber = col + 1,  // 1, 2, 3...
+                        SeatType = seatType,
+                        IsValid = seatType != "Empty"
+                    };
+
+                    seats.Add(seat);
+
+                    // 計算實際座位數（一般座位 + 殘障座位）
+                    if (seatType == "一般座位" || seatType == "殘障座位")
+                    {
+                        actualSeatCount++;
+                    }
+                }
+            }
+
+            // 使用 DbContext 批次新增座位
+            await _theaterRepository.CreateSeatsAsync(createdTheater.Id, seats, actualSeatCount);
+
+            // 重新載入 Theater 以取得更新後的 TotalSeats
+            var updatedTheater = await _theaterRepository.GetByIdAsync(createdTheater.Id);
 
             // 轉換為 DTO
             var theaterDto = new TheaterResponseDto
             {
-                Id = createdTheater.Id,
-                Name = createdTheater.Name,
-                Type = createdTheater.Type,
-                Floor = createdTheater.Floor,
-                RowCount = createdTheater.RowCount,
-                ColumnCount = createdTheater.ColumnCount,
-                TotalSeats = createdTheater.TotalSeats
+                Id = updatedTheater.Id,
+                Name = updatedTheater.Name,
+                Type = updatedTheater.Type,
+                Floor = updatedTheater.Floor,
+                RowCount = updatedTheater.RowCount,
+                ColumnCount = updatedTheater.ColumnCount,
+                TotalSeats = updatedTheater.TotalSeats
             };
 
             return ApiResponse<TheaterResponseDto>.SuccessResponse(

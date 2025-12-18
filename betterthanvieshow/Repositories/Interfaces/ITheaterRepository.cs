@@ -19,4 +19,19 @@ public interface ITheaterRepository
     /// <param name="theater">影廳實體</param>
     /// <returns>建立成功的影廳實體</returns>
     Task<Theater> CreateAsync(Theater theater);
+
+    /// <summary>
+    /// 批次建立座位並更新影廳的 TotalSeats
+    /// </summary>
+    /// <param name="theaterId">影廳 ID</param>
+    /// <param name="seats">座位列表</param>
+    /// <param name="totalSeats">座位總數</param>
+    Task CreateSeatsAsync(int theaterId, List<Seat> seats, int totalSeats);
+
+    /// <summary>
+    /// 根據 ID 取得影廳
+    /// </summary>
+    /// <param name="id">影廳 ID</param>
+    /// <returns>影廳實體</returns>
+    Task<Theater> GetByIdAsync(int id);
 }
