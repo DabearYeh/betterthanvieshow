@@ -34,4 +34,17 @@ public interface ITheaterRepository
     /// <param name="id">影廳 ID</param>
     /// <returns>影廳實體</returns>
     Task<Theater> GetByIdAsync(int id);
+
+    /// <summary>
+    /// 檢查影廳是否存在
+    /// </summary>
+    /// <param name="id">影廳 ID</param>
+    /// <returns>存在回傳 true，否則回傳 false</returns>
+    Task<bool> ExistsAsync(int id);
+
+    /// <summary>
+    /// 刪除影廳及其所有座位
+    /// </summary>
+    /// <param name="id">影廳 ID</param>
+    Task DeleteAsync(int id);
 }

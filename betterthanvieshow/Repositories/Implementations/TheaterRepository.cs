@@ -72,4 +72,51 @@ public class TheaterRepository : ITheaterRepository
         return await _context.Theaters.FindAsync(id) 
             ?? throw new InvalidOperationException($"找不到 ID 為 {id} 的影廳");
     }
+
+    /// <summary>
+    /// 檢查影廳是否存在
+    /// </summary>
+    /// <param name="id">影廳 ID</param>
+    /// <returns>存在回傳 true，否則回傳 false</returns>
+    public async Task<bool> ExistsAsync(int id)
+    {
+        return await _context.Theaters.AnyAsync(t => t.Id == id);
+    }
+
+    /// <summary>
+    /// 刪除影廳及其所有座位
+    /// </summary>
+    /// <param name="id">影廳 ID</param>
+    public async Task DeleteAsync(int id)
+    {
+        // 使用 Transaction 確保資料一致性
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            // 先刪除所有關聯的座位
+            var seats = await _context.Seats
+                .Where(s => s.TheaterId == id)
+                .ToListAsync();
+            
+            if (seats.Any())
+            {
+                _context.Seats.RemoveRange(seats);
+            }
+
+            // 再刪除影廳
+            var theater = await _context.Theaters.FindAsync(id);
+            if (theater != null)
+            {
+                _context.Theaters.Remove(theater);
+            }
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
 }

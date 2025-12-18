@@ -88,4 +88,44 @@ public class TheatersController : ControllerBase
             result
         );
     }
+
+    /// <summary>
+    /// 刪除影廳
+    /// </summary>
+    /// <param name="id">影廳 ID</param>
+    /// <returns>刪除結果</returns>
+    /// <remarks>
+    /// 注意：影廳只有在沒有關聯場次時才能刪除
+    /// </remarks>
+    [HttpDelete("{id}")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> DeleteTheater(int id)
+    {
+        var result = await _theaterService.DeleteTheaterAsync(id);
+
+        if (!result.Success)
+        {
+            // 如果是找不到影廳，回傳 404
+            if (result.Message?.Contains("找不到") == true)
+            {
+                return NotFound(result);
+            }
+
+            // 如果是有場次無法刪除，回傳 400
+            if (result.Message?.Contains("場次") == true)
+            {
+                return BadRequest(result);
+            }
+
+            // 其他錯誤回傳 500
+            return StatusCode(500, result);
+        }
+
+        return Ok(result);
+    }
 }

@@ -160,4 +160,49 @@ public class TheaterService : ITheaterService
             );
         }
     }
+
+    /// <summary>
+    /// 刪除影廳
+    /// </summary>
+    /// <param name="id">影廳 ID</param>
+    /// <returns>刪除結果</returns>
+    public async Task<ApiResponse<object>> DeleteTheaterAsync(int id)
+    {
+        try
+        {
+            // 檢查影廳是否存在
+            var exists = await _theaterRepository.ExistsAsync(id);
+            if (!exists)
+            {
+                return ApiResponse<object>.FailureResponse(
+                    "找不到指定的影廳"
+                );
+            }
+
+            // TODO: 未來需要檢查是否有關聯的場次 (MovieShowTime)
+            // 當 MovieShowTime 實體建立後，添加以下檢查：
+            // var hasShowtimes = await _showtimeRepository.HasTheaterShowtimesAsync(id);
+            // if (hasShowtimes)
+            // {
+            //     return ApiResponse<object>.FailureResponse(
+            //         "影廳目前有場次安排，無法刪除"
+            //     );
+            // }
+
+            // 刪除影廳及其座位
+            await _theaterRepository.DeleteAsync(id);
+
+            return ApiResponse<object>.SuccessResponse(
+                null,
+                "影廳刪除成功"
+            );
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "刪除影廳時發生錯誤，影廳 ID: {TheaterId}", id);
+            return ApiResponse<object>.FailureResponse(
+                "刪除影廳失敗，請稍後再試"
+            );
+        }
+    }
 }

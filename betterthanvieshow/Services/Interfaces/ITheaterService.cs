@@ -20,4 +20,11 @@ public interface ITheaterService
     /// <param name="request">建立影廳請求</param>
     /// <returns>建立結果</returns>
     Task<ApiResponse<TheaterResponseDto>> CreateTheaterAsync(CreateTheaterRequestDto request);
+
+    /// <summary>
+    /// 刪除影廳
+    /// </summary>
+    /// <param name="id">影廳 ID</param>
+    /// <returns>刪除結果</returns>
+    Task<ApiResponse<object>> DeleteTheaterAsync(int id);
 }
