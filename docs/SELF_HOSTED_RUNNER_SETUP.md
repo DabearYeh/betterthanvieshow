@@ -92,7 +92,6 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 ```
 
 測試成功後，按 `Ctrl+C` 停止。
-
 #### 2.5 安裝為 Windows 服務（重要！）
 
 ```powershell
