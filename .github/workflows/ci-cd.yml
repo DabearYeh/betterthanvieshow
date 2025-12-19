@@ -41,11 +41,11 @@ jobs:
       working-directory: ./betterthanvieshow
       
     # 只在推送到 main 分支時執行部署
-    - name: 停止 IIS 應用程式池
+    - name: 停止應用程式 (app_offline.htm)
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       run: |
-        Import-Module WebAdministration
-        Stop-WebAppPool -Name "${{ secrets.IIS_APP_POOL_NAME }}"
+        $offlineFile = "${{ secrets.IIS_SITE_PATH }}\app_offline.htm"
+        Set-Content -Path $offlineFile -Value "<html><body><h1>Site is under maintenance</h1></body></html>"
         Start-Sleep -Seconds 5
       shell: powershell
       
@@ -63,8 +63,8 @@ jobs:
     - name: 部署到 IIS
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       run: |
-        # 清理目標目錄（保留 web.config）
-        $keepFiles = @("web.config")
+        # 清理目標目錄（保留 web.config 和 app_offline.htm）
+        $keepFiles = @("web.config", "app_offline.htm")
         Get-ChildItem -Path "${{ secrets.IIS_SITE_PATH }}" -Recurse | 
           Where-Object { $keepFiles -notcontains $_.Name } | 
           Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
@@ -96,12 +96,14 @@ jobs:
         }
       shell: powershell
       
-    - name: 啟動 IIS 應用程式池
+    - name: 啟動應用程式
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       run: |
-        Import-Module WebAdministration
-        Start-WebAppPool -Name "${{ secrets.IIS_APP_POOL_NAME }}"
-        Write-Host "IIS 應用程式池已啟動"
+        $offlineFile = "${{ secrets.IIS_SITE_PATH }}\app_offline.htm"
+        if (Test-Path $offlineFile) {
+          Remove-Item -Path $offlineFile -Force
+        }
+        Write-Host "應用程式已啟動"
       shell: powershell
       
     - name: 等待應用程式啟動
