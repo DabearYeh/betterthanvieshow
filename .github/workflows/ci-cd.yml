@@ -45,26 +45,7 @@ jobs:
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       run: |
         $offlineFile = "${{ secrets.IIS_SITE_PATH }}\app_offline.htm"
-        $offlineContent = @"
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>系統維護中</title>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #f5f5f5; }
-        h1 { color: #333; }
-        p { color: #666; }
-    </style>
-</head>
-<body>
-    <h1>🔧 系統維護中</h1>
-    <p>我們正在進行系統升級，預計 1-2 分鐘後恢復服務</p>
-    <p>造成不便，敬請見諒！</p>
-</body>
-</html>
-"@
+        $offlineContent = "<html><head><meta charset='UTF-8'><title>系統維護中</title><style>body{font-family:Arial;text-align:center;padding:50px;background:#f5f5f5}h1{color:#333}p{color:#666}</style></head><body><h1>🔧 系統維護中</h1><p>我們正在進行系統升級，預計 1-2 分鐘後恢復服務</p><p>造成不便，敬請見諒！</p></body></html>"
         Set-Content -Path $offlineFile -Value $offlineContent -Encoding UTF8
         Write-Host "已創建 app_offline.htm，應用程式將優雅關閉"
         Start-Sleep -Seconds 5
