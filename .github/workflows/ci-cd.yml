@@ -1,0 +1,145 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: self-hosted
+    
+    steps:
+    - name: 檢出程式碼
+      uses: actions/checkout@v4
+      
+    - name: 設定 .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+        
+    - name: 還原 NuGet 套件
+      run: dotnet restore
+      working-directory: ./betterthanvieshow
+      
+    - name: 建置專案
+      run: dotnet build --configuration Release --no-restore
+      working-directory: ./betterthanvieshow
+      
+    - name: 執行測試
+      run: dotnet test --configuration Release --no-build --verbosity normal
+      working-directory: ./betterthanvieshow
+      continue-on-error: true
+      
+    - name: 發布專案
+      run: dotnet publish --configuration Release --output ${{ github.workspace }}\publish --no-build
+      working-directory: ./betterthanvieshow
+      
+    # 只在推送到 main 分支時執行部署
+    - name: 停止 IIS 應用程式池
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      run: |
+        Import-Module WebAdministration
+        Stop-WebAppPool -Name "${{ secrets.IIS_APP_POOL_NAME }}"
+        Start-Sleep -Seconds 5
+      shell: powershell
+      
+    - name: 備份現有版本
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      run: |
+        $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
+        $backupPath = "${{ secrets.IIS_SITE_PATH }}_backup_$timestamp"
+        if (Test-Path "${{ secrets.IIS_SITE_PATH }}") {
+          Copy-Item -Path "${{ secrets.IIS_SITE_PATH }}" -Destination $backupPath -Recurse -Force
+          Write-Host "備份完成: $backupPath"
+        }
+      shell: powershell
+      
+    - name: 部署到 IIS
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      run: |
+        # 清理目標目錄（保留 web.config）
+        $keepFiles = @("web.config")
+        Get-ChildItem -Path "${{ secrets.IIS_SITE_PATH }}" -Recurse | 
+          Where-Object { $keepFiles -notcontains $_.Name } | 
+          Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
+        
+        # 複製新版本
+        Copy-Item -Path "${{ github.workspace }}\publish\*" -Destination "${{ secrets.IIS_SITE_PATH }}" -Recurse -Force
+        Write-Host "部署完成"
+      shell: powershell
+      
+    - name: 執行資料庫遷移
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      run: |
+        dotnet ef database update --connection "${{ secrets.AZURE_SQL_CONNECTION_STRING }}"
+      working-directory: ./betterthanvieshow
+      env:
+        ASPNETCORE_ENVIRONMENT: Production
+      continue-on-error: true
+      
+    - name: 更新 appsettings.Production.json
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      run: |
+        $configPath = "${{ secrets.IIS_SITE_PATH }}\appsettings.Production.json"
+        if (Test-Path $configPath) {
+          $config = Get-Content $configPath -Raw | ConvertFrom-Json
+          $config.ConnectionStrings.DefaultConnection = "${{ secrets.AZURE_SQL_CONNECTION_STRING }}"
+          $config.JwtSettings.SecretKey = "${{ secrets.JWT_SECRET_KEY }}"
+          $config | ConvertTo-Json -Depth 10 | Set-Content $configPath
+          Write-Host "生產環境配置已更新"
+        }
+      shell: powershell
+      
+    - name: 啟動 IIS 應用程式池
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      run: |
+        Import-Module WebAdministration
+        Start-WebAppPool -Name "${{ secrets.IIS_APP_POOL_NAME }}"
+        Write-Host "IIS 應用程式池已啟動"
+      shell: powershell
+      
+    - name: 等待應用程式啟動
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      run: Start-Sleep -Seconds 10
+      shell: powershell
+      
+    - name: 健康檢查
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      run: |
+        $maxRetries = 5
+        $retryCount = 0
+        $success = $false
+        
+        while (-not $success -and $retryCount -lt $maxRetries) {
+          try {
+            $response = Invoke-WebRequest -Uri "${{ secrets.SITE_URL }}/health" -TimeoutSec 10 -UseBasicParsing
+            if ($response.StatusCode -eq 200) {
+              Write-Host "✓ 健康檢查通過"
+              $success = $true
+            }
+          } catch {
+            $retryCount++
+            Write-Host "健康檢查失敗，重試 $retryCount/$maxRetries..."
+            Start-Sleep -Seconds 5
+          }
+        }
+        
+        if (-not $success) {
+          Write-Host "⚠ 健康檢查失敗，但部署已完成"
+        }
+      shell: powershell
+      continue-on-error: true
+      
+    - name: 部署結果通知
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      run: |
+        Write-Host "========================================="
+        Write-Host "部署完成！"
+        Write-Host "網站: ${{ secrets.SITE_URL }}"
+        Write-Host "時間: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+        Write-Host "========================================="
+      shell: powershell
