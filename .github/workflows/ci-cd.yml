@@ -60,10 +60,10 @@ jobs:
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       run: |
         $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
-        $backupPath = "${{ secrets.IIS_SITE_PATH }}_backup_$timestamp"
+        $backupPath = "$env:TEMP\betterthanvieshow_backup_$timestamp"
         if (Test-Path "${{ secrets.IIS_SITE_PATH }}") {
           Copy-Item -Path "${{ secrets.IIS_SITE_PATH }}" -Destination $backupPath -Recurse -Force
-          Write-Host "備份完成: $backupPath"
+          Write-Host "Backup completed: $backupPath"
         }
       shell: powershell
       
