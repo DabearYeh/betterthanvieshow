@@ -131,18 +131,18 @@ jobs:
           try {
             $response = Invoke-WebRequest -Uri "${{ secrets.SITE_URL }}/health" -TimeoutSec 10 -UseBasicParsing
             if ($response.StatusCode -eq 200) {
-              Write-Host "✓ 健康檢查通過"
+              Write-Host "Health check passed"
               $success = $true
             }
           } catch {
             $retryCount++
-            Write-Host "健康檢查失敗，重試 $retryCount/$maxRetries..."
+            Write-Host "Health check failed, retrying $retryCount/$maxRetries..."
             Start-Sleep -Seconds 5
           }
         }
         
         if (-not $success) {
-          Write-Host "⚠ 健康檢查失敗，但部署已完成"
+          Write-Host "Warning: Health check failed, but deployment is complete"
         }
       shell: powershell
       continue-on-error: true
@@ -151,8 +151,8 @@ jobs:
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       run: |
         Write-Host "========================================="
-        Write-Host "部署完成！"
-        Write-Host "網站: ${{ secrets.SITE_URL }}"
-        Write-Host "時間: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+        Write-Host "Deployment Completed!"
+        Write-Host "Site: ${{ secrets.SITE_URL }}"
+        Write-Host "Time: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
         Write-Host "========================================="
       shell: powershell
