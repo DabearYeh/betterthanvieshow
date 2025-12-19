@@ -72,10 +72,12 @@ builder.Services.AddHealthChecks()
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+app.MapOpenApi();
+app.MapScalarApiReference();  // 在正式環境也啟用以利測試
+
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
-    app.MapScalarApiReference();  // 添加 Scalar UI
+    // 開發者模式專用設定（目前暫無）
 }
 
 app.UseHttpsRedirection();
