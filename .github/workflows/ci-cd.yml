@@ -97,7 +97,7 @@ jobs:
         if (Test-Path $configPath) {
           $config = Get-Content $configPath -Raw | ConvertFrom-Json
           $config.ConnectionStrings.DefaultConnection = "${{ secrets.AZURE_SQL_CONNECTION_STRING }}"
-          $config.Jwt.SecretKey = "${{ secrets.JWT_SECRET_KEY }}"
+          $config.JwtSettings.SecretKey = "${{ secrets.JWT_SECRET_KEY }}"
           $config | ConvertTo-Json -Depth 10 | Set-Content $configPath
           Write-Host "生產環境配置已更新"
         }
