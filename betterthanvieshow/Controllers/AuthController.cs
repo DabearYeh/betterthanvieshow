@@ -10,6 +10,7 @@ namespace betterthanvieshow.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[Tags("Member")]
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
