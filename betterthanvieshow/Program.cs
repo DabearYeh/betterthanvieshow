@@ -28,7 +28,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 );
 
 // 配置 JWT 認證
-var jwtSettings = builder.Configuration.GetSection("Jwt");
+var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey 未設定");
 
 builder.Services.AddAuthentication(options =>

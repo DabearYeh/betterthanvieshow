@@ -71,4 +71,51 @@ public class AuthService : IAuthService
 
         return ApiResponse<RegisterResponseDto>.SuccessResponse(response, "註冊成功");
     }
+
+    /// <summary>
+    /// 會員登入
+    /// </summary>
+    public async Task<ApiResponse<LoginResponseDto>> LoginAsync(LoginRequestDto request)
+    {
+        // 1. 查詢使用者
+        var user = await _userRepository.GetByEmailAsync(request.Email.ToLower());
+        
+        if (user == null)
+        {
+            return ApiResponse<LoginResponseDto>.FailureResponse(
+                "信箱不存在",
+                new Dictionary<string, string[]>
+                {
+                    { "email", new[] { "信箱不存在" } }
+                }
+            );
+        }
+
+        // 2. 驗證密碼
+        if (!_passwordHasher.VerifyPassword(request.Password, user.Password))
+        {
+            return ApiResponse<LoginResponseDto>.FailureResponse(
+                "密碼錯誤",
+                new Dictionary<string, string[]>
+                {
+                    { "password", new[] { "密碼錯誤" } }
+                }
+            );
+        }
+
+        // 3. 產生 JWT Token
+        var token = _jwtTokenGenerator.GenerateToken(user);
+
+        // 4. 回傳結果
+        var response = new LoginResponseDto
+        {
+            UserId = user.Id,
+            Name = user.Name,
+            Email = user.Email,
+            Role = user.Role,
+            Token = token
+        };
+
+        return ApiResponse<LoginResponseDto>.SuccessResponse(response, "登入成功");
+    }
 }

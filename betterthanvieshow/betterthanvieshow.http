@@ -10,4 +10,31 @@ Content-Type: application/json
   "password": "SecurePass123"
 }
 
+### 登入成功
+POST {{betterthanvieshow_HostAddress}}/api/Auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "SecurePass123"
+}
+
+### 登入失敗 - 信箱不存在
+POST {{betterthanvieshow_HostAddress}}/api/Auth/login
+Content-Type: application/json
+
+{
+  "email": "notexist@example.com",
+  "password": "SecurePass123"
+}
+
+### 登入失敗 - 密碼錯誤
+POST {{betterthanvieshow_HostAddress}}/api/Auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "WrongPassword123"
+}
+
 ###

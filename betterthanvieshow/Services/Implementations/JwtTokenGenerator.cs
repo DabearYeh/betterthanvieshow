@@ -32,15 +32,15 @@ public class JwtTokenGenerator : IJwtTokenGenerator
             new Claim(ClaimTypes.Role, user.Role)
         };
 
-        var secretKey = _configuration["Jwt:SecretKey"] 
+        var secretKey = _configuration["JwtSettings:SecretKey"] 
             ?? throw new InvalidOperationException("JWT SecretKey 未設定");
         
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
-            issuer: _configuration["Jwt:Issuer"],
-            audience: _configuration["Jwt:Audience"],
+            issuer: _configuration["JwtSettings:Issuer"],
+            audience: _configuration["JwtSettings:Audience"],
             claims: claims,
             expires: DateTime.UtcNow.AddDays(7),
             signingCredentials: credentials

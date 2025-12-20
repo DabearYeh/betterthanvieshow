@@ -14,4 +14,11 @@ public interface IAuthService
     /// <param name="request">註冊請求</param>
     /// <returns>註冊結果</returns>
     Task<ApiResponse<RegisterResponseDto>> RegisterAsync(RegisterRequestDto request);
+
+    /// <summary>
+    /// 會員登入
+    /// </summary>
+    /// <param name="request">登入請求</param>
+    /// <returns>登入結果</returns>
+    Task<ApiResponse<LoginResponseDto>> LoginAsync(LoginRequestDto request);
 }
