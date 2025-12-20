@@ -63,6 +63,18 @@ public class TheaterRepository : ITheaterRepository
     }
 
     /// <summary>
+    /// 批次建立座位（不更新 TotalSeats）
+    /// </summary>
+    /// <param name="theaterId">影廳 ID</param>
+    /// <param name="seats">座位列表</param>
+    public async Task CreateSeatsOnlyAsync(int theaterId, List<Seat> seats)
+    {
+        // 批次新增座位
+        await _context.Seats.AddRangeAsync(seats);
+        await _context.SaveChangesAsync();
+    }
+
+    /// <summary>
     /// 根據 ID 取得影廳
     /// </summary>
     /// <param name="id">影廳 ID</param>

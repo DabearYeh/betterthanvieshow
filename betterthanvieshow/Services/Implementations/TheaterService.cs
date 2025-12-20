@@ -84,7 +84,29 @@ public class TheaterService : ITheaterService
                 }
             }
 
-            // 建立 Theater 實體（先不設 TotalSeats，後面再設定）
+            // 先計算 TotalSeats（一般座位 + 殘障座位）
+            int actualSeatCount = 0;
+            for (int row = 0; row < request.RowCount; row++)
+            {
+                for (int col = 0; col < request.ColumnCount; col++)
+                {
+                    string seatType = request.Seats[row][col];
+                    if (seatType == "一般座位" || seatType == "殘障座位")
+                    {
+                        actualSeatCount++;
+                    }
+                }
+            }
+
+            // 驗證座位數量必須大於 0
+            if (actualSeatCount == 0)
+            {
+                return ApiResponse<TheaterResponseDto>.FailureResponse(
+                    "影廳必須至少包含一個可販售座位（一般座位或殘障座位）"
+                );
+            }
+
+            // 建立 Theater 實體（直接設定計算後的 TotalSeats）
             var theater = new Theater
             {
                 Name = request.Name,
@@ -92,15 +114,14 @@ public class TheaterService : ITheaterService
                 Floor = request.Floor,
                 RowCount = request.RowCount,
                 ColumnCount = request.ColumnCount,
-                TotalSeats = 0  // 暫時設為 0，後面計算
+                TotalSeats = actualSeatCount  // 直接設定正確的座位數
             };
 
             // 儲存 Theater 到資料庫以取得 ID
             var createdTheater = await _theaterRepository.CreateAsync(theater);
 
-            // 建立座位並計算 TotalSeats
+            // 建立座位列表
             var seats = new List<Seat>();
-            int actualSeatCount = 0;
 
             for (int row = 0; row < request.RowCount; row++)
             {
@@ -120,17 +141,11 @@ public class TheaterService : ITheaterService
                     };
 
                     seats.Add(seat);
-
-                    // 計算實際座位數（一般座位 + 殘障座位）
-                    if (seatType == "一般座位" || seatType == "殘障座位")
-                    {
-                        actualSeatCount++;
-                    }
                 }
             }
 
-            // 使用 DbContext 批次新增座位
-            await _theaterRepository.CreateSeatsAsync(createdTheater.Id, seats, actualSeatCount);
+            // 使用 DbContext 批次新增座位（不需要再更新 TotalSeats）
+            await _theaterRepository.CreateSeatsOnlyAsync(createdTheater.Id, seats);
 
             // 重新載入 Theater 以取得更新後的 TotalSeats
             var updatedTheater = await _theaterRepository.GetByIdAsync(createdTheater.Id);

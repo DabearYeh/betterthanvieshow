@@ -79,6 +79,15 @@ public class TheatersController : ControllerBase
 
         if (!result.Success)
         {
+            // 如果是業務邏輯驗證錯誤，回傳 400 Bad Request
+            if (result.Message?.Contains("座位陣列") == true || 
+                result.Message?.Contains("影廳必須") == true ||
+                result.Message?.Contains("不符") == true)
+            {
+                return BadRequest(result);
+            }
+            
+            // 其他錯誤回傳 500
             return StatusCode(500, result);
         }
 
