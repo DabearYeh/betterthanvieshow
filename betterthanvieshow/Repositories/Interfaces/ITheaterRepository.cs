@@ -43,6 +43,13 @@ public interface ITheaterRepository
     Task<Theater> GetByIdAsync(int id);
 
     /// <summary>
+    /// 根據 ID 取得影廳及其所有座位
+    /// </summary>
+    /// <param name="id">影廳 ID</param>
+    /// <returns>影廳實體（包含座位），若不存在回傳 null</returns>
+    Task<Theater?> GetByIdWithSeatsAsync(int id);
+
+    /// <summary>
     /// 檢查影廳是否存在
     /// </summary>
     /// <param name="id">影廳 ID</param>

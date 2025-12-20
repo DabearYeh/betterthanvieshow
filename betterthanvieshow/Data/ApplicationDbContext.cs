@@ -92,7 +92,7 @@ public class ApplicationDbContext : DbContext
 
             // 外鍵設定
             entity.HasOne(e => e.Theater)
-                .WithMany()
+                .WithMany(t => t.Seats)
                 .HasForeignKey(e => e.TheaterId)
                 .OnDelete(DeleteBehavior.Cascade);
 

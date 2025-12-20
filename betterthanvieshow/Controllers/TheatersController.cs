@@ -47,6 +47,35 @@ public class TheatersController : ControllerBase
     }
 
     /// <summary>
+    /// 根據 ID 取得影廳詳細資訊（含座位表）
+    /// </summary>
+    /// <param name="id">影廳 ID</param>
+    /// <returns>影廳詳細資訊</returns>
+    [HttpGet("{id}")]
+    [ProducesResponseType(typeof(ApiResponse<TheaterDetailResponseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<TheaterDetailResponseDto>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ApiResponse<TheaterDetailResponseDto>), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetTheaterById(int id)
+    {
+        var result = await _theaterService.GetTheaterByIdAsync(id);
+
+        if (!result.Success)
+        {
+            // 如果是找不到影廳，回傳 404
+            if (result.Message?.Contains("找不到") == true)
+            {
+                return NotFound(result);
+            }
+            
+            return StatusCode(500, result);
+        }
+
+        return Ok(result);
+    }
+
+    /// <summary>
     /// 建立新影廳
     /// </summary>
     /// <param name="request">建立影廳請求</param>

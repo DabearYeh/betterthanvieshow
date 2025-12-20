@@ -56,4 +56,9 @@ public class Theater
     [Required]
     [Range(1, int.MaxValue, ErrorMessage = "座位總數必須大於 0")]
     public int TotalSeats { get; set; }
+
+    /// <summary>
+    /// 座位列表（導航屬性）
+    /// </summary>
+    public ICollection<Seat> Seats { get; set; } = new List<Seat>();
 }

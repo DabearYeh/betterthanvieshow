@@ -220,4 +220,69 @@ public class TheaterService : ITheaterService
             );
         }
     }
+
+    /// <summary>
+    /// 根據 ID 取得影廳詳細資訊（含座位表）
+    /// </summary>
+    /// <param name="id">影廳 ID</param>
+    /// <returns>影廳詳細資訊回應</returns>
+    public async Task<ApiResponse<TheaterDetailResponseDto>> GetTheaterByIdAsync(int id)
+    {
+        try
+        {
+            var theater = await _theaterRepository.GetByIdWithSeatsAsync(id);
+            
+            if (theater == null)
+            {
+                return ApiResponse<TheaterDetailResponseDto>.FailureResponse(
+                    "找不到指定的影廳"
+                );
+            }
+
+            // 將座位轉換為二維陣列格式
+            var seatMap = new List<List<SeatDto>>();
+            var seats = theater.Seats.ToList();
+
+            for (int row = 0; row < theater.RowCount; row++)
+            {
+                var rowSeats = new List<SeatDto>();
+                string rowName = ((char)('A' + row)).ToString();
+
+                for (int col = 1; col <= theater.ColumnCount; col++)
+                {
+                    var seat = seats.FirstOrDefault(s => 
+                        s.RowName == rowName && s.ColumnNumber == col);
+
+                    rowSeats.Add(new SeatDto
+                    {
+                        RowName = rowName,
+                        ColumnNumber = col,
+                        SeatType = seat?.SeatType ?? "Empty"
+                    });
+                }
+                seatMap.Add(rowSeats);
+            }
+
+            var theaterDto = new TheaterDetailResponseDto
+            {
+                Id = theater.Id,
+                Name = theater.Name,
+                RowCount = theater.RowCount,
+                ColumnCount = theater.ColumnCount,
+                SeatMap = seatMap
+            };
+
+            return ApiResponse<TheaterDetailResponseDto>.SuccessResponse(
+                theaterDto,
+                "查詢成功"
+            );
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "查詢影廳時發生錯誤，影廳 ID: {TheaterId}", id);
+            return ApiResponse<TheaterDetailResponseDto>.FailureResponse(
+                "查詢影廳失敗，請稍後再試"
+            );
+        }
+    }
 }

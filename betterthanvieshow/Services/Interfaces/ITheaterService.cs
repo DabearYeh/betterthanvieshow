@@ -27,4 +27,11 @@ public interface ITheaterService
     /// <param name="id">影廳 ID</param>
     /// <returns>刪除結果</returns>
     Task<ApiResponse<object>> DeleteTheaterAsync(int id);
+
+    /// <summary>
+    /// 根據 ID 取得影廳詳細資訊（含座位表）
+    /// </summary>
+    /// <param name="id">影廳 ID</param>
+    /// <returns>影廳詳細資訊回應</returns>
+    Task<ApiResponse<TheaterDetailResponseDto>> GetTheaterByIdAsync(int id);
 }
