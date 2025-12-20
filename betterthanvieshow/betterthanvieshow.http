@@ -1,6 +1,13 @@
 @betterthanvieshow_HostAddress = http://localhost:5041
 
-GET {{betterthanvieshow_HostAddress}}/weatherforecast/
-Accept: application/json
+### 會員註冊
+POST {{betterthanvieshow_HostAddress}}/api/Auth/register
+Content-Type: application/json
+
+{
+  "name": "測試用戶",
+  "email": "test@example.com",
+  "password": "SecurePass123"
+}
 
 ###
