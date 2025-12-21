@@ -28,6 +28,11 @@ public class ApplicationDbContext : DbContext
     /// </summary>
     public DbSet<Seat> Seats { get; set; }
 
+    /// <summary>
+    /// 電影資料集
+    /// </summary>
+    public DbSet<Movie> Movies { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -100,6 +105,29 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(e => new { e.TheaterId, e.RowName, e.ColumnNumber })
                 .IsUnique()
                 .HasDatabaseName("IX_Seat_Theater_Row_Column");
+        });
+
+        // Movie 實體配置
+        modelBuilder.Entity<Movie>(entity =>
+        {
+            // 主鍵
+            entity.HasKey(e => e.Id);
+
+            // 建立時間預設值
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("GETDATE()");
+
+            // 檢查約束：時長必須大於 0
+            entity.ToTable(t => t.HasCheckConstraint(
+                "CHK_Movie_Duration",
+                "[Duration] > 0"
+            ));
+
+            // 檢查約束：下映日期必須大於等於上映日期
+            entity.ToTable(t => t.HasCheckConstraint(
+                "CHK_Movie_EndDate",
+                "[EndDate] >= [ReleaseDate]"
+            ));
         });
 
     }

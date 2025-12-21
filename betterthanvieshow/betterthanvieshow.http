@@ -38,3 +38,85 @@ Content-Type: application/json
 }
 
 ###
+
+### 設定 Admin Token (請先用管理員帳號登入取得 token 並替換下方 @token 的值)
+@token = YOUR_ADMIN_JWT_TOKEN_HERE
+
+### 新增電影成功 - 完整欄位
+POST {{betterthanvieshow_HostAddress}}/api/admin/movies
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "復仇者聯盟：終局之戰",
+  "description": "英雄們將展開最後一戰，阻止薩諾斯毀滅宇宙的計畫。",
+  "duration": 181,
+  "genre": "動作,科幻,冒險",
+  "rating": "普遍級",
+  "director": "乔·罗素, 安东尼·罗素",
+  "cast": "乔·罗素, 安东尼·罗素",
+  "posterUrl": "https://example.com/avengers-endgame-poster.jpg",
+  "trailerUrl": "https://www.youtube.com/watch?v=TcMBFSGVi1c",
+  "releaseDate": "2025-12-30",
+  "endDate": "2026-03-30",
+  "canCarousel": true
+}
+
+### 新增電影失敗 - 缺少片名
+POST {{betterthanvieshow_HostAddress}}/api/admin/movies
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "description": "測試簡介",
+  "duration": 120,
+  "genre": "動作",
+  "rating": "普遍級",
+  "director": "測試導演",
+  "cast": "測試演員",
+  "posterUrl": "https://example.com/poster.jpg",
+  "trailerUrl": "https://www.youtube.com/watch?v=test",
+  "releaseDate": "2025-12-30",
+  "endDate": "2026-03-30"
+}
+
+### 新增電影失敗 - 時長為 0
+POST {{betterthanvieshow_HostAddress}}/api/admin/movies
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "測試電影",
+  "description": "測試簡介",
+  "duration": 0,
+  "genre": "動作",
+  "rating": "普遍級",
+  "director": "測試導演",
+  "cast": "測試演員",
+  "posterUrl": "https://example.com/poster.jpg",
+  "trailerUrl": "https://www.youtube.com/watch?v=test",
+  "releaseDate": "2025-12-30",
+  "endDate": "2026-03-30"
+}
+
+### 新增電影失敗 - 下映日期早於上映日期
+POST {{betterthanvieshow_HostAddress}}/api/admin/movies
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "測試電影",
+  "description": "測試簡介",
+  "duration": 120,
+  "genre": "動作",
+  "rating": "普遍級",
+  "director": "測試導演",
+  "cast": "測試演員",
+  "posterUrl": "https://example.com/poster.jpg",
+  "trailerUrl": "https://www.youtube.com/watch?v=test",
+  "releaseDate": "2026-03-30",
+  "endDate": "2025-12-30"
+}
+
+###
+
