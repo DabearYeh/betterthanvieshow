@@ -27,4 +27,26 @@ public class MovieRepository : IMovieRepository
         await _context.SaveChangesAsync();
         return movie;
     }
+
+    /// <summary>
+    /// 根據 ID 取得電影
+    /// </summary>
+    /// <param name="id">電影 ID</param>
+    /// <returns>電影實體，若不存在回傳 null</returns>
+    public async Task<Movie?> GetByIdAsync(int id)
+    {
+        return await _context.Movies.FindAsync(id);
+    }
+
+    /// <summary>
+    /// 更新電影
+    /// </summary>
+    /// <param name="movie">電影實體</param>
+    /// <returns>更新後的電影實體</returns>
+    public async Task<Movie> UpdateAsync(Movie movie)
+    {
+        _context.Movies.Update(movie);
+        await _context.SaveChangesAsync();
+        return movie;
+    }
 }

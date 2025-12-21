@@ -74,4 +74,58 @@ public class MoviesController : ControllerBase
             result
         );
     }
+
+    /// <summary>
+    /// 更新電影
+    /// </summary>
+    /// <param name="id">電影 ID</param>
+    /// <param name="request">更新電影請求</param>
+    /// <returns>更新結果</returns>
+    [HttpPut("{id}")]
+    [ProducesResponseType(typeof(ApiResponse<MovieResponseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<MovieResponseDto>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<MovieResponseDto>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ApiResponse<MovieResponseDto>), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> UpdateMovie(int id, [FromBody] UpdateMovieRequestDto request)
+    {
+        // 檢查模型驗證
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
+                );
+
+            return BadRequest(ApiResponse<MovieResponseDto>.FailureResponse(
+                "驗證失敗",
+                errors
+            ));
+        }
+
+        var result = await _movieService.UpdateMovieAsync(id, request);
+
+        if (!result.Success)
+        {
+            // 如果是找不到電影，回傳 404
+            if (result.Message?.Contains("找不到") == true)
+            {
+                return NotFound(result);
+            }
+
+            // 如果是業務邏輯驗證錯誤，回傳 400 Bad Request
+            if (result.Message?.Contains("日期") == true)
+            {
+                return BadRequest(result);
+            }
+
+            // 其他錯誤回傳 500
+            return StatusCode(500, result);
+        }
+
+        return Ok(result);
+    }
 }
