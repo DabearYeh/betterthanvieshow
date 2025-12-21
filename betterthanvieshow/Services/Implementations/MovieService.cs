@@ -170,4 +170,52 @@ public class MovieService : IMovieService
             return ApiResponse<MovieResponseDto>.FailureResponse($"更新電影時發生錯誤: {ex.Message}");
         }
     }
+
+    /// <summary>
+    /// 取得所有電影
+    /// </summary>
+    /// <returns>電影列表</returns>
+    public async Task<ApiResponse<List<MovieListItemDto>>> GetAllMoviesAsync()
+    {
+        try
+        {
+            _logger.LogInformation("開始取得所有電影");
+
+            var movies = await _movieRepository.GetAllAsync();
+            var today = DateTime.UtcNow.Date;
+
+            var movieList = movies.Select(m => new MovieListItemDto
+            {
+                Id = m.Id,
+                Title = m.Title,
+                PosterUrl = m.PosterUrl,
+                Duration = m.Duration,
+                Rating = m.Rating,
+                ReleaseDate = m.ReleaseDate,
+                EndDate = m.EndDate,
+                Status = GetMovieStatus(m.ReleaseDate, m.EndDate, today)
+            }).ToList();
+
+            _logger.LogInformation("成功取得 {Count} 部電影", movieList.Count);
+
+            return ApiResponse<List<MovieListItemDto>>.SuccessResponse(movieList, "取得電影列表成功");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "取得電影列表時發生錯誤");
+            return ApiResponse<List<MovieListItemDto>>.FailureResponse($"取得電影列表時發生錯誤: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 計算電影上映狀態
+    /// </summary>
+    private static string GetMovieStatus(DateTime releaseDate, DateTime endDate, DateTime today)
+    {
+        if (today < releaseDate.Date)
+            return "即將上映";
+        if (today <= endDate.Date)
+            return "上映中";
+        return "已下映";
+    }
 }

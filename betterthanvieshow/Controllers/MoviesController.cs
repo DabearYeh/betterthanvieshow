@@ -26,6 +26,27 @@ public class MoviesController : ControllerBase
     }
 
     /// <summary>
+    /// 取得所有電影
+    /// </summary>
+    /// <returns>電影列表</returns>
+    [HttpGet]
+    [ProducesResponseType(typeof(ApiResponse<List<MovieListItemDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ApiResponse<List<MovieListItemDto>>), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetAllMovies()
+    {
+        var result = await _movieService.GetAllMoviesAsync();
+
+        if (!result.Success)
+        {
+            return StatusCode(500, result);
+        }
+
+        return Ok(result);
+    }
+
+    /// <summary>
     /// 建立新電影
     /// </summary>
     /// <param name="request">建立電影請求</param>

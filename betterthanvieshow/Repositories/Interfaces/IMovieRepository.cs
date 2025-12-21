@@ -27,4 +27,10 @@ public interface IMovieRepository
     /// <param name="movie">電影實體</param>
     /// <returns>更新後的電影實體</returns>
     Task<Movie> UpdateAsync(Movie movie);
+
+    /// <summary>
+    /// 取得所有電影
+    /// </summary>
+    /// <returns>電影列表</returns>
+    Task<List<Movie>> GetAllAsync();
 }

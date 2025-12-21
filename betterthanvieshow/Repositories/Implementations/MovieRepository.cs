@@ -1,6 +1,7 @@
 using betterthanvieshow.Data;
 using betterthanvieshow.Models.Entities;
 using betterthanvieshow.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace betterthanvieshow.Repositories.Implementations;
 
@@ -48,5 +49,16 @@ public class MovieRepository : IMovieRepository
         _context.Movies.Update(movie);
         await _context.SaveChangesAsync();
         return movie;
+    }
+
+    /// <summary>
+    /// 取得所有電影
+    /// </summary>
+    /// <returns>電影列表</returns>
+    public async Task<List<Movie>> GetAllAsync()
+    {
+        return await _context.Movies
+            .OrderByDescending(m => m.ReleaseDate)
+            .ToListAsync();
     }
 }

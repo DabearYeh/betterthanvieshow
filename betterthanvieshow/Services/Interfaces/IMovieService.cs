@@ -22,4 +22,10 @@ public interface IMovieService
     /// <param name="request">更新電影請求</param>
     /// <returns>更新結果</returns>
     Task<ApiResponse<MovieResponseDto>> UpdateMovieAsync(int id, UpdateMovieRequestDto request);
+
+    /// <summary>
+    /// 取得所有電影
+    /// </summary>
+    /// <returns>電影列表</returns>
+    Task<ApiResponse<List<MovieListItemDto>>> GetAllMoviesAsync();
 }
