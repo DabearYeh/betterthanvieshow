@@ -28,4 +28,11 @@ public interface IMovieService
     /// </summary>
     /// <returns>電影列表</returns>
     Task<ApiResponse<List<MovieListItemDto>>> GetAllMoviesAsync();
+
+    /// <summary>
+    /// 取得單一電影詳情
+    /// </summary>
+    /// <param name="id">電影 ID</param>
+    /// <returns>電影詳情</returns>
+    Task<ApiResponse<MovieResponseDto>> GetMovieByIdAsync(int id);
 }

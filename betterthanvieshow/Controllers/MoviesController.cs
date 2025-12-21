@@ -47,6 +47,33 @@ public class MoviesController : ControllerBase
     }
 
     /// <summary>
+    /// 取得單一電影詳情
+    /// </summary>
+    /// <param name="id">電影 ID</param>
+    /// <returns>電影詳情</returns>
+    [HttpGet("{id}")]
+    [ProducesResponseType(typeof(ApiResponse<MovieResponseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<MovieResponseDto>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ApiResponse<MovieResponseDto>), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetMovieById(int id)
+    {
+        var result = await _movieService.GetMovieByIdAsync(id);
+
+        if (!result.Success)
+        {
+            if (result.Message?.Contains("找不到") == true)
+            {
+                return NotFound(result);
+            }
+            return StatusCode(500, result);
+        }
+
+        return Ok(result);
+    }
+
+    /// <summary>
     /// 建立新電影
     /// </summary>
     /// <param name="request">建立電影請求</param>

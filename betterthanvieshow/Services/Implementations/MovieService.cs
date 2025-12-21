@@ -208,6 +208,54 @@ public class MovieService : IMovieService
     }
 
     /// <summary>
+    /// 取得單一電影詳情
+    /// </summary>
+    /// <param name="id">電影 ID</param>
+    /// <returns>電影詳情</returns>
+    public async Task<ApiResponse<MovieResponseDto>> GetMovieByIdAsync(int id)
+    {
+        try
+        {
+            _logger.LogInformation("開始取得電影詳情: ID={Id}", id);
+
+            var movie = await _movieRepository.GetByIdAsync(id);
+            if (movie == null)
+            {
+                _logger.LogWarning("找不到電影: ID={Id}", id);
+                return ApiResponse<MovieResponseDto>.FailureResponse("找不到指定的電影");
+            }
+
+            var responseDto = new MovieResponseDto
+            {
+                Id = movie.Id,
+                Title = movie.Title,
+                Description = movie.Description,
+                Duration = movie.Duration,
+                Genre = movie.Genre,
+                Rating = movie.Rating,
+                Director = movie.Director,
+                Cast = movie.Cast,
+                PosterUrl = movie.PosterUrl,
+                TrailerUrl = movie.TrailerUrl,
+                ReleaseDate = movie.ReleaseDate,
+                EndDate = movie.EndDate,
+                CanCarousel = movie.CanCarousel,
+                CreatedAt = movie.CreatedAt
+            };
+
+            _logger.LogInformation("成功取得電影詳情: {Title}, ID: {Id}", 
+                movie.Title, movie.Id);
+
+            return ApiResponse<MovieResponseDto>.SuccessResponse(responseDto, "取得電影詳情成功");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "取得電影詳情時發生錯誤: ID={Id}", id);
+            return ApiResponse<MovieResponseDto>.FailureResponse($"取得電影詳情時發生錯誤: {ex.Message}");
+        }
+    }
+
+    /// <summary>
     /// 計算電影上映狀態
     /// </summary>
     private static string GetMovieStatus(DateTime releaseDate, DateTime endDate, DateTime today)
