@@ -61,7 +61,7 @@ builder.Services.AddScoped<IMovieRepository, MovieRepository>();
 builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddScoped<IDailyScheduleRepository, DailyScheduleRepository>();
 builder.Services.AddScoped<IShowtimeRepository, ShowtimeRepository>();
-builder.Services.AddScoped<IShowtimeService, ShowtimeService>();
+builder.Services.AddScoped<IDailyScheduleService, DailyScheduleService>();
 
 
 // 配置 CORS

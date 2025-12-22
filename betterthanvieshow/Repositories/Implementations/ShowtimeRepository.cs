@@ -72,4 +72,41 @@ public class ShowtimeRepository : IShowtimeRepository
 
         return false;
     }
+
+    /// <inheritdoc />
+    public async Task DeleteByDateAsync(DateTime showDate)
+    {
+        var showtimes = await _context.MovieShowTimes
+            .Where(st => st.ShowDate.Date == showDate.Date)
+            .ToListAsync();
+
+        _context.MovieShowTimes.RemoveRange(showtimes);
+        await _context.SaveChangesAsync();
+    }
+
+    /// <inheritdoc />
+    public async Task<List<MovieShowTime>> CreateBatchAsync(List<MovieShowTime> showtimes)
+    {
+        foreach (var showtime in showtimes)
+        {
+            showtime.CreatedAt = DateTime.UtcNow;
+        }
+
+        await _context.MovieShowTimes.AddRangeAsync(showtimes);
+        await _context.SaveChangesAsync();
+
+        return showtimes;
+    }
+
+    /// <inheritdoc />
+    public async Task<List<MovieShowTime>> GetByDateWithDetailsAsync(DateTime showDate)
+    {
+        return await _context.MovieShowTimes
+            .Include(st => st.Movie)
+            .Include(st => st.Theater)
+            .Where(st => st.ShowDate.Date == showDate.Date)
+            .OrderBy(st => st.TheaterId)
+            .ThenBy(st => st.StartTime)
+            .ToListAsync();
+    }
 }

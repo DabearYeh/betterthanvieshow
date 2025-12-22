@@ -26,4 +26,22 @@ public interface IShowtimeRepository
     /// <param name="durationMinutes">電影時長（分鐘）</param>
     /// <param name="excludeShowtimeId">排除的場次 ID（用於編輯時排除自己）</param>
     Task<bool> HasTimeConflictAsync(int theaterId, DateTime showDate, TimeSpan startTime, int durationMinutes, int? excludeShowtimeId = null);
+
+    /// <summary>
+    /// 刪除指定日期的所有場次
+    /// </summary>
+    /// <param name="showDate">放映日期</param>
+    Task DeleteByDateAsync(DateTime showDate);
+
+    /// <summary>
+    /// 批次新增場次
+    /// </summary>
+    /// <param name="showtimes">場次清單</param>
+    Task<List<MovieShowTime>> CreateBatchAsync(List<MovieShowTime> showtimes);
+
+    /// <summary>
+    /// 取得指定日期的所有場次（包含關聯資料）
+    /// </summary>
+    /// <param name="showDate">放映日期</param>
+    Task<List<MovieShowTime>> GetByDateWithDetailsAsync(DateTime showDate);
 }

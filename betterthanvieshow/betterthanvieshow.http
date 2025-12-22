@@ -120,90 +120,85 @@ Authorization: Bearer {{token}}
 
 ###
 
-### ========== 場次管理 API ==========
+### ========== 每日時刻表管理 API ==========
 
-### 新增場次成功（DailySchedule 會自動建立）
-POST {{betterthanvieshow_HostAddress}}/api/admin/showtimes
+### 首次儲存時刻表（建立 DailySchedule）
+PUT {{betterthanvieshow_HostAddress}}/api/admin/daily-schedules/2025-12-30
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-  "movieId": 1,
-  "theaterId": 1,
-  "showDate": "2025-12-25",
-  "startTime": "14:00"
+  "showtimes": [
+    { "movieId": 1, "theaterId": 1, "startTime": "09:45" },
+    { "movieId": 1, "theaterId": 2, "startTime": "14:00" },
+    { "movieId": 2, "theaterId": 1, "startTime": "17:15" }
+  ]
 }
 
-### 新增場次成功 - 不同時間
-POST {{betterthanvieshow_HostAddress}}/api/admin/showtimes
+### 修改已有時刻表（全部替換）
+PUT {{betterthanvieshow_HostAddress}}/api/admin/daily-schedules/2025-12-30
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-  "movieId": 1,
-  "theaterId": 1,
-  "showDate": "2025-12-25",
-  "startTime": "17:00"
+  "showtimes": [
+    { "movieId": 1, "theaterId": 1, "startTime": "10:00" },
+    { "movieId": 2, "theaterId": 2, "startTime": "15:30" }
+  ]
 }
 
-### 新增場次失敗 - 電影不存在
-POST {{betterthanvieshow_HostAddress}}/api/admin/showtimes
+### 清空時刻表（傳空陣列）
+PUT {{betterthanvieshow_HostAddress}}/api/admin/daily-schedules/2025-12-30
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-  "movieId": 9999,
-  "theaterId": 1,
-  "showDate": "2025-12-25",
-  "startTime": "14:00"
+  "showtimes": []
 }
 
-### 新增場次失敗 - 影廳不存在
-POST {{betterthanvieshow_HostAddress}}/api/admin/showtimes
+### 儲存時刻表失敗 - 電影不存在
+PUT {{betterthanvieshow_HostAddress}}/api/admin/daily-schedules/2025-12-30
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-  "movieId": 1,
-  "theaterId": 9999,
-  "showDate": "2025-12-25",
-  "startTime": "14:00"
+  "showtimes": [
+    { "movieId": 9999, "theaterId": 1, "startTime": "10:00" }
+  ]
 }
 
-### 新增場次失敗 - 時間不是 15 分鐘倍數
-POST {{betterthanvieshow_HostAddress}}/api/admin/showtimes
+### 儲存時刻表失敗 - 影廳不存在
+PUT {{betterthanvieshow_HostAddress}}/api/admin/daily-schedules/2025-12-30
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-  "movieId": 1,
-  "theaterId": 1,
-  "showDate": "2025-12-25",
-  "startTime": "14:07"
+  "showtimes": [
+    { "movieId": 1, "theaterId": 9999, "startTime": "10:00" }
+  ]
 }
 
-### 新增場次失敗 - 時間衝突（需先新增成功的場次再測試）
-POST {{betterthanvieshow_HostAddress}}/api/admin/showtimes
+### 儲存時刻表失敗 - 時間非 15 分鐘倍數
+PUT {{betterthanvieshow_HostAddress}}/api/admin/daily-schedules/2025-12-30
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-  "movieId": 1,
-  "theaterId": 1,
-  "showDate": "2025-12-25",
-  "startTime": "14:30"
+  "showtimes": [
+    { "movieId": 1, "theaterId": 1, "startTime": "10:07" }
+  ]
 }
 
-### 新增場次失敗 - 放映日期在電影上映範圍外
-POST {{betterthanvieshow_HostAddress}}/api/admin/showtimes
+### 儲存時刻表失敗 - 場次時間衝突
+PUT {{betterthanvieshow_HostAddress}}/api/admin/daily-schedules/2025-12-30
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-  "movieId": 1,
-  "theaterId": 1,
-  "showDate": "2020-01-01",
-  "startTime": "14:00"
+  "showtimes": [
+    { "movieId": 1, "theaterId": 1, "startTime": "10:00" },
+    { "movieId": 1, "theaterId": 1, "startTime": "10:30" }
+  ]
 }
 
 ###

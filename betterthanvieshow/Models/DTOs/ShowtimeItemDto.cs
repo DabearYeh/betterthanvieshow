@@ -3,9 +3,9 @@ using System.ComponentModel.DataAnnotations;
 namespace betterthanvieshow.Models.DTOs;
 
 /// <summary>
-/// 新增場次請求 DTO
+/// 單一場次資料
 /// </summary>
-public class CreateShowtimeRequestDto
+public class ShowtimeItemDto
 {
     /// <summary>
     /// 電影 ID
@@ -18,12 +18,6 @@ public class CreateShowtimeRequestDto
     /// </summary>
     [Required(ErrorMessage = "影廳 ID 為必填")]
     public int TheaterId { get; set; }
-
-    /// <summary>
-    /// 放映日期，格式 YYYY-MM-DD
-    /// </summary>
-    [Required(ErrorMessage = "放映日期為必填")]
-    public DateTime ShowDate { get; set; }
 
     /// <summary>
     /// 開始時間，格式 HH:MM
