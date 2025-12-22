@@ -33,6 +33,16 @@ public class ApplicationDbContext : DbContext
     /// </summary>
     public DbSet<Movie> Movies { get; set; }
 
+    /// <summary>
+    /// 場次資料集
+    /// </summary>
+    public DbSet<MovieShowTime> MovieShowTimes { get; set; }
+
+    /// <summary>
+    /// 每日時刻表資料集
+    /// </summary>
+    public DbSet<DailySchedule> DailySchedules { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -127,6 +137,63 @@ public class ApplicationDbContext : DbContext
             entity.ToTable(t => t.HasCheckConstraint(
                 "CHK_Movie_EndDate",
                 "[EndDate] >= [ReleaseDate]"
+            ));
+        });
+
+        // MovieShowTime 實體配置
+        modelBuilder.Entity<MovieShowTime>(entity =>
+        {
+            // 主鍵
+            entity.HasKey(e => e.Id);
+
+            // 外鍵設定 - 電影
+            entity.HasOne(e => e.Movie)
+                .WithMany()
+                .HasForeignKey(e => e.MovieId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // 外鍵設定 - 影廳
+            entity.HasOne(e => e.Theater)
+                .WithMany()
+                .HasForeignKey(e => e.TheaterId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // 建立時間預設值
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("GETDATE()");
+
+            // 索引：影廳 + 日期（用於查詢某日某廳的所有場次）
+            entity.HasIndex(e => new { e.TheaterId, e.ShowDate })
+                .HasDatabaseName("IX_MovieShowTime_Theater_Date");
+        });
+
+        // DailySchedule 實體配置
+        modelBuilder.Entity<DailySchedule>(entity =>
+        {
+            // 主鍵
+            entity.HasKey(e => e.Id);
+
+            // 日期唯一索引
+            entity.HasIndex(e => e.ScheduleDate)
+                .IsUnique()
+                .HasDatabaseName("IX_DailySchedule_Date");
+
+            // 狀態預設值
+            entity.Property(e => e.Status)
+                .HasDefaultValue("Draft");
+
+            // 建立時間預設值
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("GETDATE()");
+
+            // 更新時間預設值
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("GETDATE()");
+
+            // 狀態檢查約束
+            entity.ToTable(t => t.HasCheckConstraint(
+                "CHK_DailySchedule_Status",
+                "[Status] IN ('Draft', 'OnSale')"
             ));
         });
 
