@@ -273,4 +273,24 @@ public class DailyScheduleService : IDailyScheduleService
             UpdatedAt = dailySchedule.UpdatedAt
         };
     }
+
+    /// <inheritdoc />
+    public async Task<DailyScheduleResponseDto> GetDailyScheduleAsync(DateTime date)
+    {
+        // 正規化日期
+        var scheduleDate = date.Date;
+
+        // 1. 查詢 DailySchedule
+        var dailySchedule = await _dailyScheduleRepository.GetByDateAsync(scheduleDate);
+        if (dailySchedule == null)
+        {
+            throw new KeyNotFoundException($"日期 {scheduleDate:yyyy-MM-dd} 的時刻表不存在");
+        }
+
+        // 2. 查詢該日期的所有場次（含電影和影廳資料）
+        var showtimes = await _showtimeRepository.GetByDateWithDetailsAsync(scheduleDate);
+
+        // 3. 建立並返回回應
+        return BuildDailyScheduleResponse(dailySchedule, showtimes);
+    }
 }

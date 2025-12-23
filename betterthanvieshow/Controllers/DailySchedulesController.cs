@@ -90,6 +90,50 @@ public class DailySchedulesController : ControllerBase
         }
     }
 
+
+    /// <summary>
+    /// 查詢每日時刻表
+    /// </summary>
+    /// <remarks>
+    /// 查詢指定日期的時刻表及所有場次資料。
+    /// 
+    /// **用途**：
+    /// - 後台編輯時預覽該日期的時刻表內容
+    /// - 前端顯示時刻表管理頁面
+    /// 
+    /// **回傳資料**：
+    /// - 時刻表基本資訊（日期、狀態、建立/更新時間）
+    /// - 該日期的所有場次（包含電影、影廳資訊）
+    /// </remarks>
+    /// <param name="date">時刻表日期，格式：YYYY-MM-DD</param>
+    /// <response code="200">查詢成功</response>
+    /// <response code="400">日期格式錯誤</response>
+    /// <response code="404">該日期沒有時刻表記錄</response>
+    /// <response code="401">未授權</response>
+    [HttpGet("{date}")]
+    [ProducesResponseType(typeof(DailyScheduleResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetDailySchedule([FromRoute] string date)
+    {
+        try
+        {
+            // 解析日期
+            if (!DateTime.TryParse(date, out var scheduleDate))
+            {
+                return BadRequest(new { message = "日期格式錯誤，必須為 YYYY-MM-DD" });
+            }
+
+            var result = await _dailyScheduleService.GetDailyScheduleAsync(scheduleDate);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+    }
+
     /// <summary>
     /// 開始販售時刻表
     /// </summary>

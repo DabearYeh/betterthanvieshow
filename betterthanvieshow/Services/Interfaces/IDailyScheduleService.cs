@@ -21,4 +21,11 @@ public interface IDailyScheduleService
     /// <param name="date">時刻表日期</param>
     /// <returns>販售後的時刻表資訊</returns>
     Task<DailyScheduleResponseDto> PublishDailyScheduleAsync(DateTime date);
+
+    /// <summary>
+    /// 查詢每日時刻表
+    /// </summary>
+    /// <param name="date">時刻表日期</param>
+    /// <returns>時刻表資訊及所有場次</returns>
+    Task<DailyScheduleResponseDto> GetDailyScheduleAsync(DateTime date);
 }
