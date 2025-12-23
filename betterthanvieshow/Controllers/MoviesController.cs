@@ -26,6 +26,38 @@ public class MoviesController : ControllerBase
     }
 
     /// <summary>
+    /// 取得首頁電影資料
+    /// </summary>
+    /// <remarks>
+    /// 此端點提供前台首頁所需的所有電影資料，包含：
+    /// - **輪播圖電影**：標記為可輪播的電影（CanCarousel = true）
+    /// - **本週前10**：目前為最新建立的10部正在上映電影，未來將改為根據票券銷售數量排序
+    /// - **即將上映**：上映日期在今天之後的電影
+    /// - **隨機推薦**：隨機推薦10部正在上映的電影
+    /// - **所有電影**：正在上映 + 即將上映的完整列表
+    /// 
+    /// **無需授權**，任何使用者皆可存取。
+    /// </remarks>
+    /// <response code="200">成功取得首頁電影資料</response>
+    /// <response code="500">伺服器內部錯誤</response>
+    /// <returns>首頁電影資料</returns>
+    [HttpGet("~/api/movies/homepage")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(ApiResponse<HomepageMoviesResponseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<HomepageMoviesResponseDto>), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetHomepageMovies()
+    {
+        var result = await _movieService.GetHomepageMoviesAsync();
+
+        if (!result.Success)
+        {
+            return StatusCode(500, result);
+        }
+
+        return Ok(result);
+    }
+
+    /// <summary>
     /// 取得所有電影
     /// </summary>
     /// <returns>電影列表</returns>

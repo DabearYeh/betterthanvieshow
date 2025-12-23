@@ -61,4 +61,58 @@ public class MovieRepository : IMovieRepository
             .OrderByDescending(m => m.ReleaseDate)
             .ToListAsync();
     }
+
+    /// <summary>
+    /// 取得輪播電影（CanCarousel = true）
+    /// </summary>
+    /// <returns>輪播電影列表</returns>
+    public async Task<List<Movie>> GetCarouselMoviesAsync()
+    {
+        return await _context.Movies
+            .Where(m => m.CanCarousel)
+            .OrderByDescending(m => m.ReleaseDate)
+            .ToListAsync();
+    }
+
+    /// <summary>
+    /// 取得即將上映電影（ReleaseDate > 今天）
+    /// </summary>
+    /// <returns>即將上映電影列表</returns>
+    public async Task<List<Movie>> GetComingSoonMoviesAsync()
+    {
+        var today = DateTime.Today;
+        return await _context.Movies
+            .Where(m => m.ReleaseDate > today)
+            .OrderBy(m => m.ReleaseDate)
+            .ToListAsync();
+    }
+
+    /// <summary>
+    /// 取得正在上映電影（今天在 [ReleaseDate, EndDate] 範圍內）
+    /// </summary>
+    /// <returns>正在上映電影列表</returns>
+    public async Task<List<Movie>> GetMoviesOnSaleAsync()
+    {
+        var today = DateTime.Today;
+        return await _context.Movies
+            .Where(m => m.ReleaseDate <= today && m.EndDate >= today)
+            .OrderByDescending(m => m.ReleaseDate)
+            .ToListAsync();
+    }
+
+    /// <summary>
+    /// 取得最新建立的正在上映電影（按建立時間降序）
+    /// </summary>
+    /// <param name="count">取得數量</param>
+    /// <returns>最新建立的正在上映電影列表</returns>
+    public async Task<List<Movie>> GetRecentOnSaleMoviesAsync(int count)
+    {
+        var today = DateTime.Today;
+        return await _context.Movies
+            .Where(m => m.ReleaseDate <= today && m.EndDate >= today)
+            .OrderByDescending(m => m.CreatedAt)
+            .Take(count)
+            .ToListAsync();
+    }
 }
+

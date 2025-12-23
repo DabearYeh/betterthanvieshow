@@ -256,9 +256,82 @@ public class MovieService : IMovieService
     }
 
     /// <summary>
+    /// 取得首頁電影資料（輪播、本週前10、即將上映、隨機推薦、所有電影）
+    /// </summary>
+    /// <returns>首頁電影資料</returns>
+    public async Task<ApiResponse<HomepageMoviesResponseDto>> GetHomepageMoviesAsync()
+    {
+        try
+        {
+            _logger.LogInformation("開始取得首頁電影資料");
+
+            // 順序取得各類別電影資料（避免 EF Core DbContext 並發問題）
+            var carouselMovies = await _movieRepository.GetCarouselMoviesAsync();
+            var topWeeklyMovies = await _movieRepository.GetRecentOnSaleMoviesAsync(10);
+            var comingSoonMovies = await _movieRepository.GetComingSoonMoviesAsync();
+            var onSaleMovies = await _movieRepository.GetMoviesOnSaleAsync();
+
+
+            // 隨機推薦：從正在上映的電影中隨機選 10 部
+            var recommendedMovies = onSaleMovies
+                .OrderBy(_ => Random.Shared.Next())
+                .Take(10)
+                .ToList();
+
+            // 所有電影：正在上映 + 即將上映
+            var allMovies = onSaleMovies
+                .Concat(comingSoonMovies)
+                .OrderByDescending(m => m.ReleaseDate)
+                .ToList();
+
+            // 轉換為 DTO
+            var response = new HomepageMoviesResponseDto
+            {
+                Carousel = carouselMovies.Select(MapToSimpleDto).ToList(),
+                TopWeekly = topWeeklyMovies.Select(MapToSimpleDto).ToList(),
+                ComingSoon = comingSoonMovies.Select(MapToSimpleDto).ToList(),
+                Recommended = recommendedMovies.Select(MapToSimpleDto).ToList(),
+                AllMovies = allMovies.Select(MapToSimpleDto).ToList()
+            };
+
+            _logger.LogInformation(
+                "成功取得首頁電影資料 - 輪播: {CarouselCount}, 本週前10: {TopWeeklyCount}, " +
+                "即將上映: {ComingSoonCount}, 隨機推薦: {RecommendedCount}, 所有電影: {AllMoviesCount}",
+                response.Carousel.Count, response.TopWeekly.Count, response.ComingSoon.Count,
+                response.Recommended.Count, response.AllMovies.Count);
+
+            return ApiResponse<HomepageMoviesResponseDto>.SuccessResponse(response, "取得首頁電影資料成功");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "取得首頁電影資料時發生錯誤");
+            return ApiResponse<HomepageMoviesResponseDto>.FailureResponse($"取得首頁電影資料時發生錯誤: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 將 Movie 實體轉換為 MovieSimpleDto
+    /// </summary>
+    private static MovieSimpleDto MapToSimpleDto(Movie movie)
+    {
+        return new MovieSimpleDto
+        {
+            Id = movie.Id,
+            Title = movie.Title,
+            PosterUrl = movie.PosterUrl,
+            Duration = movie.Duration,
+            Genre = movie.Genre,
+            Rating = movie.Rating,
+            ReleaseDate = movie.ReleaseDate,
+            EndDate = movie.EndDate
+        };
+    }
+
+    /// <summary>
     /// 計算電影上映狀態
     /// </summary>
     private static string GetMovieStatus(DateTime releaseDate, DateTime endDate, DateTime today)
+
     {
         if (today < releaseDate.Date)
             return "即將上映";
