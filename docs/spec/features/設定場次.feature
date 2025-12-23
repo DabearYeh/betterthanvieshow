@@ -41,3 +41,28 @@ Feature: 設定場次
       Given 管理者完成所有場次資訊
       When 管理者按下確認設定鈕
       Then 系統建立 MovieShowTime 記錄
+
+  Rule: 只有草稿狀態的日期可以設定場次
+    Example: 草稿狀態可新增場次
+      Given 日期「2025-12-22」的時刻表狀態為 Draft
+      When 管理者在日期「2025-12-22」新增場次
+      Then 系統建立 MovieShowTime 記錄
+
+    Example: 販售中狀態禁止新增場次
+      Given 日期「2025-12-22」的時刻表狀態為 OnSale
+      When 管理者嘗試在日期「2025-12-22」新增場次
+      Then 操作失敗
+
+  Rule: 新增場次時自動建立或關聯每日時刻表
+    Example: 日期首次新增場次時建立 DailySchedule
+      Given 日期「2025-12-25」尚無時刻表記錄
+      When 管理者在日期「2025-12-25」新增場次
+      Then 系統建立 DailySchedule 記錄
+      And 該 DailySchedule 的狀態為 Draft
+      And 系統建立 MovieShowTime 記錄
+
+    Example: 日期已有時刻表時關聯現有記錄
+      Given 日期「2025-12-22」已有時刻表記錄（狀態為 Draft）
+      When 管理者在日期「2025-12-22」新增第二個場次
+      Then 系統不重複建立 DailySchedule
+      And 系統建立 MovieShowTime 記錄並關聯至現有時刻表

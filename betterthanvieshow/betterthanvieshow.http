@@ -120,3 +120,97 @@ Authorization: Bearer {{token}}
 
 ###
 
+### ========== 每日時刻表管理 API ==========
+
+### 首次儲存時刻表（建立 DailySchedule）
+PUT {{betterthanvieshow_HostAddress}}/api/admin/daily-schedules/2025-12-30
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "showtimes": [
+    { "movieId": 1, "theaterId": 1, "startTime": "09:45" },
+    { "movieId": 1, "theaterId": 2, "startTime": "14:00" },
+    { "movieId": 2, "theaterId": 1, "startTime": "17:15" }
+  ]
+}
+
+### 修改已有時刻表（全部替換）
+PUT {{betterthanvieshow_HostAddress}}/api/admin/daily-schedules/2025-12-30
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "showtimes": [
+    { "movieId": 1, "theaterId": 1, "startTime": "10:00" },
+    { "movieId": 2, "theaterId": 2, "startTime": "15:30" }
+  ]
+}
+
+### 清空時刻表（傳空陣列）
+PUT {{betterthanvieshow_HostAddress}}/api/admin/daily-schedules/2025-12-30
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "showtimes": []
+}
+
+### 儲存時刻表失敗 - 電影不存在
+PUT {{betterthanvieshow_HostAddress}}/api/admin/daily-schedules/2025-12-30
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "showtimes": [
+    { "movieId": 9999, "theaterId": 1, "startTime": "10:00" }
+  ]
+}
+
+### 儲存時刻表失敗 - 影廳不存在
+PUT {{betterthanvieshow_HostAddress}}/api/admin/daily-schedules/2025-12-30
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "showtimes": [
+    { "movieId": 1, "theaterId": 9999, "startTime": "10:00" }
+  ]
+}
+
+### 儲存時刻表失敗 - 時間非 15 分鐘倍數
+PUT {{betterthanvieshow_HostAddress}}/api/admin/daily-schedules/2025-12-30
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "showtimes": [
+    { "movieId": 1, "theaterId": 1, "startTime": "10:07" }
+  ]
+}
+
+### 儲存時刻表失敗 - 場次時間衝突
+PUT {{betterthanvieshow_HostAddress}}/api/admin/daily-schedules/2025-12-30
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "showtimes": [
+    { "movieId": 1, "theaterId": 1, "startTime": "10:00" },
+    { "movieId": 1, "theaterId": 1, "startTime": "10:30" }
+  ]
+}
+
+### 開始販售時刻表（Draft → OnSale）
+POST {{betterthanvieshow_HostAddress}}/api/admin/daily-schedules/2025-12-30/publish
+Authorization: Bearer {{token}}
+
+### 重複開始販售（冪等性測試）
+POST {{betterthanvieshow_HostAddress}}/api/admin/daily-schedules/2025-12-30/publish
+Authorization: Bearer {{token}}
+
+### 開始販售失敗 - 日期不存在
+POST {{betterthanvieshow_HostAddress}}/api/admin/daily-schedules/2099-01-01/publish
+Authorization: Bearer {{token}}
+
+###

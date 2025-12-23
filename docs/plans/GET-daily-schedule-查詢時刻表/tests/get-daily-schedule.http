@@ -1,0 +1,32 @@
+### 測試：查詢每日時刻表 API
+
+@baseUrl = http://localhost:5041
+@adminToken = YOUR_ADMIN_TOKEN_HERE
+
+### 0. 登入取得 Token（先執行這個）
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin1234@gmail.com",
+  "password": "Admin1234"
+}
+
+### 1. 查詢存在的時刻表（Draft 狀態）
+GET {{baseUrl}}/api/admin/daily-schedules/2025-12-24
+Authorization: Bearer {{adminToken}}
+
+### 2. 查詢存在的時刻表（OnSale 狀態）
+GET {{baseUrl}}/api/admin/daily-schedules/2025-12-25
+Authorization: Bearer {{adminToken}}
+
+### 3. 查詢不存在的時刻表（應返回 404）
+GET {{baseUrl}}/api/admin/daily-schedules/2099-12-31
+Authorization: Bearer {{adminToken}}
+
+### 4. 日期格式錯誤（應返回 400）
+GET {{baseUrl}}/api/admin/daily-schedules/invalid-date
+Authorization: Bearer {{adminToken}}
+
+### 5. 未授權訪問（應返回 401）
+GET {{baseUrl}}/api/admin/daily-schedules/2025-12-24

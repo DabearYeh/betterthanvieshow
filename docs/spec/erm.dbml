@@ -39,7 +39,7 @@ Table Movie {
   title string [note: '片名']
   description string [note: '簡介']
   duration int [note: '時長（分鐘），必須 > 0']
-  genre string [note: '影片類型（多個用逗號分隔），可選：動作、愛情、冒險、懸疑、恐怖、科幻、日本動漫、喜劇']
+  genre string [note: '影片類型（多個用逗號分隔），嚴格限制選項：動作、愛情、冒險、懸疑、恐怖、科幻、日本動漫、喜劇']
   rating string [note: '電影分級：普遍級、輔導級、限制級']
   director string [note: '導演']
   cast string [note: '演員']
@@ -57,9 +57,19 @@ Table MovieShowTime {
   movie_id int [ref: > Movie.id, note: '電影 ID']
   theater_id int [ref: > Theater.id, note: '影廳 ID']
   show_date string [note: '放映日期，格式 YYYY-MM-DD。規則：show_date 必須在 [Movie.release_date, Movie.end_date] 範圍內']
-  start_time string [note: '開始時間，格式 HH:MM。規則：場次結束時間由 start_time + Movie.duration 動態計算，不存 DB']
+  start_time string [note: '開始時間，格式 HH:MM。規則：必須是 15 分鐘的倍數（如 09:00, 09:15, 09:30, 09:45）；場次結束時間由 start_time + Movie.duration 動態計算，不存 DB']
   
-  Note: '場次：電影排片的具體時段。同一影廳在同一時段只能播放一部電影。排片日期限制：show_date 必須在 [Movie.release_date, Movie.end_date] 範圍內。場次結束時間通過應用層計算：end_time = start_time + Movie.duration（分鐘）。時間衝突檢查：同一影廳同一日期的場次，[start_time, start_time+duration) 不可重疊。刪除規則：場次不能被刪除。關聯：MovieShowTime N:1 Movie, MovieShowTime N:1 Theater, MovieShowTime 1:N Ticket。跨屬性不變條件：show_date >= Movie.release_date AND show_date <= Movie.end_date；同 theater_id 在同 show_date 的時間不可重疊'
+  Note: '場次：電影排片的具體時段。同一影廳在同一時段只能播放一部電影。排片日期限制：show_date 必須在 [Movie.release_date, Movie.end_date] 範圍內。場次結束時間通過應用層計算：end_time = start_time + Movie.duration（分鐘）。時間衝突檢查：同一影廳同一日期的場次，[start_time, start_time+duration) 不可重疊。刪除規則：場次不能被刪除。關聯：MovieShowTime N:1 Movie, MovieShowTime N:1 Theater, MovieShowTime N:1 DailySchedule, MovieShowTime 1:N Ticket。跨屬性不變條件：show_date >= Movie.release_date AND show_date <= Movie.end_date；同 theater_id 在同 show_date 的時間不可重疊'
+}
+
+Table DailySchedule {
+  id int [pk, note: '每日時刻表 ID']
+  schedule_date string [unique, note: '日期，格式 YYYY-MM-DD，必須唯一']
+  status string [note: '狀態：Draft（草稿）、OnSale（販售中）。規則：新建時預設為 Draft；確認販售後轉為 OnSale；OnSale 狀態絕對不可逆轉回 Draft（無例外），緊急情況需透過取消訂單等其他方式處理']
+  created_at string [note: '建立時間']
+  updated_at string [note: '最後更新時間']
+  
+  Note: '每日時刻表：管理特定日期的場次排片狀態。Draft 狀態下可新增/編輯場次；OnSale 狀態下該日期的場次無法編輯。關聯方式：DailySchedule 1:N MovieShowTime（隱式關聯，透過 DailySchedule.schedule_date = MovieShowTime.show_date 比對，不需在 MovieShowTime 新增外鍵欄位）。複製功能：可將 OnSale 狀態的時刻表複製到 Draft 狀態的日期。'
 }
 
 Table Order {
@@ -67,9 +77,10 @@ Table Order {
   order_number string [unique, note: '訂單編號，格式正則表達式 ^#[A-Z]{3}-\\d{5}$，例 #ABC-12345']
   user_id int [ref: > User.id, note: '使用者 ID']
   show_time_id int [ref: > MovieShowTime.id, note: '場次 ID']
+  payment_transaction_id string [note: '第三方支付交易序號（如 LINE Pay Transaction ID），用於對帳與退款']
   created_at string [note: '訂單建立時間']
   expires_at string [note: '付款期限，訂單建立後 5 分鐘自動過期']
-  status string [note: '訂單狀態（三態設計）：未付款 → 已付款 → 已取消。規則：訂單建立後進入「未付款」狀態；使用者完成支付後轉為「已付款」；超過 5 分鐘未付款或使用者取消訂單時轉為「已取消」']
+  status string [note: '訂單狀態（三態設計）：未付款 → 已付款 → 已取消。規則：訂單建立後進入「未付款」狀態；使用者完成支付後轉為「已付款」；超過 5 分鐘未付款或使用者取消訂單時轉為「已取消」。備註：目前系統無退票功能，訂單一旦付款即為最終狀態']
   total_price float [note: '訂單總金額 = Σ(Ticket.price)，根據影廳類型動態計算。必須 >= 0']
   ticket_count int [note: '票券數量。規則：每張 Order 最多可訂 6 張票']
   
