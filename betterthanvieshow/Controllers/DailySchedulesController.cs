@@ -89,4 +89,46 @@ public class DailySchedulesController : ControllerBase
             return Conflict(new { message = ex.Message });
         }
     }
+
+    /// <summary>
+    /// 開始販售時刻表
+    /// </summary>
+    /// <remarks>
+    /// 將指定日期的時刻表狀態從 Draft 轉為 OnSale。
+    /// 
+    /// **重要事項**：
+    /// - 販售後該日期的場次無法再編輯、新增或刪除
+    /// - 此操作不可逆，OnSale 無法轉回 Draft
+    /// - 即使該日期沒有任何場次，也允許開始販售
+    /// - 已是 OnSale 狀態時，返回成功（冪等性）
+    /// 
+    /// **前端應實作二次確認**：
+    /// 建議前端顯示確認對話框，提醒使用者販售後無法再編輯。
+    /// </remarks>
+    /// <param name="date">時刻表日期，格式：YYYY-MM-DD</param>
+    /// <response code="200">開始販售成功</response>
+    /// <response code="404">該日期沒有時刻表記錄</response>
+    /// <response code="401">未授權</response>
+    [HttpPost("{date}/publish")]
+    [ProducesResponseType(typeof(DailyScheduleResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> PublishDailySchedule([FromRoute] string date)
+    {
+        try
+        {
+            // 解析日期
+            if (!DateTime.TryParse(date, out var scheduleDate))
+            {
+                return BadRequest(new { message = "日期格式錯誤，必須為 YYYY-MM-DD" });
+            }
+
+            var result = await _dailyScheduleService.PublishDailyScheduleAsync(scheduleDate);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+    }
 }

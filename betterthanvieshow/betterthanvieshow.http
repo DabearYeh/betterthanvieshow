@@ -201,4 +201,16 @@ Authorization: Bearer {{token}}
   ]
 }
 
+### 開始販售時刻表（Draft → OnSale）
+POST {{betterthanvieshow_HostAddress}}/api/admin/daily-schedules/2025-12-30/publish
+Authorization: Bearer {{token}}
+
+### 重複開始販售（冪等性測試）
+POST {{betterthanvieshow_HostAddress}}/api/admin/daily-schedules/2025-12-30/publish
+Authorization: Bearer {{token}}
+
+### 開始販售失敗 - 日期不存在
+POST {{betterthanvieshow_HostAddress}}/api/admin/daily-schedules/2099-01-01/publish
+Authorization: Bearer {{token}}
+
 ###

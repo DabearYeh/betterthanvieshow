@@ -208,4 +208,69 @@ public class DailyScheduleService : IDailyScheduleService
             }
         }
     }
+
+    /// <inheritdoc />
+    public async Task<DailyScheduleResponseDto> PublishDailyScheduleAsync(DateTime date)
+    {
+        // 正規化日期
+        var scheduleDate = date.Date;
+
+        // 1. 檢查 DailySchedule 是否存在
+        var dailySchedule = await _dailyScheduleRepository.GetByDateAsync(scheduleDate);
+        if (dailySchedule == null)
+        {
+            throw new KeyNotFoundException($"日期 {scheduleDate:yyyy-MM-dd} 的時刻表不存在");
+        }
+
+        // 2. 檢查狀態（冪等性：已是 OnSale 則直接返回成功）
+        if (dailySchedule.Status == "OnSale")
+        {
+            // 已是 OnSale，直接載入並返回
+            var existingShowtimes = await _showtimeRepository.GetByDateWithDetailsAsync(scheduleDate);
+            return BuildDailyScheduleResponse(dailySchedule, existingShowtimes);
+        }
+
+        // 3. 更新狀態為 OnSale
+        dailySchedule.Status = "OnSale";
+        await _dailyScheduleRepository.UpdateAsync(dailySchedule);
+
+        // 4. 載入場次並回傳
+        var showtimes = await _showtimeRepository.GetByDateWithDetailsAsync(scheduleDate);
+        return BuildDailyScheduleResponse(dailySchedule, showtimes);
+    }
+
+    /// <summary>
+    /// 建立 DailyScheduleResponseDto
+    /// </summary>
+    private DailyScheduleResponseDto BuildDailyScheduleResponse(
+        DailySchedule dailySchedule,
+        List<MovieShowTime> showtimes)
+    {
+        return new DailyScheduleResponseDto
+        {
+            ScheduleDate = dailySchedule.ScheduleDate,
+            Status = dailySchedule.Status,
+            Showtimes = showtimes.Select(st =>
+            {
+                var endTime = st.StartTime.Add(TimeSpan.FromMinutes(st.Movie.Duration));
+                return new ShowtimeResponseDto
+                {
+                    Id = st.Id,
+                    MovieId = st.MovieId,
+                    MovieTitle = st.Movie.Title,
+                    MovieDuration = st.Movie.Duration,
+                    TheaterId = st.TheaterId,
+                    TheaterName = st.Theater.Name,
+                    TheaterType = st.Theater.Type,
+                    ShowDate = st.ShowDate,
+                    StartTime = st.StartTime.ToString(@"hh\:mm"),
+                    EndTime = endTime.ToString(@"hh\:mm"),
+                    ScheduleStatus = dailySchedule.Status,
+                    CreatedAt = st.CreatedAt
+                };
+            }).ToList(),
+            CreatedAt = dailySchedule.CreatedAt,
+            UpdatedAt = dailySchedule.UpdatedAt
+        };
+    }
 }
