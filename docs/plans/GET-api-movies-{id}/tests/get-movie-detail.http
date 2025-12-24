@@ -1,0 +1,15 @@
+@baseUrl = http://localhost:5041
+
+### 測試 1: 成功取得電影詳情
+# @name getMovieDetail
+GET {{baseUrl}}/api/movies/1
+Content-Type: application/json
+
+###
+
+### 測試 2: 電影不存在（應該返回 404）
+# @name getMovieNotFound
+GET {{baseUrl}}/api/movies/999999
+Content-Type: application/json
+
+###

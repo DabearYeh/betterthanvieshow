@@ -98,6 +98,44 @@ public class MoviesController : ControllerBase
     }
 
     /// <summary>
+    /// 取得電影詳情（前台）
+    /// </summary>
+    /// <remarks>
+    /// 取得單一電影的完整資訊，包括：
+    /// - 基本資訊：標題、分級、時長、類型
+    /// - 詳細資訊：劇情介紹、導演、演員
+    /// - 媒體：海報、預告片連結
+    /// - 上映時間：上映日期、下映日期
+    /// 
+    /// **無需授權**，任何使用者皆可存取。
+    /// </remarks>
+    /// <param name="id">電影 ID</param>
+    /// <response code="200">成功取得電影詳情</response>
+    /// <response code="404">找不到指定的電影</response>
+    /// <response code="500">伺服器內部錯誤</response>
+    /// <returns>電影詳情</returns>
+    [HttpGet("~/api/movies/{id}")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(ApiResponse<MovieResponseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<MovieResponseDto>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse<MovieResponseDto>), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetMovieDetailForFrontend(int id)
+    {
+        var result = await _movieService.GetMovieByIdAsync(id);
+
+        if (!result.Success)
+        {
+            if (result.Message?.Contains("找不到") == true)
+            {
+                return NotFound(result);
+            }
+            return StatusCode(500, result);
+        }
+
+        return Ok(result);
+    }
+
+    /// <summary>
     /// 取得所有電影
     /// </summary>
     /// <returns>電影列表</returns>
