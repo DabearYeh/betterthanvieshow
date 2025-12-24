@@ -35,4 +35,17 @@ public interface IMovieService
     /// <param name="id">電影 ID</param>
     /// <returns>電影詳情</returns>
     Task<ApiResponse<MovieResponseDto>> GetMovieByIdAsync(int id);
+
+    /// <summary>
+    /// 取得首頁電影資料（輪播、本週前10、即將上映、隨機推薦、所有電影）
+    /// </summary>
+    /// <returns>首頁電影資料</returns>
+    Task<ApiResponse<HomepageMoviesResponseDto>> GetHomepageMoviesAsync();
+
+    /// <summary>
+    /// 搜尋電影
+    /// </summary>
+    /// <param name="keyword">搜尋關鍵字</param>
+    /// <returns>搜尋結果</returns>
+    Task<ApiResponse<List<MovieSimpleDto>>> SearchMoviesAsync(string keyword);
 }

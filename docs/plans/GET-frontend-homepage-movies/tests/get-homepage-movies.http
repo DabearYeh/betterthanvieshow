@@ -1,0 +1,9 @@
+@baseUrl = https://localhost:7182
+@movieId = 1
+
+### 測試 1: 成功取得首頁電影資料
+# @name getHomepageMovies
+GET {{baseUrl}}/api/movies/homepage
+Content-Type: application/json
+
+###
