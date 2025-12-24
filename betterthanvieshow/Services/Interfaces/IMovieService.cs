@@ -41,4 +41,11 @@ public interface IMovieService
     /// </summary>
     /// <returns>首頁電影資料</returns>
     Task<ApiResponse<HomepageMoviesResponseDto>> GetHomepageMoviesAsync();
+
+    /// <summary>
+    /// 搜尋電影
+    /// </summary>
+    /// <param name="keyword">搜尋關鍵字</param>
+    /// <returns>搜尋結果</returns>
+    Task<ApiResponse<List<MovieSimpleDto>>> SearchMoviesAsync(string keyword);
 }

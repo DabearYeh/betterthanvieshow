@@ -58,6 +58,46 @@ public class MoviesController : ControllerBase
     }
 
     /// <summary>
+    /// 搜尋電影
+    /// </summary>
+    /// <remarks>
+    /// 根據關鍵字搜尋電影標題（Title）。
+    /// 
+    /// 只返回正在上映或即將上映的電影。
+    /// 
+    /// **無需授權**，任何使用者皆可存取。
+    /// </remarks>
+    /// <param name="keyword">搜尋關鍵字（必填，至少 1 個字元）</param>
+    /// <response code="200">成功取得搜尋結果</response>
+    /// <response code="400">關鍵字為空或無效</response>
+    /// <response code="500">伺服器內部錯誤</response>
+    /// <returns>符合條件的電影列表</returns>
+    [HttpGet("~/api/movies/search")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(ApiResponse<List<MovieSimpleDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<List<MovieSimpleDto>>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<List<MovieSimpleDto>>), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> SearchMovies([FromQuery] string keyword)
+    {
+        // 驗證關鍵字
+        if (string.IsNullOrWhiteSpace(keyword))
+        {
+            return BadRequest(ApiResponse<List<MovieSimpleDto>>.FailureResponse(
+                "搜尋關鍵字不可為空"
+            ));
+        }
+
+        var result = await _movieService.SearchMoviesAsync(keyword);
+
+        if (!result.Success)
+        {
+            return StatusCode(500, result);
+        }
+
+        return Ok(result);
+    }
+
+    /// <summary>
     /// 取得所有電影
     /// </summary>
     /// <returns>電影列表</returns>

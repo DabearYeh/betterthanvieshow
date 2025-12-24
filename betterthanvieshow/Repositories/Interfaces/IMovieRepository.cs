@@ -58,4 +58,11 @@ public interface IMovieRepository
     /// <param name="count">取得數量</param>
     /// <returns>最新建立的正在上映電影列表</returns>
     Task<List<Movie>> GetRecentOnSaleMoviesAsync(int count);
+
+    /// <summary>
+    /// 搜尋電影（根據關鍵字搜尋標題）
+    /// </summary>
+    /// <param name="keyword">搜尋關鍵字</param>
+    /// <returns>符合條件的電影列表</returns>
+    Task<List<Movie>> SearchMoviesAsync(string keyword);
 }

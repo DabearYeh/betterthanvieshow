@@ -328,6 +328,46 @@ public class MovieService : IMovieService
     }
 
     /// <summary>
+    /// 搜尋電影
+    /// </summary>
+    /// <param name="keyword">搜尋關鍵字</param>
+    /// <returns>搜尋結果</returns>
+    public async Task<ApiResponse<List<MovieSimpleDto>>> SearchMoviesAsync(string keyword)
+    {
+        try
+        {
+            _logger.LogInformation("搜尋電影: {Keyword}", keyword);
+
+            // 驗證關鍵字
+            if (string.IsNullOrWhiteSpace(keyword))
+            {
+                _logger.LogWarning("搜尋關鍵字為空");
+                return ApiResponse<List<MovieSimpleDto>>.FailureResponse("搜尋關鍵字不可為空");
+            }
+
+            // 搜尋電影
+            var movies = await _movieRepository.SearchMoviesAsync(keyword.Trim());
+
+            // 轉換為 DTO
+            var result = movies.Select(MapToSimpleDto).ToList();
+
+            _logger.LogInformation("搜尋電影完成，找到 {Count} 部電影", result.Count);
+
+            return ApiResponse<List<MovieSimpleDto>>.SuccessResponse(
+                result, 
+                $"找到 {result.Count} 部符合的電影"
+            );
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "搜尋電影時發生錯誤: {Keyword}", keyword);
+            return ApiResponse<List<MovieSimpleDto>>.FailureResponse(
+                $"搜尋電影時發生錯誤: {ex.Message}"
+            );
+        }
+    }
+
+    /// <summary>
     /// 計算電影上映狀態
     /// </summary>
     private static string GetMovieStatus(DateTime releaseDate, DateTime endDate, DateTime today)

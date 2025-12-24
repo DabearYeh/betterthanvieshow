@@ -114,5 +114,28 @@ public class MovieRepository : IMovieRepository
             .Take(count)
             .ToListAsync();
     }
+
+    /// <summary>
+    /// 搜尋電影（根據關鍵字搜尋標題）
+    /// </summary>
+    /// <param name="keyword">搜尋關鍵字</param>
+    /// <returns>符合條件的電影列表</returns>
+    public async Task<List<Movie>> SearchMoviesAsync(string keyword)
+    {
+        var today = DateTime.Today;
+        var lowerKeyword = keyword.ToLower();
+
+        return await _context.Movies
+            .Where(m => 
+                // 只搜尋正在上映或即將上映的電影
+                (m.ReleaseDate <= today && m.EndDate >= today) || m.ReleaseDate > today
+            )
+            .Where(m => 
+                // 只搜尋標題
+                m.Title.ToLower().Contains(lowerKeyword)
+            )
+            .OrderByDescending(m => m.ReleaseDate)
+            .ToListAsync();
+    }
 }
 
