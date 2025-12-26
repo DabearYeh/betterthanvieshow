@@ -48,4 +48,11 @@ public interface IMovieService
     /// <param name="keyword">搜尋關鍵字</param>
     /// <returns>搜尋結果</returns>
     Task<ApiResponse<List<MovieSimpleDto>>> SearchMoviesAsync(string keyword);
+
+    /// <summary>
+    /// 取得指定電影的可訂票日期
+    /// </summary>
+    /// <param name="movieId">電影 ID</param>
+    /// <returns>可訂票日期的回應 DTO</returns>
+    Task<MovieAvailableDatesResponseDto?> GetAvailableDatesAsync(int movieId);
 }

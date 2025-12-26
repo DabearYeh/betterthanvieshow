@@ -12,13 +12,16 @@ namespace betterthanvieshow.Services.Implementations;
 public class MovieService : IMovieService
 {
     private readonly IMovieRepository _movieRepository;
+    private readonly IShowtimeRepository _showtimeRepository;
     private readonly ILogger<MovieService> _logger;
 
     public MovieService(
         IMovieRepository movieRepository,
+        IShowtimeRepository showtimeRepository,
         ILogger<MovieService> logger)
     {
         _movieRepository = movieRepository;
+        _showtimeRepository = showtimeRepository;
         _logger = logger;
     }
 
@@ -378,5 +381,74 @@ public class MovieService : IMovieService
         if (today <= endDate.Date)
             return "上映中";
         return "已下映";
+    }
+
+    /// <summary>
+    /// 取得指定電影的可訂票日期
+    /// </summary>
+    /// <param name="movieId">電影 ID</param>
+    /// <returns>可訂票日期的回應 DTO</returns>
+    public async Task<MovieAvailableDatesResponseDto?> GetAvailableDatesAsync(int movieId)
+    {
+        try
+        {
+            _logger.LogInformation("開始取得電影 {MovieId} 的可訂票日期", movieId);
+
+            // 1. 檢查電影是否存在
+            var movie = await _movieRepository.GetByIdAsync(movieId);
+            if (movie == null)
+            {
+                _logger.LogWarning("找不到電影: ID={MovieId}", movieId);
+                return null;
+            }
+
+            // 2. 取得可訂票日期
+            var availableDates = await _showtimeRepository.GetAvailableDatesByMovieIdAsync(movieId);
+
+            // 3. 轉換為 DTO
+            var dateDtos = availableDates.Select(date => new DateItemDto
+            {
+                Date = date.ToString("yyyy-MM-dd"),
+                DayOfWeek = GetDayOfWeekInChinese(date.DayOfWeek)
+            }).ToList();
+
+            _logger.LogInformation("成功取得電影 {MovieId} 的 {Count} 個可訂票日期", 
+                movieId, dateDtos.Count);
+
+            return new MovieAvailableDatesResponseDto
+            {
+                MovieId = movie.Id,
+                Title = movie.Title,
+                Rating = movie.Rating,
+                Duration = movie.Duration,
+                Genre = movie.Genre,
+                PosterUrl = movie.PosterUrl ?? string.Empty,
+                TrailerUrl = movie.TrailerUrl ?? string.Empty,
+                Dates = dateDtos
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "取得電影 {MovieId} 的可訂票日期時發生錯誤", movieId);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// 將 DayOfWeek 轉換為繁體中文
+    /// </summary>
+    private static string GetDayOfWeekInChinese(DayOfWeek dayOfWeek)
+    {
+        return dayOfWeek switch
+        {
+            DayOfWeek.Monday => "週一",
+            DayOfWeek.Tuesday => "週二",
+            DayOfWeek.Wednesday => "週三",
+            DayOfWeek.Thursday => "週四",
+            DayOfWeek.Friday => "週五",
+            DayOfWeek.Saturday => "週六",
+            DayOfWeek.Sunday => "週日",
+            _ => ""
+        };
     }
 }

@@ -136,6 +136,71 @@ public class MoviesController : ControllerBase
     }
 
     /// <summary>
+    /// 取得電影的可訂票日期
+    /// </summary>
+    /// <remarks>
+    /// 此端點用於訂票流程的第一步：選擇日期。
+    /// 
+    /// 返回該電影的完整資訊以及有場次且時刻表狀態為 **OnSale**（販售中）的日期列表。
+    /// 
+    /// **無需授權**，任何使用者皆可存取。
+    /// 
+    /// **業務規則**：
+    /// - 只返回 `DailySchedule.Status = "OnSale"` 的日期
+    /// - 草稿狀態 (`Draft`) 的場次不會出現在列表中
+    /// - 日期按升序排序
+    /// 
+    /// **回應資料包含**：
+    /// - 電影基本資訊（標題、分級、時長、類型）
+    /// - 媒體資訊（海報、預告片）
+    /// - 可訂票日期列表（含星期幾）
+    /// </remarks>
+    /// <param name="id">電影 ID</param>
+    /// <response code="200">成功取得可訂票日期列表</response>
+    /// <response code="404">找不到指定的電影</response>
+    /// <response code="500">伺服器內部錯誤</response>
+    /// <returns>可訂票日期列表</returns>
+    [HttpGet("~/api/movies/{id}/available-dates")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(ApiResponse<MovieAvailableDatesResponseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetAvailableDates(int id)
+    {
+        try
+        {
+            var result = await _movieService.GetAvailableDatesAsync(id);
+
+            if (result == null)
+            {
+                return NotFound(new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = $"找不到 ID 為 {id} 的電影",
+                    Data = null
+                });
+            }
+
+            return Ok(new ApiResponse<MovieAvailableDatesResponseDto>
+            {
+                Success = true,
+                Message = "成功取得可訂票日期",
+                Data = result
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "取得電影 {MovieId} 的可訂票日期時發生錯誤", id);
+            return StatusCode(500, new ApiResponse<object>
+            {
+                Success = false,
+                Message = "取得可訂票日期時發生錯誤",
+                Data = null
+            });
+        }
+    }
+
+    /// <summary>
     /// 取得所有電影
     /// </summary>
     /// <returns>電影列表</returns>

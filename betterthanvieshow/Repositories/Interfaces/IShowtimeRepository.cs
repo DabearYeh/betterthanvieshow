@@ -44,4 +44,11 @@ public interface IShowtimeRepository
     /// </summary>
     /// <param name="showDate">放映日期</param>
     Task<List<MovieShowTime>> GetByDateWithDetailsAsync(DateTime showDate);
+
+    /// <summary>
+    /// 取得指定電影的所有可訂票日期（時刻表狀態為 OnSale）
+    /// </summary>
+    /// <param name="movieId">電影 ID</param>
+    /// <returns>可訂票的日期列表（已去重且排序）</returns>
+    Task<List<DateTime>> GetAvailableDatesByMovieIdAsync(int movieId);
 }
