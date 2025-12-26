@@ -208,7 +208,7 @@ public class TheaterService : ITheaterService
             await _theaterRepository.DeleteAsync(id);
 
             return ApiResponse<object>.SuccessResponse(
-                null,
+                new object(),
                 "影廳刪除成功"
             );
         }
