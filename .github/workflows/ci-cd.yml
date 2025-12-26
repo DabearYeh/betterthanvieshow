@@ -81,6 +81,11 @@ jobs:
         Write-Host "部署完成"
       shell: powershell
       
+    - name: 安裝 EF Core 工具
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      run: dotnet tool install --global dotnet-ef --version 9.0.0
+      continue-on-error: true
+      
     - name: 執行資料庫遷移
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       run: |
