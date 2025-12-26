@@ -51,4 +51,12 @@ public interface IShowtimeRepository
     /// <param name="movieId">電影 ID</param>
     /// <returns>可訂票的日期列表（已去重且排序）</returns>
     Task<List<DateTime>> GetAvailableDatesByMovieIdAsync(int movieId);
+
+    /// <summary>
+    /// 取得指定電影在特定日期的所有場次（包含影廳和電影資訊，且時刻表狀態為 OnSale）
+    /// </summary>
+    /// <param name="movieId">電影 ID</param>
+    /// <param name="date">日期</param>
+    /// <returns>場次列表</returns>
+    Task<List<MovieShowTime>> GetShowtimesByMovieAndDateAsync(int movieId, DateTime date);
 }

@@ -201,6 +201,89 @@ public class MoviesController : ControllerBase
     }
 
     /// <summary>
+    /// 取得電影在特定日期的場次列表
+    /// </summary>
+    /// <remarks>
+    /// 此端點用於訂票流程的第二步：選擇場次。
+    /// 
+    /// 返回該電影在指定日期的所有場次資訊，包含影廳、時間、票價、可用座位數等。
+    /// 
+    /// **無需授權**，任何使用者皆可存取。
+    /// 
+    /// **業務規則**：
+    /// - 只返回 `DailySchedule.Status = "OnSale"` 的場次
+    /// - 草稿狀態 (`Draft`) 的場次不會出現在列表中
+    /// - 場次按開始時間升序排序
+    /// - 結束時間由系統動態計算（開始時間 + 電影時長）
+    /// - 可用座位數 = 總座位數 - 已售出票券數（待支付、未使用、已使用狀態）
+    /// - 票價根據影廳類型決定（一般數位 300元、4DX 380元、IMAX 380元）
+    /// 
+    /// **回應資料包含**：
+    /// - 電影基本資訊（ID、名稱）
+    /// - 查詢日期
+    /// - 場次列表（影廳、時間、票價、座位資訊）
+    /// </remarks>
+    /// <param name="id">電影 ID</param>
+    /// <param name="date">日期（格式：YYYY-MM-DD）</param>
+    /// <response code="200">成功取得場次列表</response>
+    /// <response code="400">日期格式無效</response>
+    /// <response code="404">找不到指定的電影</response>
+    /// <response code="500">伺服器內部錯誤</response>
+    /// <returns>場次列表</returns>
+    [HttpGet("~/api/movies/{id}/showtimes")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(ApiResponse<MovieShowtimesResponseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetShowtimesByDate(int id, [FromQuery] string date)
+    {
+        try
+        {
+            // 驗證日期格式
+            if (!DateTime.TryParseExact(date, "yyyy-MM-dd", null, 
+                System.Globalization.DateTimeStyles.None, out var parsedDate))
+            {
+                return BadRequest(new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "日期格式無效，請使用 YYYY-MM-DD 格式",
+                    Data = null
+                });
+            }
+
+            var result = await _movieService.GetShowtimesByDateAsync(id, parsedDate);
+
+            if (result == null)
+            {
+                return NotFound(new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = $"找不到 ID 為 {id} 的電影",
+                    Data = null
+                });
+            }
+
+            return Ok(new ApiResponse<MovieShowtimesResponseDto>
+            {
+                Success = true,
+                Message = "成功取得場次列表",
+                Data = result
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "取得電影 {MovieId} 在 {Date} 的場次列表時發生錯誤", id, date);
+            return StatusCode(500, new ApiResponse<object>
+            {
+                Success = false,
+                Message = "取得場次列表時發生錯誤",
+                Data = null
+            });
+        }
+    }
+
+    /// <summary>
     /// 取得所有電影
     /// </summary>
     /// <returns>電影列表</returns>

@@ -13,15 +13,18 @@ public class MovieService : IMovieService
 {
     private readonly IMovieRepository _movieRepository;
     private readonly IShowtimeRepository _showtimeRepository;
+    private readonly ITicketRepository _ticketRepository;
     private readonly ILogger<MovieService> _logger;
 
     public MovieService(
         IMovieRepository movieRepository,
         IShowtimeRepository showtimeRepository,
+        ITicketRepository ticketRepository,
         ILogger<MovieService> logger)
     {
         _movieRepository = movieRepository;
         _showtimeRepository = showtimeRepository;
+        _ticketRepository = ticketRepository;
         _logger = logger;
     }
 
@@ -449,6 +452,90 @@ public class MovieService : IMovieService
             DayOfWeek.Saturday => "週六",
             DayOfWeek.Sunday => "週日",
             _ => ""
+        };
+    }
+
+    /// <summary>
+    /// 取得指定電影在特定日期的場次列表
+    /// </summary>
+    /// <param name="movieId">電影 ID</param>
+    /// <param name="date">日期</param>
+    /// <returns>場次列表的回應 DTO</returns>
+    public async Task<MovieShowtimesResponseDto?> GetShowtimesByDateAsync(int movieId, DateTime date)
+    {
+        try
+        {
+            _logger.LogInformation("開始取得電影 {MovieId} 在 {Date} 的場次列表", movieId, date);
+
+            // 1. 檢查電影是否存在
+            var movie = await _movieRepository.GetByIdAsync(movieId);
+            if (movie == null)
+            {
+                _logger.LogWarning("找不到電影: ID={MovieId}", movieId);
+                return null;
+            }
+
+            // 2. 取得該日期的場次（只包含 OnSale 狀態）
+            var showtimes = await _showtimeRepository.GetShowtimesByMovieAndDateAsync(movieId, date);
+
+            // 3. 為每個場次計算可用座位數
+            var showtimeDtos = new List<ShowtimeListItemDto>();
+            foreach (var showtime in showtimes)
+            {
+                // 計算結束時間
+                var endTime = showtime.StartTime.Add(TimeSpan.FromMinutes(showtime.Movie.Duration));
+
+                // 查詢已售出票券數
+                var soldTickets = await _ticketRepository.GetSoldTicketCountByShowTimeAsync(showtime.Id);
+
+                // 可用座位數 = 總座位數 - 已售出票券數
+                var availableSeats = showtime.Theater.TotalSeats - soldTickets;
+
+                // 根據影廳類型決定票價
+                var price = GetPriceByTheaterType(showtime.Theater.Type);
+
+                showtimeDtos.Add(new ShowtimeListItemDto
+                {
+                    ShowTimeId = showtime.Id,
+                    TheaterName = showtime.Theater.Name,
+                    TheaterType = showtime.Theater.Type,
+                    StartTime = showtime.StartTime.ToString(@"hh\:mm"),
+                    EndTime = endTime.ToString(@"hh\:mm"),
+                    Price = price,
+                    AvailableSeats = availableSeats,
+                    TotalSeats = showtime.Theater.TotalSeats
+                });
+            }
+
+            _logger.LogInformation("成功取得電影 {MovieId} 在 {Date} 的 {Count} 個場次", 
+                movieId, date, showtimeDtos.Count);
+
+            return new MovieShowtimesResponseDto
+            {
+                MovieId = movie.Id,
+                MovieTitle = movie.Title,
+                Date = date.ToString("yyyy-MM-dd"),
+                Showtimes = showtimeDtos
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "取得電影 {MovieId} 在 {Date} 的場次列表時發生錯誤", movieId, date);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// 根據影廳類型取得票價
+    /// </summary>
+    private static int GetPriceByTheaterType(string theaterType)
+    {
+        return theaterType switch
+        {
+            "一般數位" => 300,
+            "4DX" => 380,
+            "IMAX" => 380,
+            _ => 300 // 預設價格
         };
     }
 }

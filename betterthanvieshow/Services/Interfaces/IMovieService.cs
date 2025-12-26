@@ -55,4 +55,12 @@ public interface IMovieService
     /// <param name="movieId">電影 ID</param>
     /// <returns>可訂票日期的回應 DTO</returns>
     Task<MovieAvailableDatesResponseDto?> GetAvailableDatesAsync(int movieId);
+
+    /// <summary>
+    /// 取得指定電影在特定日期的場次列表
+    /// </summary>
+    /// <param name="movieId">電影 ID</param>
+    /// <param name="date">日期</param>
+    /// <returns>場次列表的回應 DTO</returns>
+    Task<MovieShowtimesResponseDto?> GetShowtimesByDateAsync(int movieId, DateTime date);
 }
