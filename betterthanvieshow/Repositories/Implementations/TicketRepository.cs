@@ -27,4 +27,16 @@ public class TicketRepository : ITicketRepository
                        (t.Status == "待支付" || t.Status == "未使用" || t.Status == "已使用"))
             .CountAsync();
     }
+
+    /// <inheritdoc />
+    public async Task<HashSet<int>> GetSoldSeatIdsByShowTimeAsync(int showTimeId)
+    {
+        var seatIds = await _context.Tickets
+            .Where(t => t.ShowTimeId == showTimeId && 
+                       (t.Status == "待支付" || t.Status == "未使用" || t.Status == "已使用"))
+            .Select(t => t.SeatId)
+            .ToListAsync();
+
+        return new HashSet<int>(seatIds);
+    }
 }
