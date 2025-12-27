@@ -1,0 +1,16 @@
+@baseUrl = http://localhost:5041
+
+### 測試 1: 成功取得座位配置
+# @name getShowtimeSeats
+# 前置條件：場次 ID 7 存在
+GET {{baseUrl}}/api/showtimes/7/seats
+Content-Type: application/json
+
+###
+
+### 測試 2: 場次不存在（應該返回 404）
+# @name getShowtimeSeatsNotFound
+GET {{baseUrl}}/api/showtimes/999999/seats
+Content-Type: application/json
+
+###

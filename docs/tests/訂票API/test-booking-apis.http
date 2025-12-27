@@ -1,0 +1,79 @@
+@baseUrl = http://localhost:5041
+
+### ========================================
+### API 1: 取得電影的可訂票日期
+### ========================================
+
+### 測試 1.1: 成功取得可訂票日期
+# @name getAvailableDates
+# 前置條件：電影 ID 2 存在且有 OnSale 狀態的場次
+GET {{baseUrl}}/api/movies/2/available-dates
+Content-Type: application/json
+
+###
+
+### 測試 1.2: 電影不存在（應該返回 404）
+# @name getAvailableDatesNotFound
+GET {{baseUrl}}/api/movies/999999/available-dates
+Content-Type: application/json
+
+###
+
+### 測試 1.3: 電影存在但無可訂票場次（應該返回 200 且空陣列）
+# @name getAvailableDatesEmpty
+GET {{baseUrl}}/api/movies/1/available-dates
+Content-Type: application/json
+
+###
+
+### ========================================
+### API 2: 取得電影在特定日期的場次列表
+### ========================================
+
+### 測試 2.1: 成功取得場次列表
+# @name getShowtimes
+# 前置條件：電影 ID 2 存在，2025-12-31 有場次且狀態為 OnSale
+GET {{baseUrl}}/api/movies/2/showtimes?date=2025-12-31
+Content-Type: application/json
+
+###
+
+### 測試 2.2: 電影不存在（應該返回 404）
+# @name getShowtimesNotFound
+GET {{baseUrl}}/api/movies/999999/showtimes?date=2025-12-31
+Content-Type: application/json
+
+###
+
+### 測試 2.3: 日期格式無效（應該返回 400）
+# @name getShowtimesInvalidDate
+GET {{baseUrl}}/api/movies/2/showtimes?date=2025/12/31
+Content-Type: application/json
+
+###
+
+### 測試 2.4: 該日期無場次或無 OnSale 狀態（應該返回 200 且空陣列）
+# @name getShowtimesEmptyDate
+GET {{baseUrl}}/api/movies/2/showtimes?date=2025-01-01
+Content-Type: application/json
+
+###
+
+### ========================================
+### API 3: 取得場次的座位配置
+### ========================================
+
+### 測試 3.1: 成功取得座位配置
+# @name getShowtimeSeats
+# 前置條件：場次 ID 7 存在
+GET {{baseUrl}}/api/showtimes/7/seats
+Content-Type: application/json
+
+###
+
+### 測試 3.2: 場次不存在（應該返回 404）
+# @name getShowtimeSeatsNotFound
+GET {{baseUrl}}/api/showtimes/999999/seats
+Content-Type: application/json
+
+###

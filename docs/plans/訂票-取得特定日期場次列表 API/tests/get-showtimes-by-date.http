@@ -1,0 +1,30 @@
+@baseUrl = http://localhost:5041
+
+### 測試 1: 成功取得場次列表
+# @name getShowtimes
+# 前置條件：電影 ID 2 存在，2025-12-31 有場次且狀態為 OnSale
+GET {{baseUrl}}/api/movies/2/showtimes?date=2025-12-31
+Content-Type: application/json
+
+###
+
+### 測試 2: 電影不存在（應該返回 404）
+# @name getShowtimesNotFound
+GET {{baseUrl}}/api/movies/999999/showtimes?date=2025-12-31
+Content-Type: application/json
+
+###
+
+### 測試 3: 日期格式無效（應該返回 400）
+# @name getShowtimesInvalidDate
+GET {{baseUrl}}/api/movies/2/showtimes?date=2025/12/31
+Content-Type: application/json
+
+###
+
+### 測試 4: 該日期無場次或無 OnSale 狀態
+# @name getShowtimesEmptyDate
+GET {{baseUrl}}/api/movies/2/showtimes?date=2025-01-01
+Content-Type: application/json
+
+###

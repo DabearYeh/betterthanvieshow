@@ -109,4 +109,41 @@ public class ShowtimeRepository : IShowtimeRepository
             .ThenBy(st => st.StartTime)
             .ToListAsync();
     }
+
+    /// <inheritdoc />
+    public async Task<List<DateTime>> GetAvailableDatesByMovieIdAsync(int movieId)
+    {
+        return await _context.MovieShowTimes
+            .Where(st => st.MovieId == movieId)
+            .Join(
+                _context.DailySchedules,
+                st => st.ShowDate.Date,
+                ds => ds.ScheduleDate.Date,
+                (st, ds) => new { st.ShowDate, ds.Status }
+            )
+            .Where(x => x.Status == "OnSale")
+            .Select(x => x.ShowDate.Date)
+            .Distinct()
+            .OrderBy(date => date)
+            .ToListAsync();
+    }
+
+    /// <inheritdoc />
+    public async Task<List<MovieShowTime>> GetShowtimesByMovieAndDateAsync(int movieId, DateTime date)
+    {
+        return await _context.MovieShowTimes
+            .Include(st => st.Movie)
+            .Include(st => st.Theater)
+            .Where(st => st.MovieId == movieId && st.ShowDate.Date == date.Date)
+            .Join(
+                _context.DailySchedules,
+                st => st.ShowDate.Date,
+                ds => ds.ScheduleDate.Date,
+                (st, ds) => new { ShowTime = st, ds.Status }
+            )
+            .Where(x => x.Status == "OnSale")
+            .Select(x => x.ShowTime)
+            .OrderBy(st => st.StartTime)
+            .ToListAsync();
+    }
 }

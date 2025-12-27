@@ -61,8 +61,14 @@ builder.Services.AddScoped<IMovieRepository, MovieRepository>();
 builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddScoped<IDailyScheduleRepository, DailyScheduleRepository>();
 builder.Services.AddScoped<IShowtimeRepository, ShowtimeRepository>();
+builder.Services.AddScoped<ITicketRepository, TicketRepository>();
+builder.Services.AddScoped<ISeatRepository, SeatRepository>();
 builder.Services.AddScoped<IDailyScheduleService, DailyScheduleService>();
+builder.Services.AddScoped<IShowtimeService, ShowtimeService>();
 
+
+// 配置 SignalR
+builder.Services.AddSignalR();
 
 // 配置 CORS
 builder.Services.AddCors(options =>
@@ -104,6 +110,9 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// 映射 SignalR Hub
+app.MapHub<betterthanvieshow.Hubs.ShowtimeHub>("/hub/showtime");
 
 // 映射健康檢查端點
 app.MapHealthChecks("/health");

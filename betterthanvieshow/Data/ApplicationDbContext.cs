@@ -43,6 +43,11 @@ public class ApplicationDbContext : DbContext
     /// </summary>
     public DbSet<DailySchedule> DailySchedules { get; set; }
 
+    /// <summary>
+    /// 票券資料集
+    /// </summary>
+    public DbSet<Ticket> Tickets { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -195,6 +200,45 @@ public class ApplicationDbContext : DbContext
                 "CHK_DailySchedule_Status",
                 "[Status] IN ('Draft', 'OnSale')"
             ));
+        });
+
+        // Ticket 實體配置
+        modelBuilder.Entity<Ticket>(entity =>
+        {
+            // 主鍵
+            entity.HasKey(e => e.Id);
+
+            // 票券編號唯一索引
+            entity.HasIndex(e => e.TicketNumber)
+                .IsUnique()
+                .HasDatabaseName("IX_Ticket_TicketNumber");
+
+            // 外鍵設定 - 場次
+            entity.HasOne(e => e.ShowTime)
+                .WithMany()
+                .HasForeignKey(e => e.ShowTimeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // 外鍵設定 - 座位
+            entity.HasOne(e => e.Seat)
+                .WithMany()
+                .HasForeignKey(e => e.SeatId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // 狀態預設值
+            entity.Property(e => e.Status)
+                .HasDefaultValue("待支付");
+
+            // 狀態檢查約束
+            entity.ToTable(t => t.HasCheckConstraint(
+                "CHK_Ticket_Status",
+                "[Status] IN ('待支付', '未使用', '已使用', '已過期')"
+            ));
+
+            // 唯一約束：同一場次同一座位只能有一張有效票券
+            // 注意：這個約束可能需要在應用層實作，因為「有效」的定義包含多個狀態
+            entity.HasIndex(e => new { e.ShowTimeId, e.SeatId })
+                .HasDatabaseName("IX_Ticket_ShowTime_Seat");
         });
 
     }

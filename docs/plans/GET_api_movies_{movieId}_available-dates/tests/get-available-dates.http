@@ -1,0 +1,31 @@
+@baseUrl = http://localhost:5041
+
+### 測試 1: 成功取得可訂票日期
+# @name getAvailableDates
+# 前置條件：電影 ID 1 存在，且有場次的日期狀態為 OnSale
+GET {{baseUrl}}/api/movies/1/available-dates
+Content-Type: application/json
+
+###
+
+### 測試 2: 電影不存在（應該返回 404）
+# @name getAvailableDatesNotFound
+GET {{baseUrl}}/api/movies/999999/available-dates
+Content-Type: application/json
+
+###
+
+### 測試 3: 無效的電影 ID（負數）
+# @name getAvailableDatesInvalidId
+GET {{baseUrl}}/api/movies/-1/available-dates
+Content-Type: application/json
+
+###
+
+### 測試 4: 電影存在但無可訂票日期
+# @name getAvailableDatesEmpty
+# 前置條件：電影存在，但沒有場次或所有場次的日期狀態為 Draft
+GET {{baseUrl}}/api/movies/2/available-dates
+Content-Type: application/json
+
+###
