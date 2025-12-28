@@ -29,6 +29,22 @@ public class TheatersController : ControllerBase
     /// <summary>
     /// /api/admin/theaters 取得所有影廳
     /// </summary>
+    /// <remarks>
+    /// 取得系統內所有影廳的摘要清單。
+    /// 
+    /// **用途**：
+    /// - 用於後台影廳管理列表。
+    /// - 快速查看影廳類型、樓層與統計資訊。
+    /// 
+    /// **回傳資料包含**：
+    /// - 影廳 ID、名稱、類型 (IMAX, 4DX, Standard)
+    /// - 所在的樓層 (Floor)
+    /// - 統計資訊：總座位數 (TotalSeats)
+    /// </remarks>
+    /// <response code="200">成功取得影廳列表</response>
+    /// <response code="401">未授權（需登入）</response>
+    /// <response code="403">權限不足（需 Admin 角色）</response>
+    /// <response code="500">伺服器內部錯誤</response>
     /// <returns>影廳列表</returns>
     [HttpGet]
     [ProducesResponseType(typeof(ApiResponse<List<TheaterResponseDto>>), StatusCodes.Status200OK)]
@@ -51,6 +67,23 @@ public class TheatersController : ControllerBase
     /// /api/admin/theaters/{id} 根據 ID 取得影廳詳細資訊（含座位表）
     /// </summary>
     /// <param name="id">影廳 ID</param>
+    /// <remarks>
+    /// 取得單一影廳的完整設定值，包含「二維座位矩陣」。
+    /// 
+    /// **用途**：
+    /// - 影廳編輯頁面的資料預填。
+    /// - 查看影廳的座位實際佈局情況。
+    /// 
+    /// **座位表結構 (Seats)**：
+    /// - 回傳一個二維陣列 `string[][]`。
+    /// - 外層代表「排」，內層代表「列」。
+    /// - 座位標記：`Standard`、`Wheelchair`、`Aisle` (走道)、`Empty` (空位)。
+    /// </remarks>
+    /// <response code="200">成功取得影廳詳情與座位配置</response>
+    /// <response code="401">未授權（需登入）</response>
+    /// <response code="403">權限不足（需 Admin 角色）</response>
+    /// <response code="404">找不到指定的影廳</response>
+    /// <response code="500">伺服器內部錯誤</response>
     /// <returns>影廳詳細資訊</returns>
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(ApiResponse<TheaterDetailResponseDto>), StatusCodes.Status200OK)]
@@ -130,7 +163,7 @@ public class TheatersController : ControllerBase
     /// </remarks>
     /// <param name="request">影廳資訊</param>
     /// <response code="201">影廳建立成功</response>
-    /// <response code="400">欄位驗證失敗或座位配置錯誤</response>
+    /// <response code="400">驗證失敗（如：欄位必填、座位矩陣大小不符、有無效的座位類型標記等）</response>
     /// <response code="401">未授權（需登入）</response>
     /// <response code="403">權限不足（需 Admin 角色）</response>
     /// <response code="500">伺服器內部錯誤</response>
@@ -185,10 +218,20 @@ public class TheatersController : ControllerBase
     /// /api/admin/theaters/{id} 刪除影廳
     /// </summary>
     /// <param name="id">影廳 ID</param>
-    /// <returns>刪除結果</returns>
     /// <remarks>
-    /// 注意：影廳只有在沒有關聯場次時才能刪除
+    /// 從系統中移除指定的影廳。此操作具有連鎖限制。
+    /// 
+    /// **業務規則 (Business Rules)**：
+    /// - **安全性限制**：若影廳已具備任何相關場次（Showtimes），系統將禁止刪除，並回傳 400 Bad Request。
+    /// - **操作不可逆**：一旦刪除，影廳及其所有座位設定將永久移除。
     /// </remarks>
+    /// <response code="200">影廳刪除成功</response>
+    /// <response code="400">無法刪除（因影廳已有關聯場次或存在未完成訂單）</response>
+    /// <response code="401">未授權（需登入）</response>
+    /// <response code="403">權限不足（需 Admin 角色）</response>
+    /// <response code="404">找不到指定的影廳</response>
+    /// <response code="500">伺服器內部錯誤</response>
+    /// <returns>刪除結果</returns>
     [HttpDelete("{id}")]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]

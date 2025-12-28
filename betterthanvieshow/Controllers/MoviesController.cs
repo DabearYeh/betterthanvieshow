@@ -291,6 +291,22 @@ public class MoviesController : ControllerBase
     /// <summary>
     /// /api/admin/movies 取得所有電影
     /// </summary>
+    /// <remarks>
+    /// 取得管理後台所需的完整電影清單。
+    /// 
+    /// **用途**：
+    /// - 顯示在管理後台的電影列表頁面
+    /// - 快速查看每部電影的上映狀態與分級
+    /// 
+    /// **回傳資料包含**：
+    /// - 基本資訊：ID、電影標題、海報 URL
+    /// - 上映資訊：上映日期、下架日期、是否正在上映 (IsReleased)
+    /// - 管理資訊：分級 (Rating)、片長 (Runtime)
+    /// </remarks>
+    /// <response code="200">成功取得電影列表</response>
+    /// <response code="401">未授權（需登入）</response>
+    /// <response code="403">權限不足（需 Admin 角色）</response>
+    /// <response code="500">伺服器內部錯誤</response>
     /// <returns>電影列表</returns>
     [HttpGet]
     [Tags("Admin/Movies - 電影管理")]
@@ -313,7 +329,19 @@ public class MoviesController : ControllerBase
     /// <summary>
     /// /api/admin/movies/{id} 取得單一電影詳情
     /// </summary>
+    /// <remarks>
+    /// 根據 ID 取得指定電影的完整詳細資料，用於後台的「編輯」頁面預載資料。
+    /// 
+    /// **回傳資料包含**：
+    /// - 完整欄位資訊（含簡介、預告連結、輪播設定等）
+    /// - 不需要包含場次資訊（僅限電影本體資料）
+    /// </remarks>
     /// <param name="id">電影 ID</param>
+    /// <response code="200">成功取得電影詳情</response>
+    /// <response code="401">未授權（需登入）</response>
+    /// <response code="403">權限不足（需 Admin 角色）</response>
+    /// <response code="404">找不到指定的電影</response>
+    /// <response code="500">伺服器內部錯誤</response>
     /// <returns>電影詳情</returns>
     [HttpGet("{id}")]
     [Tags("Admin/Movies - 電影管理")]
