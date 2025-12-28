@@ -63,6 +63,12 @@ public class Ticket
     // Navigation Properties
 
     /// <summary>
+    /// 關聯的訂單
+    /// </summary>
+    [ForeignKey("OrderId")]
+    public virtual Order Order { get; set; } = null!;
+
+    /// <summary>
     /// 關聯的場次
     /// </summary>
     [ForeignKey("ShowTimeId")]

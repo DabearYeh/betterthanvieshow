@@ -69,6 +69,10 @@ builder.Services.AddScoped<ISeatRepository, SeatRepository>();
 builder.Services.AddScoped<IDailyScheduleService, DailyScheduleService>();
 builder.Services.AddScoped<IShowtimeService, ShowtimeService>();
 
+// 註冊訂單相關服務
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+
 
 // 配置 SignalR
 builder.Services.AddSignalR();

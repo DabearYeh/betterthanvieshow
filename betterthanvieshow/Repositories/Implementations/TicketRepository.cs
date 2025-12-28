@@ -39,4 +39,28 @@ public class TicketRepository : ITicketRepository
 
         return new HashSet<int>(seatIds);
     }
+
+    /// <inheritdoc />
+    public async Task<List<Ticket>> CreateBatchAsync(List<Ticket> tickets)
+    {
+        await _context.Tickets.AddRangeAsync(tickets);
+        await _context.SaveChangesAsync();
+        return tickets;
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> IsSeatOccupiedAsync(int showTimeId, int seatId)
+    {
+        return await _context.Tickets
+            .AnyAsync(t => t.ShowTimeId == showTimeId && 
+                          t.SeatId == seatId &&
+                          (t.Status == "待支付" || t.Status == "未使用" || t.Status == "已使用"));
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> TicketNumberExistsAsync(string ticketNumber)
+    {
+        return await _context.Tickets
+            .AnyAsync(t => t.TicketNumber == ticketNumber);
+    }
 }
