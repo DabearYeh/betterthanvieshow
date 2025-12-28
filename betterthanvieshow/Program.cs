@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text;
 using betterthanvieshow.Data;
 using betterthanvieshow.Repositories.Implementations;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -82,18 +84,47 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi(options =>
+
+// 配置 Swagger/OpenAPI
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
 {
-    options.AddDocumentTransformer((document, context, cancellationToken) =>
+    options.SwaggerDoc("v1", new OpenApiInfo
     {
-        document.Info = new()
+        Title = "BetterThanVieShow API",
+        Version = "v1.0.0",
+        Description = "比威秀好訂票系統 API 文件 - 提供電影查詢、場次管理與訂票功能。"
+    });
+
+    // 啟用 XML 註解
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    options.IncludeXmlComments(xmlPath);
+
+    // 配置 JWT Bearer 認證
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT"
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
         {
-            Title = "BetterThanVieShow API",
-            Version = "v1.0.0",
-            Description = "比威秀好訂票系統 API 文件 - 提供電影查詢、場次管理與訂票功能。"
-        };
-        return Task.CompletedTask;
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
     });
 });
 
@@ -106,13 +137,25 @@ var app = builder.Build();
 app.UseForwardedHeaders();
 
 // Configure the HTTP request pipeline.
-app.MapOpenApi();
-app.MapScalarApiReference();  // 在正式環境也啟用以利測試
+// 啟用 Swagger
+app.UseSwagger();
 
-if (app.Environment.IsDevelopment())
+// 啟用 Swagger UI (傳統介面)
+app.UseSwaggerUI(c =>
 {
-    // 開發者模式專用設定（目前暫無）
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "BetterThanVieShow API v1");
+    c.RoutePrefix = "swagger";
+});
+
+// 啟用 Scalar UI (現代化介面) - 讀取 Swagger 的 OpenAPI 規格
+app.MapScalarApiReference(options =>
+{
+    options
+        .WithTitle("BetterThanVieShow API")
+        .WithTheme(ScalarTheme.Purple)
+        .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
+        .WithOpenApiRoutePattern("/swagger/{documentName}/swagger.json");
+});
 
 app.UseHttpsRedirection();
 

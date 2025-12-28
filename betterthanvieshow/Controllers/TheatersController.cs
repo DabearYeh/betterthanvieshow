@@ -12,6 +12,7 @@ namespace betterthanvieshow.Controllers;
 [ApiController]
 [Route("api/admin/[controller]")]
 [Authorize(Roles = "Admin")]
+[Tags("Admin/Theaters - 影廳管理")]
 public class TheatersController : ControllerBase
 {
     private readonly ITheaterService _theaterService;

@@ -57,6 +57,7 @@ public class ShowtimesController : ControllerBase
     /// <returns>座位配置</returns>
     [HttpGet("{id}/seats")]
     [AllowAnonymous]
+    [Tags("Booking - 訂票流程")]
     [ProducesResponseType(typeof(ApiResponse<ShowtimeSeatsResponseDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status500InternalServerError)]

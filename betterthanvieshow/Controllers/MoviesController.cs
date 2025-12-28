@@ -43,6 +43,7 @@ public class MoviesController : ControllerBase
     /// <returns>首頁電影資料</returns>
     [HttpGet("~/api/movies/homepage")]
     [AllowAnonymous]
+    [Tags("Movies - 電影資訊")]
     [ProducesResponseType(typeof(ApiResponse<HomepageMoviesResponseDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<HomepageMoviesResponseDto>), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetHomepageMovies()
@@ -74,6 +75,7 @@ public class MoviesController : ControllerBase
     /// <returns>符合條件的電影列表</returns>
     [HttpGet("~/api/movies/search")]
     [AllowAnonymous]
+    [Tags("Movies - 電影資訊")]
     [ProducesResponseType(typeof(ApiResponse<List<MovieSimpleDto>>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<List<MovieSimpleDto>>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<List<MovieSimpleDto>>), StatusCodes.Status500InternalServerError)]
@@ -116,6 +118,7 @@ public class MoviesController : ControllerBase
     /// <returns>電影詳情</returns>
     [HttpGet("~/api/movies/{id}")]
     [AllowAnonymous]
+    [Tags("Movies - 電影資訊")]
     [ProducesResponseType(typeof(ApiResponse<MovieResponseDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<MovieResponseDto>), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponse<MovieResponseDto>), StatusCodes.Status500InternalServerError)]
@@ -162,6 +165,7 @@ public class MoviesController : ControllerBase
     /// <returns>可訂票日期列表</returns>
     [HttpGet("~/api/movies/{id}/available-dates")]
     [AllowAnonymous]
+    [Tags("Booking - 訂票流程")]
     [ProducesResponseType(typeof(ApiResponse<MovieAvailableDatesResponseDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status500InternalServerError)]
@@ -232,6 +236,7 @@ public class MoviesController : ControllerBase
     /// <returns>場次列表</returns>
     [HttpGet("~/api/movies/{id}/showtimes")]
     [AllowAnonymous]
+    [Tags("Booking - 訂票流程")]
     [ProducesResponseType(typeof(ApiResponse<MovieShowtimesResponseDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
@@ -288,6 +293,7 @@ public class MoviesController : ControllerBase
     /// </summary>
     /// <returns>電影列表</returns>
     [HttpGet]
+    [Tags("Admin/Movies - 電影管理")]
     [ProducesResponseType(typeof(ApiResponse<List<MovieListItemDto>>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -310,6 +316,7 @@ public class MoviesController : ControllerBase
     /// <param name="id">電影 ID</param>
     /// <returns>電影詳情</returns>
     [HttpGet("{id}")]
+    [Tags("Admin/Movies - 電影管理")]
     [ProducesResponseType(typeof(ApiResponse<MovieResponseDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<MovieResponseDto>), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -395,6 +402,7 @@ public class MoviesController : ControllerBase
     /// <response code="403">權限不足（需 Admin 角色）</response>
     /// <response code="500">伺服器內部錯誤</response>
     [HttpPost]
+    [Tags("Admin/Movies - 電影管理")]
     [ProducesResponseType(typeof(ApiResponse<MovieResponseDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(object), StatusCodes.Status401Unauthorized)]
@@ -496,6 +504,7 @@ public class MoviesController : ControllerBase
     /// <response code="403">權限不足（需 Admin 角色）</response>
     /// <response code="500">伺服器內部錯誤</response>
     [HttpPut("{id}")]
+    [Tags("Admin/Movies - 電影管理")]
     [ProducesResponseType(typeof(ApiResponse<MovieResponseDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]

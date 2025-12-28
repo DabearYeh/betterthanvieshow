@@ -11,6 +11,7 @@ namespace betterthanvieshow.Controllers;
 [ApiController]
 [Route("api/admin/daily-schedules")]
 [Authorize(Roles = "Admin")]
+[Tags("Admin/DailySchedules - 排程管理")]
 public class DailySchedulesController : ControllerBase
 {
     private readonly IDailyScheduleService _dailyScheduleService;
