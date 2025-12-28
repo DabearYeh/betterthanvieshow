@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
+using betterthanvieshow.Infrastructure.Swagger;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -87,6 +88,7 @@ builder.Services.AddControllers();
 
 // 配置 Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
@@ -95,6 +97,9 @@ builder.Services.AddSwaggerGen(options =>
         Version = "v1.0.0",
         Description = "比威秀好訂票系統 API 文件 - 提供電影查詢、場次管理與訂票功能。"
     });
+
+    // 註冊群組描述過濾器
+    options.DocumentFilter<TagDescriptionsDocumentFilter>();
 
     // 啟用 XML 註解
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
