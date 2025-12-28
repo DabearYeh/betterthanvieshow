@@ -36,9 +36,13 @@ public class MovieResponseDto
     public string Genre { get; set; } = string.Empty;
 
     /// <summary>
-    /// 電影分級
+    /// 電影分級：
+    /// - G（普遍級）
+    /// - P（保護級）
+    /// - PG（輔導級）
+    /// - R（限制級）
     /// </summary>
-    /// <example>輔導級</example>
+    /// <example>G</example>
     public string Rating { get; set; } = string.Empty;
 
     /// <summary>

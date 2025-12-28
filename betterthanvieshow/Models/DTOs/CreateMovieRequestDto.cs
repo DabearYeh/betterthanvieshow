@@ -38,9 +38,13 @@ public class CreateMovieRequestDto
     public string Genre { get; set; } = string.Empty;
 
     /// <summary>
-    /// 電影分級：普遍級、輔導級、限制級
+    /// 電影分級（請輸入英文代碼）：
+    /// - G（普遍級）
+    /// - P（保護級）
+    /// - PG（輔導級）
+    /// - R（限制級）
     /// </summary>
-    /// <example>普遍級</example>
+    /// <example>G</example>
     [Required(ErrorMessage = "電影分級為必填")]
     public string Rating { get; set; } = string.Empty;
 

@@ -29,9 +29,13 @@ public class MovieListItemDto
     public int Duration { get; set; }
 
     /// <summary>
-    /// 電影分級
+    /// 電影分級：
+    /// - G（普遍級）
+    /// - P（保護級）
+    /// - PG（輔導級）
+    /// - R（限制級）
     /// </summary>
-    /// <example>普遍級</example>
+    /// <example>G</example>
     public string Rating { get; set; } = string.Empty;
 
     /// <summary>

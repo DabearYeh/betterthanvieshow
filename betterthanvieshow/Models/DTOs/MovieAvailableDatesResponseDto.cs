@@ -18,9 +18,13 @@ public class MovieAvailableDatesResponseDto
     public string Title { get; set; } = string.Empty;
 
     /// <summary>
-    /// 電影分級（普遍級、輔導級、限制級）
+    /// 電影分級：
+    /// - G（普遍級）
+    /// - P（保護級）
+    /// - PG（輔導級）
+    /// - R（限制級）
     /// </summary>
-    /// <example>普遍級</example>
+    /// <example>G</example>
     public string Rating { get; set; } = string.Empty;
 
     /// <summary>
