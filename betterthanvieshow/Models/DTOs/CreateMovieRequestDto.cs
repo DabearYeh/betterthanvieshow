@@ -31,9 +31,12 @@ public class CreateMovieRequestDto
     public int Duration { get; set; }
 
     /// <summary>
-    /// 影片類型（多個用逗號分隔）
+    /// 影片類型（多個以逗號分隔，請輸入英文代碼）：
+    /// - Action (動作), Adventure (冒險), SciFi (科幻)
+    /// - Comedy (喜劇), Drama (劇情), Horror (恐怖)
+    /// - Animation (動畫), Romance (愛情), Thriller (驚悚)
     /// </summary>
-    /// <example>科幻,動作,冒險</example>
+    /// <example>SciFi,Action,Adventure</example>
     [Required(ErrorMessage = "影片類型為必填")]
     public string Genre { get; set; } = string.Empty;
 

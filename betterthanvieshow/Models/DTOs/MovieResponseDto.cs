@@ -30,9 +30,10 @@ public class MovieResponseDto
     public int Duration { get; set; }
 
     /// <summary>
-    /// 影片類型
+    /// 影片類型：
+    /// - Action (動作), Adventure (冒險), SciFi (科幻)
     /// </summary>
-    /// <example>科幻, 動作</example>
+    /// <example>SciFi, Action</example>
     public string Genre { get; set; } = string.Empty;
 
     /// <summary>

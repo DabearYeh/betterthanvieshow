@@ -34,9 +34,10 @@ public class MovieAvailableDatesResponseDto
     public int Duration { get; set; }
 
     /// <summary>
-    /// 電影類型（多個用逗號分隔）
+    /// 電影類型（多個以逗號分隔）：
+    /// - Action (動作), Adventure (冒險), SciFi (科幻)
     /// </summary>
-    /// <example>科幻,動作,冒險</example>
+    /// <example>SciFi,Action,Adventure</example>
     public string Genre { get; set; } = string.Empty;
 
     /// <summary>
