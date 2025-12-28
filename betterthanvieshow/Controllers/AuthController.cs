@@ -23,7 +23,7 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// 會員註冊
+    /// /api/auth/register 會員註冊
     /// </summary>
     /// <remarks>
     /// 使用使用者名稱、Email 和密碼進行註冊。
@@ -124,7 +124,7 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// 會員登入
+    /// /api/auth/login 會員登入
     /// </summary>
     /// <remarks>
     /// 使用 Email 和密碼進行登入，獲取 JWT Token。

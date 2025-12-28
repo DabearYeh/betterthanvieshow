@@ -22,7 +22,7 @@ public class DailySchedulesController : ControllerBase
     }
 
     /// <summary>
-    /// 儲存每日時刻表
+    /// /api/admin/daily-schedules/{date} 儲存每日時刻表
     /// </summary>
     /// <remarks>
     /// 用來新增或修改特定日期的時刻表。
@@ -93,7 +93,7 @@ public class DailySchedulesController : ControllerBase
 
 
     /// <summary>
-    /// 查詢每日時刻表
+    /// /api/admin/daily-schedules/{date} 查詢每日時刻表
     /// </summary>
     /// <remarks>
     /// 查詢指定日期的時刻表及所有場次資料。
@@ -136,7 +136,7 @@ public class DailySchedulesController : ControllerBase
     }
 
     /// <summary>
-    /// 開始販售時刻表
+    /// /api/admin/daily-schedules/{date}/publish 開始販售時刻表
     /// </summary>
     /// <remarks>
     /// 將指定日期的時刻表狀態從 Draft 轉為 OnSale。

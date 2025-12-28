@@ -26,7 +26,7 @@ public class MoviesController : ControllerBase
     }
 
     /// <summary>
-    /// 取得首頁電影資料
+    /// /api/movies/homepage 取得首頁電影資料
     /// </summary>
     /// <remarks>
     /// 此端點提供前台首頁所需的所有電影資料，包含：
@@ -59,7 +59,7 @@ public class MoviesController : ControllerBase
     }
 
     /// <summary>
-    /// 搜尋電影
+    /// /api/movies/search 搜尋電影
     /// </summary>
     /// <remarks>
     /// 根據關鍵字搜尋電影標題（Title）。
@@ -100,7 +100,7 @@ public class MoviesController : ControllerBase
     }
 
     /// <summary>
-    /// 取得電影詳情（前台）
+    /// /api/movies/{id} 取得電影詳情（前台）
     /// </summary>
     /// <remarks>
     /// 取得單一電影的完整資訊，包括：
@@ -139,7 +139,7 @@ public class MoviesController : ControllerBase
     }
 
     /// <summary>
-    /// 取得電影的可訂票日期
+    /// /api/movies/{id}/available-dates 取得電影的可訂票日期
     /// </summary>
     /// <remarks>
     /// 此端點用於訂票流程的第一步：選擇日期。
@@ -205,7 +205,7 @@ public class MoviesController : ControllerBase
     }
 
     /// <summary>
-    /// 取得電影在特定日期的場次列表
+    /// /api/movies/{id}/showtimes 取得電影在特定日期的場次列表
     /// </summary>
     /// <remarks>
     /// 此端點用於訂票流程的第二步：選擇場次。
@@ -289,7 +289,7 @@ public class MoviesController : ControllerBase
     }
 
     /// <summary>
-    /// 取得所有電影
+    /// /api/admin/movies 取得所有電影
     /// </summary>
     /// <returns>電影列表</returns>
     [HttpGet]
@@ -311,7 +311,7 @@ public class MoviesController : ControllerBase
     }
 
     /// <summary>
-    /// 取得單一電影詳情
+    /// /api/admin/movies/{id} 取得單一電影詳情
     /// </summary>
     /// <param name="id">電影 ID</param>
     /// <returns>電影詳情</returns>
@@ -339,7 +339,7 @@ public class MoviesController : ControllerBase
     }
 
     /// <summary>
-    /// 建立新電影
+    /// /api/admin/movies 建立新電影
     /// </summary>
     /// <remarks>
     /// 建立一部新電影，包含基本資訊、上映日期和輪播設定。
@@ -448,7 +448,7 @@ public class MoviesController : ControllerBase
     }
 
     /// <summary>
-    /// 更新電影資訊
+    /// /api/admin/movies/{id} 更新電影資訊
     /// </summary>
     /// <remarks>
     /// 更新指定電影的完整資訊。
