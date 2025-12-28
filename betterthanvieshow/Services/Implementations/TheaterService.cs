@@ -84,14 +84,15 @@ public class TheaterService : ITheaterService
                 }
             }
 
-            // 先計算 TotalSeats（一般座位 + 殘障座位）
+            // 先計算 TotalSeats（只有 Standard 和 Wheelchair 算入總座位數）
             int actualSeatCount = 0;
             for (int row = 0; row < request.RowCount; row++)
             {
                 for (int col = 0; col < request.ColumnCount; col++)
                 {
                     string seatType = request.Seats[row][col];
-                    if (seatType == "一般座位" || seatType == "殘障座位")
+                    // 使用英文代碼判斷
+                    if (seatType == "Standard" || seatType == "Wheelchair")
                     {
                         actualSeatCount++;
                     }
@@ -102,11 +103,11 @@ public class TheaterService : ITheaterService
             if (actualSeatCount == 0)
             {
                 return ApiResponse<TheaterResponseDto>.FailureResponse(
-                    "影廳必須至少包含一個可販售座位（一般座位或殘障座位）"
+                    "影廳必須至少包含一個可販售座位（Standard 或 Wheelchair）"
                 );
             }
 
-            // 建立 Theater 實體（直接設定計算後的 TotalSeats）
+            // 建立 Theater 實體
             var theater = new Theater
             {
                 Name = request.Name,
@@ -114,7 +115,7 @@ public class TheaterService : ITheaterService
                 Floor = request.Floor,
                 RowCount = request.RowCount,
                 ColumnCount = request.ColumnCount,
-                TotalSeats = actualSeatCount  // 直接設定正確的座位數
+                TotalSeats = actualSeatCount
             };
 
             // 儲存 Theater 到資料庫以取得 ID
@@ -130,13 +131,13 @@ public class TheaterService : ITheaterService
                 for (int col = 0; col < request.ColumnCount; col++)
                 {
                     string seatType = request.Seats[row][col];
-                    
+
                     var seat = new Seat
                     {
                         TheaterId = createdTheater.Id,
                         RowName = rowName,
-                        ColumnNumber = col + 1,  // 1, 2, 3...
-                        SeatType = seatType,
+                        ColumnNumber = col + 1,
+                        SeatType = seatType, // 直接存入英文代碼
                         IsValid = seatType != "Empty"
                     };
 
@@ -257,7 +258,7 @@ public class TheaterService : ITheaterService
                     {
                         RowName = rowName,
                         ColumnNumber = col,
-                        SeatType = seat?.SeatType ?? "Empty"
+                        SeatType = seat?.SeatType ?? "Empty" // 直接回傳英文代碼
                     });
                 }
                 seatMap.Add(rowSeats);
