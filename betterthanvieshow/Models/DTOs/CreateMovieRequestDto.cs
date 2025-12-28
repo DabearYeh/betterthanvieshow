@@ -77,12 +77,14 @@ public class CreateMovieRequestDto
     /// <summary>
     /// 電影上映日期
     /// </summary>
+    /// <example>2023-12-15T00:00:00</example>
     [Required(ErrorMessage = "上映日期為必填")]
     public DateTime ReleaseDate { get; set; }
 
     /// <summary>
     /// 電影下映日期
     /// </summary>
+    /// <example>2024-03-15T00:00:00</example>
     [Required(ErrorMessage = "下映日期為必填")]
     public DateTime EndDate { get; set; }
 

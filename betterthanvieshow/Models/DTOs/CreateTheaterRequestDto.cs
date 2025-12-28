@@ -47,8 +47,13 @@ public class CreateTheaterRequestDto
 
     /// <summary>
     /// 座位配置（二維陣列）
-    /// 每個元素代表座位類型：一般座位、殘障座位、走道、Empty
+    /// 每個元素代表座位類型（需傳入英文）：
+    /// - Standard (一般座位)
+    /// - Wheelchair (殘障座位)
+    /// - Aisle (走道)
+    /// - Empty (空位)
     /// </summary>
+    /// <example>[["Standard", "Aisle", "Standard"], ["Wheelchair", "Aisle", "Standard"]]</example>
     [Required(ErrorMessage = "座位配置為必填")]
     public List<List<string>> Seats { get; set; } = new();
 }
