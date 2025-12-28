@@ -78,14 +78,67 @@ public class TheatersController : ControllerBase
     /// <summary>
     /// 建立新影廳
     /// </summary>
-    /// <param name="request">建立影廳請求</param>
-    /// <returns>建立結果</returns>
+    /// <remarks>
+    /// 建立一個新影廳，包含名稱、類型、樓層和座位配置。
+    /// 
+    /// **座位配置說明**：
+    /// - 座位陣列為二維陣列，外層代表排，內層代表列
+    /// - 座位類型：`Standard`（一般座位）、`Wheelchair`（無障礙座位）、`Aisle`（走道）、`Empty`（空位）
+    /// 
+    /// **請求範例 (JSON)**：
+    /// ```json
+    /// {
+    ///   "name": "IMAX廳",
+    ///   "type": "IMAX",
+    ///   "floor": 5,
+    ///   "rowCount": 3,
+    ///   "columnCount": 5,
+    ///   "seats": [
+    ///     ["Standard", "Standard", "Aisle", "Standard", "Standard"],
+    ///     ["Standard", "Standard", "Aisle", "Standard", "Standard"],
+    ///     ["Wheelchair", "Standard", "Aisle", "Standard", "Wheelchair"]
+    ///   ]
+    /// }
+    /// ```
+    /// 
+    /// **成功回應範例 (201 Created)**：
+    /// ```json
+    /// {
+    ///   "success": true,
+    ///   "message": "影廳建立成功",
+    ///   "data": {
+    ///     "id": 1,
+    ///     "name": "IMAX廳",
+    ///     "type": "IMAX",
+    ///     "floor": 5,
+    ///     "rowCount": 3,
+    ///     "columnCount": 5,
+    ///     "totalSeats": 12
+    ///   }
+    /// }
+    /// ```
+    /// 
+    /// **失敗回應範例 (400 Bad Request - 座位陣列不符)**：
+    /// ```json
+    /// {
+    ///   "success": false,
+    ///   "message": "座位陣列大小與 RowCount 和 ColumnCount 不符",
+    ///   "data": null
+    /// }
+    /// ```
+    /// </remarks>
+    /// <param name="request">影廳資訊</param>
+    /// <response code="201">影廳建立成功</response>
+    /// <response code="400">欄位驗證失敗或座位配置錯誤</response>
+    /// <response code="401">未授權（需登入）</response>
+    /// <response code="403">權限不足（需 Admin 角色）</response>
+    /// <response code="500">伺服器內部錯誤</response>
     [HttpPost]
     [ProducesResponseType(typeof(ApiResponse<TheaterResponseDto>), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ApiResponse<TheaterResponseDto>), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(ApiResponse<TheaterResponseDto>), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CreateTheater([FromBody] CreateTheaterRequestDto request)
     {
         // 檢查模型驗證

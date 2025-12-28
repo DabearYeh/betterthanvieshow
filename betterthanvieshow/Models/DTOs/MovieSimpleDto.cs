@@ -8,11 +8,13 @@ public class MovieSimpleDto
     /// <summary>
     /// 電影 ID
     /// </summary>
+    /// <example>1</example>
     public int Id { get; set; }
 
     /// <summary>
     /// 片名
     /// </summary>
+    /// <example>少林足球</example>
     public string Title { get; set; } = string.Empty;
 
     /// <summary>
@@ -23,16 +25,19 @@ public class MovieSimpleDto
     /// <summary>
     /// 時長（分鐘）
     /// </summary>
+    /// <example>113</example>
     public int Duration { get; set; }
 
     /// <summary>
     /// 影片類型
     /// </summary>
+    /// <example>喜劇, 動作</example>
     public string Genre { get; set; } = string.Empty;
 
     /// <summary>
     /// 電影分級
     /// </summary>
+    /// <example>普遍級</example>
     public string Rating { get; set; } = string.Empty;
 
     /// <summary>

@@ -13,6 +13,7 @@ public class DailyScheduleResponseDto
     /// <summary>
     /// 狀態：Draft（草稿）、OnSale（販售中）
     /// </summary>
+    /// <example>OnSale</example>
     public string Status { get; set; } = string.Empty;
 
     /// <summary>

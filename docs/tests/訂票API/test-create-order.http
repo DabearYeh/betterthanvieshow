@@ -1,0 +1,144 @@
+@baseUrl = http://localhost:5041
+
+### ========================================
+### 前置作業：取得 JWT Token
+### ========================================
+
+### 1. 註冊測試用客戶帳號
+# @name register
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "test.customer@example.com",
+  "password": "Test123456!",
+  "name": "測試客戶"
+}
+
+###
+
+### 2. 登入取得 Token
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test.customer@example.com",
+  "password": "Test123456!"
+}
+
+###
+
+@customerToken = {{login.response.body.data.token}}
+
+### ========================================
+### API: POST /api/orders - 建立訂單
+### ========================================
+
+### 測試 1: 成功建立訂單  
+# @name createOrderSuccess
+# 前置條件：
+# - 場次 ID 7 存在且對應日期的 DailySchedule 狀態為 "OnSale"
+# - 座位 ID 11, 13 存在且未被訂購
+POST {{baseUrl}}/api/orders
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "showTimeId": 7,
+  "seatIds": [1, 2]
+}
+
+###
+
+### 測試 2: 座位已被訂購
+# @name createOrderSeatOccupied
+# 前置條件：座位 ID 11 已被其他訂單訂購
+POST {{baseUrl}}/api/orders
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "showTimeId": 7,
+  "seatIds": [1, 4]
+}
+
+###
+
+### 測試3: 訂購超過 6 張票
+# @name createOrderTooManyTickets
+POST {{baseUrl}}/api/orders
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "showTimeId": 7,
+  "seatIds": [1, 2, 4, 5, 6, 10, 12]
+}
+
+###
+
+### 測試 4: 場次不存在
+# @name createOrderShowtimeNotFound
+POST {{baseUrl}}/api/orders
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "showTimeId": 999999,
+  "seatIds": [1, 2]
+}
+
+###
+
+### 測試 5: 座位不存在
+# @name createOrderSeatsNotFound
+POST {{baseUrl}}/api/orders
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "showTimeId": 7,
+  "seatIds": [999, 1000]
+}
+
+###
+
+### 測試 6: 未登入（無 Authorization Header）
+# @name createOrderUnauthorized
+POST {{baseUrl}}/api/orders
+Content-Type: application/json
+
+{
+  "showTimeId": 7,
+  "seatIds": [1, 2]
+}
+
+###
+
+### 測試 7: 座位數量為 0
+# @name createOrderNoSeats
+POST {{baseUrl}}/api/orders
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "showTimeId": 7,
+  "seatIds": []
+}
+
+###
+
+### 測試 8: 場次狀態為 Draft（未開放訂票）
+# @name createOrderDraftStatus
+# 前置條件：場次 ID 8 的日期對應的 DailySchedule 狀態為 "Draft"
+POST {{baseUrl}}/api/orders
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "showTimeId": 8,
+  "seatIds": [21, 22]
+}
+
+###

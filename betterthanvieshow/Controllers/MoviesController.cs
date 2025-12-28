@@ -334,14 +334,72 @@ public class MoviesController : ControllerBase
     /// <summary>
     /// 建立新電影
     /// </summary>
-    /// <param name="request">建立電影請求</param>
-    /// <returns>建立結果</returns>
+    /// <remarks>
+    /// 建立一部新電影，包含基本資訊、上映日期和輪播設定。
+    /// 
+    /// **請求範例 (JSON)**：
+    /// ```json
+    /// {
+    ///   "title": "阿凡達：水之道",
+    ///   "description": "卡麥隆執導的科幻史詩鉅作續集，傑克與娜美蒂在潘朵拉星球建立家庭...",
+    ///   "duration": 192,
+    ///   "genre": "科幻,動作,冒險",
+    ///   "rating": "普遍級",
+    ///   "director": "詹姆士·卡麥隆",
+    ///   "cast": "山姆·沃辛頓, 柔伊·莎達娜",
+    ///   "posterUrl": "https://example.com/poster.jpg",
+    ///   "trailerUrl": "https://youtube.com/watch?v=XXX",
+    ///   "releaseDate": "2023-10-25",
+    ///   "endDate": "2024-01-25",
+    ///   "canCarousel": true
+    /// }
+    /// ```
+    /// 
+    /// **成功回應範例 (201 Created)**：
+    /// ```json
+    /// {
+    ///   "success": true,
+    ///   "message": "電影建立成功",
+    ///   "data": {
+    ///     "id": 1,
+    ///     "title": "阿凡達：水之道",
+    ///     "description": "卡麥隆執導的科幻史詩鉅作續集...",
+    ///     "duration": 192,
+    ///     "genre": "科幻,動作,冒險",
+    ///     "rating": "普遍級",
+    ///     "director": "詹姆士·卡麥隆",
+    ///     "cast": "山姆·沃辛頓, 柔伊·莎達娜",
+    ///     "posterUrl": "https://example.com/poster.jpg",
+    ///     "trailerUrl": "https://youtube.com/watch?v=XXX",
+    ///     "releaseDate": "2023-10-25T00:00:00",
+    ///     "endDate": "2024-01-25T00:00:00",
+    ///     "canCarousel": true,
+    ///     "createdAt": "2023-10-20T10:00:00"
+    ///   }
+    /// }
+    /// ```
+    /// 
+    /// **失敗回應範例 (400 Bad Request - 日期錯誤)**：
+    /// ```json
+    /// {
+    ///   "success": false,
+    ///   "message": "下映日期必須晚於上映日期",
+    ///   "data": null
+    /// }
+    /// ```
+    /// </remarks>
+    /// <param name="request">電影資訊</param>
+    /// <response code="201">電影建立成功</response>
+    /// <response code="400">欄位驗證失敗或日期邏輯錯誤</response>
+    /// <response code="401">未授權（需登入）</response>
+    /// <response code="403">權限不足（需 Admin 角色）</response>
+    /// <response code="500">伺服器內部錯誤</response>
     [HttpPost]
     [ProducesResponseType(typeof(ApiResponse<MovieResponseDto>), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ApiResponse<MovieResponseDto>), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(ApiResponse<MovieResponseDto>), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CreateMovie([FromBody] CreateMovieRequestDto request)
     {
         // 檢查模型驗證
@@ -382,18 +440,68 @@ public class MoviesController : ControllerBase
     }
 
     /// <summary>
-    /// 更新電影
+    /// 更新電影資訊
     /// </summary>
+    /// <remarks>
+    /// 更新指定電影的完整資訊。
+    /// 
+    /// **請求範例 (JSON)**：
+    /// ```json
+    /// {
+    ///   "title": "阿凡達：水之道（更新）",
+    ///   "description": "更新後的電影簡介...",
+    ///   "duration": 192,
+    ///   "genre": "科幻,動作",
+    ///   "rating": "普遍級",
+    ///   "director": "詹姆士·卡麥隆",
+    ///   "cast": "山姆·沃辛頓, 柔伊·莎達娜",
+    ///   "posterUrl": "https://example.com/new-poster.jpg",
+    ///   "trailerUrl": "https://youtube.com/watch?v=YYY",
+    ///   "releaseDate": "2023-10-25",
+    ///   "endDate": "2024-02-25",
+    ///   "canCarousel": false
+    /// }
+    /// ```
+    /// 
+    /// **成功回應範例 (200 OK)**：
+    /// ```json
+    /// {
+    ///   "success": true,
+    ///   "message": "電影更新成功",
+    ///   "data": {
+    ///     "id": 1,
+    ///     "title": "阿凡達：水之道（更新）",
+    ///     "description": "更新後的電影簡介...",
+    ///     "canCarousel": false,
+    ///     "createdAt": "2023-10-20T10:00:00"
+    ///   }
+    /// }
+    /// ```
+    /// 
+    /// **失敗回應範例 (404 Not Found)**：
+    /// ```json
+    /// {
+    ///   "success": false,
+    ///   "message": "找不到指定的電影",
+    ///   "data": null
+    /// }
+    /// ```
+    /// </remarks>
     /// <param name="id">電影 ID</param>
-    /// <param name="request">更新電影請求</param>
-    /// <returns>更新結果</returns>
+    /// <param name="request">更新資訊</param>
+    /// <response code="200">電影更新成功</response>
+    /// <response code="400">欄位驗證失敗或日期邏輯錯誤</response>
+    /// <response code="404">找不到指定的電影</response>
+    /// <response code="401">未授權（需登入）</response>
+    /// <response code="403">權限不足（需 Admin 角色）</response>
+    /// <response code="500">伺服器內部錯誤</response>
     [HttpPut("{id}")]
     [ProducesResponseType(typeof(ApiResponse<MovieResponseDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse<MovieResponseDto>), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ApiResponse<MovieResponseDto>), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(ApiResponse<MovieResponseDto>), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> UpdateMovie(int id, [FromBody] UpdateMovieRequestDto request)
     {
         // 檢查模型驗證

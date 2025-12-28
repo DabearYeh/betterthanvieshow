@@ -56,7 +56,7 @@ namespace betterthanvieshow.Migrations
                         .IsUnique()
                         .HasDatabaseName("IX_DailySchedule_Date");
 
-                    b.ToTable("DailySchedule", t =>
+                    b.ToTable("DailySchedule", null, t =>
                         {
                             t.HasCheckConstraint("CHK_DailySchedule_Status", "[Status] IN ('Draft', 'OnSale')");
                         });
@@ -128,7 +128,7 @@ namespace betterthanvieshow.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Movie", t =>
+                    b.ToTable("Movie", null, t =>
                         {
                             t.HasCheckConstraint("CHK_Movie_Duration", "[Duration] > 0");
 
@@ -168,7 +168,7 @@ namespace betterthanvieshow.Migrations
                     b.HasIndex("TheaterId", "ShowDate")
                         .HasDatabaseName("IX_MovieShowTime_Theater_Date");
 
-                    b.ToTable("MovieShowTime");
+                    b.ToTable("MovieShowTime", (string)null);
                 });
 
             modelBuilder.Entity("betterthanvieshow.Models.Entities.Seat", b =>
@@ -204,7 +204,7 @@ namespace betterthanvieshow.Migrations
                         .IsUnique()
                         .HasDatabaseName("IX_Seat_Theater_Row_Column");
 
-                    b.ToTable("Seat");
+                    b.ToTable("Seat", (string)null);
                 });
 
             modelBuilder.Entity("betterthanvieshow.Models.Entities.Theater", b =>
@@ -239,7 +239,7 @@ namespace betterthanvieshow.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Theater", t =>
+                    b.ToTable("Theater", null, t =>
                         {
                             t.HasCheckConstraint("CHK_Theater_ColumnCount", "[ColumnCount] > 0");
 
@@ -295,7 +295,7 @@ namespace betterthanvieshow.Migrations
                     b.HasIndex("ShowTimeId", "SeatId")
                         .HasDatabaseName("IX_Ticket_ShowTime_Seat");
 
-                    b.ToTable("Ticket", t =>
+                    b.ToTable("Ticket", null, t =>
                         {
                             t.HasCheckConstraint("CHK_Ticket_Status", "[Status] IN ('待支付', '未使用', '已使用', '已過期')");
                         });
@@ -342,7 +342,7 @@ namespace betterthanvieshow.Migrations
                         .IsUnique()
                         .HasDatabaseName("IX_User_Email");
 
-                    b.ToTable("User", t =>
+                    b.ToTable("User", null, t =>
                         {
                             t.HasCheckConstraint("CHK_User_Role", "[Role] IN ('Customer', 'Admin')");
                         });

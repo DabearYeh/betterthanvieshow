@@ -83,7 +83,19 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer((document, context, cancellationToken) =>
+    {
+        document.Info = new()
+        {
+            Title = "BetterThanVieShow API",
+            Version = "v1.0.0",
+            Description = "比威秀好訂票系統 API 文件 - 提供電影查詢、場次管理與訂票功能。"
+        };
+        return Task.CompletedTask;
+    });
+});
 
 // 添加健康檢查
 builder.Services.AddHealthChecks()
