@@ -24,7 +24,7 @@ public class TicketRepository : ITicketRepository
         // 已過期的票券不計入
         return await _context.Tickets
             .Where(t => t.ShowTimeId == showTimeId && 
-                       (t.Status == "待支付" || t.Status == "未使用" || t.Status == "已使用"))
+                       (t.Status == "Pending" || t.Status == "Unused" || t.Status == "Used"))
             .CountAsync();
     }
 
@@ -33,7 +33,7 @@ public class TicketRepository : ITicketRepository
     {
         var seatIds = await _context.Tickets
             .Where(t => t.ShowTimeId == showTimeId && 
-                       (t.Status == "待支付" || t.Status == "未使用" || t.Status == "已使用"))
+                       (t.Status == "Pending" || t.Status == "Unused" || t.Status == "Used"))
             .Select(t => t.SeatId)
             .ToListAsync();
 
@@ -54,7 +54,7 @@ public class TicketRepository : ITicketRepository
         return await _context.Tickets
             .AnyAsync(t => t.ShowTimeId == showTimeId && 
                           t.SeatId == seatId &&
-                          (t.Status == "待支付" || t.Status == "未使用" || t.Status == "已使用"));
+                          (t.Status == "Pending" || t.Status == "Unused" || t.Status == "Used"));
     }
 
     /// <inheritdoc />

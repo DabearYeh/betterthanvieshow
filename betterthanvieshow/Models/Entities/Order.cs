@@ -59,7 +59,7 @@ public class Order
     /// </summary>
     [Required]
     [MaxLength(20)]
-    public string Status { get; set; } = "未付款";
+    public string Status { get; set; } = "Pending";
 
     /// <summary>
     /// 訂單總金額，根據影廳類型動態計算

@@ -12,7 +12,7 @@ namespace betterthanvieshow.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-[Tags("Orders - 訂單")]
+[Tags("Booking - 訂票流程")]
 public class OrdersController : ControllerBase
 {
     private readonly IOrderService _orderService;
@@ -25,7 +25,7 @@ public class OrdersController : ControllerBase
     }
 
     /// <summary>
-    /// POST /api/orders - 創建訂單
+    /// /api/orders 創建訂單
     /// </summary>
     /// <remarks>
     /// 使用者選擇座位後，點擊「確認訂單」按鈕創建訂單。系統將鎖定座位並開始 5 分鐘倒計時。

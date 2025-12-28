@@ -37,14 +37,14 @@ public class Movie
     public int Duration { get; set; }
 
     /// <summary>
-    /// 影片類型（多個用逗號分隔）
+    /// 影片類型（英文，多個用逗號分隔，例如 "Action, Sci-Fi"）
     /// </summary>
     [Required]
     [MaxLength(200)]
     public string Genre { get; set; } = string.Empty;
 
     /// <summary>
-    /// 電影分級：普遍級、輔導級、限制級
+    /// 電影分級（英文代碼，如 "G", "PG", "PG-13", "R"）
     /// </summary>
     [Required]
     [MaxLength(50)]

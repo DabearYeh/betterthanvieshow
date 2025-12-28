@@ -238,12 +238,12 @@ public class ApplicationDbContext : DbContext
 
             // 狀態預設值
             entity.Property(e => e.Status)
-                .HasDefaultValue("待支付");
+                .HasDefaultValue("Pending");
 
             // 狀態檢查約束
             entity.ToTable(t => t.HasCheckConstraint(
                 "CHK_Ticket_Status",
-                "[Status] IN ('待支付', '未使用', '已使用', '已過期')"
+                "[Status] IN ('Pending', 'Unused', 'Used', 'Expired')"
             ));
 
             // 唯一約束：同一場次同一座位只能有一張有效票券
@@ -281,12 +281,12 @@ public class ApplicationDbContext : DbContext
 
             // 狀態預設值
             entity.Property(e => e.Status)
-                .HasDefaultValue("未付款");
+                .HasDefaultValue("Pending");
 
             // 狀態檢查約束
             entity.ToTable(t => t.HasCheckConstraint(
                 "CHK_Order_Status",
-                "[Status] IN ('未付款', '已付款', '已取消')"
+                "[Status] IN ('Pending', 'Paid', 'Cancelled')"
             ));
 
             // 票券數量檢查約束

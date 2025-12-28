@@ -89,7 +89,7 @@ public class OrderService : IOrderService
             ShowTimeId = request.ShowTimeId,
             CreatedAt = DateTime.UtcNow,
             ExpiresAt = DateTime.UtcNow.AddMinutes(5),
-            Status = "未付款",
+            Status = "Pending",
             TotalPrice = totalPrice,
             TicketCount = request.SeatIds.Count
         };
@@ -107,7 +107,7 @@ public class OrderService : IOrderService
                 OrderId = order.Id,
                 ShowTimeId = request.ShowTimeId,
                 SeatId = seatId,
-                Status = "待支付",
+                Status = "Pending",
                 Price = ticketPrice
             };
             tickets.Add(ticket);

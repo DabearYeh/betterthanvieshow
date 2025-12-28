@@ -52,7 +52,7 @@ public class Ticket
     /// </summary>
     [Required]
     [MaxLength(20)]
-    public string Status { get; set; } = "待支付";
+    public string Status { get; set; } = "Pending";
 
     /// <summary>
     /// 票價，根據該場次所屬影廳類型決定
