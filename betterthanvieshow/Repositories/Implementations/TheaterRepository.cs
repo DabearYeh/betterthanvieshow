@@ -108,6 +108,16 @@ public class TheaterRepository : ITheaterRepository
     }
 
     /// <summary>
+    /// 檢查影廳是否有關聯的場次
+    /// </summary>
+    /// <param name="id">影廳 ID</param>
+    /// <returns>有場次回傳 true，否則回傳 false</returns>
+    public async Task<bool> HasShowtimesAsync(int id)
+    {
+        return await _context.MovieShowTimes.AnyAsync(s => s.TheaterId == id);
+    }
+
+    /// <summary>
     /// 刪除影廳及其所有座位
     /// </summary>
     /// <param name="id">影廳 ID</param>
