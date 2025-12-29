@@ -106,7 +106,7 @@ public class ShowtimeService : IShowtimeService
                 {
                     // 判斷座位狀態
                     string status;
-                    if (seat.SeatType == "走道")
+                    if (seat.SeatType == "Aisle")
                         status = "aisle";
                     else if (seat.SeatType == "Empty")
                         status = "empty";
