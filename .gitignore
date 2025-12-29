@@ -141,3 +141,6 @@ appsettings.Development.json
 
 # Documentation and prompts
 docs/prompt
+
+# Clarify AI files
+.clarify/
