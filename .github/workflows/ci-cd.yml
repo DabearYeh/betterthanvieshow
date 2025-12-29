@@ -13,35 +13,35 @@ jobs:
     runs-on: self-hosted
     
     steps:
-    - name: 檢出程式碼
+    - name: Checkout code
       uses: actions/checkout@v4
       
-    - name: 設定 .NET
+    - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '9.0.x'
       env:
         DOTNET_INSTALL_DIR: "C:\\actions-runner\\.dotnet"
         
-    - name: 還原 NuGet 套件
+    - name: Restore NuGet packages
       run: dotnet restore
       working-directory: ./betterthanvieshow
       
-    - name: 建置專案
+    - name: Build project
       run: dotnet build --configuration Release --no-restore
       working-directory: ./betterthanvieshow
       
-    - name: 執行測試
+    - name: Run tests
       run: dotnet test --configuration Release --no-build --verbosity normal
       working-directory: ./betterthanvieshow
       continue-on-error: true
       
-    - name: 發布專案
+    - name: Publish project
       run: dotnet publish --configuration Release --output ${{ github.workspace }}\publish --no-build
       working-directory: ./betterthanvieshow
       
-    # 只在推送到 main 分支時執行部署
-    - name: 停止應用程式 (使用 app_offline.htm)
+    # Deploy only when pushing to main branch
+    - name: Stop application (using app_offline.htm)
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       run: |
         $sitePath = "${{ secrets.IIS_SITE_PATH }}"
@@ -56,7 +56,7 @@ jobs:
         Start-Sleep -Seconds 5
       shell: powershell
       
-    - name: 備份現有版本
+    - name: Backup current version
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       run: |
         $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
@@ -67,27 +67,27 @@ jobs:
         }
       shell: powershell
       
-    - name: 部署到 IIS
+    - name: Deploy to IIS
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       run: |
-        # 清理目標目錄（保留 web.config 和 app_offline.htm）
+        # Clean target directory (keep web.config and app_offline.htm)
         $keepFiles = @("web.config", "app_offline.htm")
         Get-ChildItem -Path "${{ secrets.IIS_SITE_PATH }}" -Recurse | 
           Where-Object { $keepFiles -notcontains $_.Name } | 
           Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
         
-        # 複製新版本
+        # Copy new version
         Copy-Item -Path "${{ github.workspace }}\publish\*" -Destination "${{ secrets.IIS_SITE_PATH }}" -Recurse -Force
-        Write-Host "部署完成"
+        Write-Host "Deployment completed"
       shell: powershell
       
-    - name: 確保 EF Core 工具在 PATH 中
+    - name: Ensure EF Core tools in PATH
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       run: |
         echo "$env:USERPROFILE\.dotnet\tools" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
       shell: powershell
       
-    - name: 執行資料庫遷移
+    - name: Run database migrations
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       run: |
         dotnet ef database update --connection "${{ secrets.AZURE_SQL_CONNECTION_STRING }}"
@@ -96,18 +96,18 @@ jobs:
         ASPNETCORE_ENVIRONMENT: Production
       continue-on-error: true
       
-    - name: 更新 appsettings.Production.json
+    - name: Update appsettings.Production.json
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       run: |
         $configPath = "${{ secrets.IIS_SITE_PATH }}\appsettings.Production.json"
         if (Test-Path $configPath) {
           $config = Get-Content $configPath -Raw | ConvertFrom-Json
           
-          # 1. 更新原本有的連線字串與 JWT
+          # 1. Update connection string and JWT
           $config.ConnectionStrings.DefaultConnection = "${{ secrets.AZURE_SQL_CONNECTION_STRING }}"
           $config.JwtSettings.SecretKey = "${{ secrets.JWT_SECRET_KEY }}"
           
-          # 2. 加入或更新 LinePay 區塊
+          # 2. Add or update LinePay section
           if (-not $config.LinePay) { $config | Add-Member -MemberType NoteProperty -Name "LinePay" -Value @{} }
           $config.LinePay.ChannelId = "${{ secrets.LINEPAY_CHANNEL_ID }}"
           $config.LinePay.ChannelSecret = "${{ secrets.LINEPAY_CHANNEL_SECRET }}"
@@ -117,30 +117,30 @@ jobs:
           $config.LinePay.ConfirmUrlPath = "/checkout/confirm"
           $config.LinePay.CancelUrlPath = "/checkout/cancel"
           
-          # 3. 儲存回檔案
+          # 3. Save to file
           $config | ConvertTo-Json -Depth 10 | Set-Content $configPath
-          Write-Host "生產環境配置已更新，包含 LINE Pay 設定"
+          Write-Host "Production configuration updated with LINE Pay settings"
         }
       shell: powershell
       
-    - name: 啟動應用程式 (移除 app_offline.htm)
+    - name: Start application (remove app_offline.htm)
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       run: |
         $offlineFile = "${{ secrets.IIS_SITE_PATH }}\app_offline.htm"
         if (Test-Path $offlineFile) {
           Remove-Item -Path $offlineFile -Force
-          Write-Host "已移除 app_offline.htm，應用程式正在啟動"
+          Write-Host "Removed app_offline.htm, application is starting"
         } else {
-          Write-Host "未找到 app_offline.htm，應用程式可能已在運行"
+          Write-Host "app_offline.htm not found, application may already be running"
         }
       shell: powershell
       
-    - name: 等待應用程式啟動
+    - name: Wait for application to start
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       run: Start-Sleep -Seconds 10
       shell: powershell
       
-    - name: 健康檢查
+    - name: Health check
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       run: |
         $maxRetries = 5
@@ -167,7 +167,7 @@ jobs:
       shell: powershell
       continue-on-error: true
       
-    - name: 部署結果通知
+    - name: Deployment notification
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       run: |
         Write-Host "========================================="
