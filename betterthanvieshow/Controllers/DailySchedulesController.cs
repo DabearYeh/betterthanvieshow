@@ -310,4 +310,77 @@ public class DailySchedulesController : ControllerBase
             return BadRequest(new { message = ex.Message });
         }
     }
+
+    /// <summary>
+    /// /api/admin/daily-schedules/{date}/grouped 取得分組時刻表
+    /// </summary>
+    /// <remarks>
+    /// 取得按電影和影廳類型分組的時刻表資料，用於側邊欄顯示。
+    /// 
+    /// **分組邏輯**：
+    /// 1. 第一層：按電影分組
+    /// 2. 第二層：每部電影下，按影廳類型（Digital、4DX、IMAX）分組
+    /// 3. 每個影廳類型組顯示時間範圍和場次列表
+    /// 
+    /// **資料包含**：
+    /// - 電影海報、名稱、分級（0+/12+/18+）、片長
+    /// - 影廳類型中文顯示（數位/4DX/IMAX）及其時間範圍
+    /// - 具體場次時間
+    /// 
+    /// **範例回應**：
+    /// ```json
+    /// {
+    ///   "scheduleDate": "2025-12-01",
+    ///   "status": "OnSale",
+    ///   "movieShowtimes": [
+    ///     {
+    ///       "movieId": 1,
+    ///       "movieTitle": "雲深不知處",
+    ///       "posterUrl": "https://...",
+    ///       "rating": "G",
+    ///       "ratingDisplay": "0+",
+    ///       "duration": 143,
+    ///       "durationDisplay": "2 小時 23 分鐘",
+    ///       "theaterTypeGroups": [
+    ///         {
+    ///           "theaterType": "Digital",
+    ///           "theaterTypeDisplay": "數位",
+    ///           "timeRange": "09:00 09:45",
+    ///           "showtimes": [
+    ///             { "id": 1, "theaterId": 1, "theaterName": "1廳", "startTime": "09:00", "endTime": "11:23" }
+    ///           ]
+    ///         }
+    ///       ]
+    ///     }
+    ///   ]
+    /// }
+    /// ```
+    /// </remarks>
+    /// <param name="date">時刻表日期，格式：YYYY-MM-DD</param>
+    /// <response code="200">查詢成功</response>
+    /// <response code="400">日期格式錯誤</response>
+    /// <response code="404">該日期沒有時刻表記錄</response>
+    /// <response code="401">未授權</response>
+    [HttpGet("{date}/grouped")]
+    [ProducesResponseType(typeof(GroupedDailyScheduleResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetGroupedDailySchedule([FromRoute] string date)
+    {
+        try
+        {
+            if (!DateTime.TryParse(date, out var scheduleDate))
+            {
+                return BadRequest(new { message = "日期格式錯誤，必須為 YYYY-MM-DD" });
+            }
+
+            var result = await _dailyScheduleService.GetGroupedDailyScheduleAsync(scheduleDate);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+    }
 }

@@ -436,4 +436,118 @@ public class DailyScheduleService : IDailyScheduleService
         }
     }
 
+    /// <inheritdoc />
+    public async Task<GroupedDailyScheduleResponseDto> GetGroupedDailyScheduleAsync(DateTime date)
+    {
+        var scheduleDate = date.Date;
+
+        // 1. 查詢時刻表
+        var dailySchedule = await _dailyScheduleRepository.GetByDateAsync(scheduleDate);
+        if (dailySchedule == null)
+        {
+            throw new KeyNotFoundException($"日期 {scheduleDate:yyyy-MM-dd} 的時刻表不存在");
+        }
+
+        // 2. 取得該日期的所有場次（包含電影、影廳資訊）
+        var showtimes = await _showtimeRepository.GetByDateWithDetailsAsync(scheduleDate);
+
+        // 3. 按電影分組
+        var movieGroups = showtimes
+            .GroupBy(s => new { s.MovieId, s.Movie.Title, s.Movie.PosterUrl, s.Movie.Rating, s.Movie.Duration })
+            .Select(movieGroup =>
+            {
+                // 4. 每個電影內，按影廳類型分組
+                var theaterTypeGroups = movieGroup
+                    .GroupBy(s => s.Theater.Type)
+                    .Select(typeGroup =>
+                    {
+                        var showtimesList = typeGroup
+                            .Select(s => new ShowtimeSimpleDto
+                            {
+                                Id = s.Id,
+                                TheaterId = s.TheaterId,
+                                TheaterName = s.Theater.Name,
+                                StartTime = s.StartTime.ToString(@"hh\:mm"),
+                                EndTime = s.StartTime.Add(TimeSpan.FromMinutes(s.Movie.Duration)).ToString(@"hh\:mm")
+                            })
+                            .OrderBy(s => s.StartTime)
+                            .ToList();
+
+                        // 計算時間範圍
+                        var minStartTime = showtimesList.Min(s => s.StartTime);
+                        var maxEndTime = showtimesList.Max(s => s.EndTime);
+                        var timeRange = minStartTime == maxEndTime ? minStartTime : $"{minStartTime} {maxEndTime}";
+
+                        return new TheaterTypeGroupDto
+                        {
+                            TheaterType = typeGroup.Key,
+                            TheaterTypeDisplay = ConvertTheaterTypeToDisplay(typeGroup.Key),
+                            TimeRange = timeRange,
+                            Showtimes = showtimesList
+                        };
+                    })
+                    .OrderBy(t => t.TheaterType)
+                    .ToList();
+
+                return new MovieShowtimeGroupDto
+                {
+                    MovieId = movieGroup.Key.MovieId,
+                    MovieTitle = movieGroup.Key.Title,
+                    PosterUrl = movieGroup.Key.PosterUrl,
+                    Rating = movieGroup.Key.Rating,
+                    RatingDisplay = ConvertRatingToDisplay(movieGroup.Key.Rating),
+                    Duration = movieGroup.Key.Duration,
+                    DurationDisplay = FormatDuration(movieGroup.Key.Duration),
+                    TheaterTypeGroups = theaterTypeGroups
+                };
+            })
+            .OrderBy(m => m.TheaterTypeGroups.Min(t => t.Showtimes.Min(s => s.StartTime)))
+            .ToList();
+
+        return new GroupedDailyScheduleResponseDto
+        {
+            ScheduleDate = scheduleDate,
+            Status = dailySchedule.Status,
+            MovieShowtimes = movieGroups
+        };
+    }
+
+    /// <summary>
+    /// 轉換電影分級為顯示格式
+    /// </summary>
+    private string ConvertRatingToDisplay(string rating)
+    {
+        return rating switch
+        {
+            "G" => "0+",      // General Audiences
+            "PG" => "12+",    // Parental Guidance
+            "R" => "18+",     // Restricted
+            _ => "0+"
+        };
+    }
+
+    /// <summary>
+    /// 格式化片長顯示
+    /// </summary>
+    private string FormatDuration(int minutes)
+    {
+        var hours = minutes / 60;
+        var mins = minutes % 60;
+        return $"{hours} 小時 {mins} 分鐘";
+    }
+
+    /// <summary>
+    /// 轉換影廳類型為顯示格式
+    /// </summary>
+    private string ConvertTheaterTypeToDisplay(string theaterType)
+    {
+        return theaterType switch
+        {
+            "Digital" => "數位",
+            "4DX" => "4DX",
+            "IMAX" => "IMAX",
+            _ => theaterType
+        };
+    }
+
 }

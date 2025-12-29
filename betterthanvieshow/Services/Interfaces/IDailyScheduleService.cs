@@ -45,4 +45,11 @@ public interface IDailyScheduleService
     /// <returns>複製結果</returns>
     Task<CopyDailyScheduleResponseDto> CopyDailyScheduleAsync(DateTime sourceDate, CopyDailyScheduleRequestDto dto);
 
+    /// <summary>
+    /// 取得分組時刻表（用於側邊欄顯示）
+    /// </summary>
+    /// <param name="date">時刻表日期</param>
+    /// <returns>按電影和影廳類型分組的時刻表</returns>
+    Task<GroupedDailyScheduleResponseDto> GetGroupedDailyScheduleAsync(DateTime date);
+
 }
