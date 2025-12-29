@@ -293,4 +293,261 @@ public class DailyScheduleService : IDailyScheduleService
         // 3. 建立並返回回應
         return BuildDailyScheduleResponse(dailySchedule, showtimes);
     }
+
+    /// <inheritdoc />
+    public async Task<MonthOverviewResponseDto> GetMonthOverviewAsync(int year, int month)
+    {
+        // 從 Repository 獲取該月份的所有時刻表
+        var schedules = await _dailyScheduleRepository.GetByMonthAsync(year, month);
+
+        // 轉換為 DTO
+        var dates = schedules.Select(s => new DailyScheduleStatusDto
+        {
+            Date = s.ScheduleDate.ToString("yyyy-MM-dd"),
+            Status = s.Status
+        }).ToList();
+
+        return new MonthOverviewResponseDto
+        {
+            Year = year,
+            Month = month,
+            Dates = dates
+        };
+    }
+
+    /// <inheritdoc />
+    public async Task<CopyDailyScheduleResponseDto> CopyDailyScheduleAsync(DateTime sourceDate, CopyDailyScheduleRequestDto dto)
+    {
+        // 正規化日期
+        var sourceDateNormalized = sourceDate.Date;
+
+        // 解析目標日期
+        if (!DateTime.TryParse(dto.TargetDate, out var targetDate))
+        {
+            throw new ArgumentException("目標日期格式錯誤，必須為 YYYY-MM-DD");
+        }
+        var targetDateNormalized = targetDate.Date;
+
+        // 開啟交易
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            // 1. 驗證來源時刻表
+            var sourceSchedule = await _dailyScheduleRepository.GetByDateAsync(sourceDateNormalized);
+            if (sourceSchedule == null)
+            {
+                throw new KeyNotFoundException($"來源日期 {sourceDateNormalized:yyyy-MM-dd} 的時刻表不存在");
+            }
+
+            if (sourceSchedule.Status != "OnSale")
+            {
+                throw new ArgumentException("只能複製已販售的時刻表");
+            }
+
+            // 2. 驗證/建立目標時刻表
+            var targetSchedule = await _dailyScheduleRepository.GetByDateAsync(targetDateNormalized);
+
+            if (targetSchedule != null && targetSchedule.Status == "OnSale")
+            {
+                throw new ArgumentException("目標日期必須為草稿狀態");
+            }
+
+            if (targetSchedule == null)
+            {
+                // 建立新的 Draft 狀態時刻表
+                targetSchedule = await _dailyScheduleRepository.CreateAsync(new DailySchedule
+                {
+                    ScheduleDate = targetDateNormalized,
+                    Status = "Draft"
+                });
+            }
+
+            // 3. 刪除目標日期的舊場次（覆蓋模式）
+            await _showtimeRepository.DeleteByDateAsync(targetDateNormalized);
+
+            // 4. 取得來源場次（包含電影資訊）
+            var sourceShowtimes = await _showtimeRepository.GetByDateWithMovieAsync(sourceDateNormalized);
+
+            // 5. 檔期檢查並複製
+            var showtimesToCopy = new List<MovieShowTime>();
+            var skippedCount = 0;
+
+            foreach (var sourceShowtime in sourceShowtimes)
+            {
+                // 檢查電影在目標日期是否仍在檔期內
+                if (sourceShowtime.Movie.ReleaseDate.Date <= targetDateNormalized &&
+                    targetDateNormalized <= sourceShowtime.Movie.EndDate.Date)
+                {
+                    // 在檔期內，加入待複製清單
+                    showtimesToCopy.Add(new MovieShowTime
+                    {
+                        MovieId = sourceShowtime.MovieId,
+                        TheaterId = sourceShowtime.TheaterId,
+                        ShowDate = targetDateNormalized,
+                        StartTime = sourceShowtime.StartTime
+                    });
+                }
+                else
+                {
+                    // 檔期已過，略過
+                    skippedCount++;
+                }
+            }
+
+            // 6. 批次建立新場次
+            if (showtimesToCopy.Any())
+            {
+                await _showtimeRepository.CreateBatchAsync(showtimesToCopy);
+            }
+
+            // 7. 更新目標時刻表的 UpdatedAt
+            targetSchedule.UpdatedAt = DateTime.UtcNow;
+            await _dailyScheduleRepository.UpdateAsync(targetSchedule);
+
+            // 8. 提交交易
+            await transaction.CommitAsync();
+
+            // 9. 載入完整的目標時刻表資料
+            var targetShowtimesWithDetails = await _showtimeRepository.GetByDateWithDetailsAsync(targetDateNormalized);
+            var targetScheduleResponse = BuildDailyScheduleResponse(targetSchedule, targetShowtimesWithDetails);
+
+            // 10. 建立回應
+            var response = new CopyDailyScheduleResponseDto
+            {
+                SourceDate = sourceDateNormalized,
+                TargetDate = targetDateNormalized,
+                CopiedCount = showtimesToCopy.Count,
+                SkippedCount = skippedCount,
+                TargetSchedule = targetScheduleResponse
+            };
+
+            // 如有場次被略過，加入提示訊息
+            if (skippedCount > 0)
+            {
+                response.Message = "部分場次因電影檔期已過期未複製";
+            }
+
+            return response;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<GroupedDailyScheduleResponseDto> GetGroupedDailyScheduleAsync(DateTime date)
+    {
+        var scheduleDate = date.Date;
+
+        // 1. 查詢時刻表
+        var dailySchedule = await _dailyScheduleRepository.GetByDateAsync(scheduleDate);
+        if (dailySchedule == null)
+        {
+            throw new KeyNotFoundException($"日期 {scheduleDate:yyyy-MM-dd} 的時刻表不存在");
+        }
+
+        // 2. 取得該日期的所有場次（包含電影、影廳資訊）
+        var showtimes = await _showtimeRepository.GetByDateWithDetailsAsync(scheduleDate);
+
+        // 3. 按電影分組
+        var movieGroups = showtimes
+            .GroupBy(s => new { s.MovieId, s.Movie.Title, s.Movie.PosterUrl, s.Movie.Rating, s.Movie.Duration })
+            .Select(movieGroup =>
+            {
+                // 4. 每個電影內，按影廳類型分組
+                var theaterTypeGroups = movieGroup
+                    .GroupBy(s => s.Theater.Type)
+                    .Select(typeGroup =>
+                    {
+                        var showtimesList = typeGroup
+                            .Select(s => new ShowtimeSimpleDto
+                            {
+                                Id = s.Id,
+                                TheaterId = s.TheaterId,
+                                TheaterName = s.Theater.Name,
+                                StartTime = s.StartTime.ToString(@"hh\:mm"),
+                                EndTime = s.StartTime.Add(TimeSpan.FromMinutes(s.Movie.Duration)).ToString(@"hh\:mm")
+                            })
+                            .OrderBy(s => s.StartTime)
+                            .ToList();
+
+                        // 計算時間範圍
+                        var minStartTime = showtimesList.Min(s => s.StartTime);
+                        var maxEndTime = showtimesList.Max(s => s.EndTime);
+                        var timeRange = minStartTime == maxEndTime ? minStartTime : $"{minStartTime} {maxEndTime}";
+
+                        return new TheaterTypeGroupDto
+                        {
+                            TheaterType = typeGroup.Key,
+                            TheaterTypeDisplay = ConvertTheaterTypeToDisplay(typeGroup.Key),
+                            TimeRange = timeRange,
+                            Showtimes = showtimesList
+                        };
+                    })
+                    .OrderBy(t => t.TheaterType)
+                    .ToList();
+
+                return new MovieShowtimeGroupDto
+                {
+                    MovieId = movieGroup.Key.MovieId,
+                    MovieTitle = movieGroup.Key.Title,
+                    PosterUrl = movieGroup.Key.PosterUrl,
+                    Rating = movieGroup.Key.Rating,
+                    RatingDisplay = ConvertRatingToDisplay(movieGroup.Key.Rating),
+                    Duration = movieGroup.Key.Duration,
+                    DurationDisplay = FormatDuration(movieGroup.Key.Duration),
+                    TheaterTypeGroups = theaterTypeGroups
+                };
+            })
+            .OrderBy(m => m.TheaterTypeGroups.Min(t => t.Showtimes.Min(s => s.StartTime)))
+            .ToList();
+
+        return new GroupedDailyScheduleResponseDto
+        {
+            ScheduleDate = scheduleDate,
+            Status = dailySchedule.Status,
+            MovieShowtimes = movieGroups
+        };
+    }
+
+    /// <summary>
+    /// 轉換電影分級為顯示格式
+    /// </summary>
+    private string ConvertRatingToDisplay(string rating)
+    {
+        return rating switch
+        {
+            "G" => "0+",      // General Audiences
+            "PG" => "12+",    // Parental Guidance
+            "R" => "18+",     // Restricted
+            _ => "0+"
+        };
+    }
+
+    /// <summary>
+    /// 格式化片長顯示
+    /// </summary>
+    private string FormatDuration(int minutes)
+    {
+        var hours = minutes / 60;
+        var mins = minutes % 60;
+        return $"{hours} 小時 {mins} 分鐘";
+    }
+
+    /// <summary>
+    /// 轉換影廳類型為顯示格式
+    /// </summary>
+    private string ConvertTheaterTypeToDisplay(string theaterType)
+    {
+        return theaterType switch
+        {
+            "Digital" => "數位",
+            "4DX" => "4DX",
+            "IMAX" => "IMAX",
+            _ => theaterType
+        };
+    }
+
 }

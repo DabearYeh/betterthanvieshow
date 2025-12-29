@@ -106,7 +106,7 @@ public class ShowtimeService : IShowtimeService
                 {
                     // 判斷座位狀態
                     string status;
-                    if (seat.SeatType == "走道")
+                    if (seat.SeatType == "Aisle")
                         status = "aisle";
                     else if (seat.SeatType == "Empty")
                         status = "empty";
@@ -155,7 +155,7 @@ public class ShowtimeService : IShowtimeService
     {
         return theaterType switch
         {
-            "一般數位" => 300,
+            "Digital" => 300,
             "4DX" => 380,
             "IMAX" => 380,
             _ => 300

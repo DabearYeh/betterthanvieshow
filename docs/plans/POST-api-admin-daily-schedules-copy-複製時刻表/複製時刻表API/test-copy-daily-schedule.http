@@ -1,0 +1,125 @@
+### 測試複製時刻表 API
+### POST /api/admin/daily-schedules/{sourceDate}/copy
+
+### 前置設定
+@baseUrl = http://localhost:5041
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjI0IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoiYWRtaW4xMjM0QGdtYWlsLmNvbSIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWUiOiLnrqHnkIblk6EiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBZG1pbiIsImV4cCI6MTc2NzYzMjc3MSwiaXNzIjoiQmV0dGVyVGhhblZpZVNob3dBUEkiLCJhdWQiOiJCZXR0ZXJUaGFuVmllU2hvd0NsaWVudCJ9.DJabywgOzk6EsGq-2SSJcOBjrTqso3Tsnl71pZYqOSQ
+
+###############################################################################
+### 測試情境 1: 成功複製販售中的時刻表
+### 前置條件：
+### - 來源日期 2025-12-22 狀態為 OnSale，有多個場次
+### - 目標日期 2025-12-25 狀態為 Draft（或不存在）
+###############################################################################
+
+POST {{baseUrl}}/api/admin/daily-schedules/2025-12-22/copy
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "targetDate": "2025-12-25"
+}
+
+###############################################################################
+### 測試情境 2: 禁止複製草稿狀態的時刻表
+### 前置條件：來源日期狀態為 Draft
+### 預期結果：400 Bad Request，錯誤訊息「只能複製已販售的時刻表」
+###############################################################################
+
+POST {{baseUrl}}/api/admin/daily-schedules/2025-12-31/copy
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "targetDate": "2026-01-05"
+}
+
+###############################################################################
+### 測試情境 3: 禁止複製到已販售的日期
+### 前置條件：
+### - 來源日期 2025-12-22 狀態為 OnSale
+### - 目標日期 2025-12-30 狀態為 OnSale
+### 預期結果：400 Bad Request，錯誤訊息「目標日期必須為草稿狀態」
+###############################################################################
+
+POST {{baseUrl}}/api/admin/daily-schedules/2025-12-22/copy
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "targetDate": "2025-12-30"
+}
+
+###############################################################################
+### 測試情境 4: 覆蓋模式測試
+### 前置條件：
+### - 來源日期 2025-12-22 狀態為 OnSale
+### - 目標日期 2025-12-26 狀態為 Draft，已有部分場次
+### 預期結果：200 OK，舊場次被刪除，新場次成功複製
+###############################################################################
+
+POST {{baseUrl}}/api/admin/daily-schedules/2025-12-22/copy
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "targetDate": "2025-12-26"
+}
+
+###############################################################################
+### 測試情境 5: 來源日期格式錯誤
+### 預期結果：400 Bad Request
+###############################################################################
+
+POST {{baseUrl}}/api/admin/daily-schedules/invalid-date/copy
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "targetDate": "2025-12-25"
+}
+
+###############################################################################
+### 測試情境 6: 目標日期格式錯誤
+### 預期結果：400 Bad Request
+###############################################################################
+
+POST {{baseUrl}}/api/admin/daily-schedules/2025-12-22/copy
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "targetDate": "invalid-date"
+}
+
+###############################################################################
+### 測試情境 7: 來源日期不存在
+### 預期結果：404 Not Found
+###############################################################################
+
+POST {{baseUrl}}/api/admin/daily-schedules/2099-12-31/copy
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "targetDate": "2099-12-30"
+}
+
+###############################################################################
+### 測試情境 8: 未授權測試
+### 預期結果：401 Unauthorized
+###############################################################################
+
+POST {{baseUrl}}/api/admin/daily-schedules/2025-12-22/copy
+Content-Type: application/json
+
+{
+  "targetDate": "2025-12-25"
+}
+
+###############################################################################
+### 輔助測試：查看複製後的目標時刻表
+###############################################################################
+
+GET {{baseUrl}}/api/admin/daily-schedules/2025-12-25
+Authorization: Bearer {{token}}

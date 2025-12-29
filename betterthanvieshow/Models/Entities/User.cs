@@ -39,7 +39,7 @@ public class User
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
-    /// 角色：Customer（顧客）、Admin（管理者）
+    /// 角色（英文枚舉值）：Customer（顧客）、Admin（管理者）
     /// </summary>
     [Required]
     [MaxLength(50)]

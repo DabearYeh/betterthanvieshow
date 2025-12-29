@@ -5,7 +5,7 @@ Table User {
   email string [unique, note: '登入帳號（信箱），必須唯一']
   password string [note: '使用者密碼']
   name string [note: '使用者名稱']
-  role string [note: '角色：Customer（顧客）、Admin（管理者）。權限劃分：Customer 可訂票、查詢自己的訂票記錄、瀏覽電影/場次；Admin 擁有系統最高權限，包含管理電影/影廳/場次/座位、查詢所有訂票記錄以及執行驗票功能']
+  role string [note: '角色（英文枚舉值）：Customer（顧客）、Admin（管理者）。權限劃分：Customer 可訂票、查詢自己的訂票記錄、瀏覽電影/場次；Admin 擁有系統最高權限，包含管理電影/影廳/場次/座位、查詢所有訂票記錄以及執行驗票功能']
   created_at string [note: '帳號建立時間']
   
   Note: '使用者：系統登入的使用者。雙角色模型：Customer（顧客）- 一般消費者；Admin（管理者）- 包含後台管理與現場驗票權限。關聯：User 1:N Order, User 1:N TicketValidateLog'
@@ -14,13 +14,13 @@ Table User {
 Table Theater {
   id int [pk, note: '影廳 ID']
   name string [note: '影廳名稱']
-  type string [note: '影廳類型與票價：一般數位（300元）、4DX（380元）、IMAX（380元）']
+  type string [note: '影廳類型與票價（英文枚舉值）：Digital（一般數位，300元）、4DX（380元）、IMAX（380元）']
   floor int [note: '所在樓層']
   row_count int [note: '排數，必須 > 0']
   column_count int [note: '列數，必須 > 0']
   total_seats int [note: '座位總數，必須 > 0。規則：影廳只有在沒有關聯場次時才能刪除']
   
-  Note: '影廳：播放電影的場所，每個影廳有固定座位配置。票價與影廳類型綁定：一般數位 300元、4DX 380元、IMAX 380元。座位配置方式：先選排數和列數生成網格，逐格自訂為具體座位類型（一般座、殘障座、走道等）。關聯：Theater 1:N Seat, Theater 1:N MovieShowTime。跨屬性不變條件：total_seats 必須等於該影廳實際的有效 Seat 數量（一般座 + 殘障座）；row_count * column_count >= total_seats（網格大小必須足以容納所有座位）'
+  Note: '影廳：播放電影的場所，每個影廳有固定座位配置。票價與影廳類型綁定：Digital（一般數位）300元、4DX 380元、IMAX 380元。座位配置方式：先選排數和列數生成網格，逐格自訂為具體座位類型（Standard、Wheelchair、Aisle、Empty）。關聯：Theater 1:N Seat, Theater 1:N MovieShowTime。跨屬性不變條件：total_seats 必須等於該影廳實際的有效 Seat 數量（Standard + Wheelchair）；row_count * column_count >= total_seats（網格大小必須足以容納所有座位）'
 }
 
 Table Seat {
@@ -28,7 +28,7 @@ Table Seat {
   theater_id int [ref: > Theater.id, note: '所屬影廳 ID']
   row_name string [note: '座位排名（例如：A、B、C）']
   column_number int [note: '欄號（正整數，一般從1開始）']
-  seat_type string [note: '座位類型（一般座位、殘障座位、走道、Empty）']
+  seat_type string [note: '座位類型（英文枚舉值）：Standard（一般座位）、Wheelchair（殘障座位）、Aisle（走道）、Empty（空位）']
   is_valid bool [note: '座位是否有效，系統預設為真。若因柱子、空間等原因無法使用，設為無效']
   
   Note: '座位：影廳中的固定座位。每個影廳有固定座位配置，不隨場次更改。Empty = 不屬於座位區，也不是走道，不會售票。關聯：Seat N:1 Theater。跨屬性不變條件：同一個 theater_id 內，(row_name, column_number) 組合必須唯一（需 DB Unique Constraint）'
@@ -39,8 +39,8 @@ Table Movie {
   title string [note: '片名']
   description string [note: '簡介']
   duration int [note: '時長（分鐘），必須 > 0']
-  genre string [note: '影片類型（多個用逗號分隔），嚴格限制選項：動作、愛情、冒險、懸疑、恐怖、科幻、日本動漫、喜劇']
-  rating string [note: '電影分級：普遍級、輔導級、限制級']
+  genre string [note: '影片類型（英文枚舉值，多個用逗號分隔）：Action（動作）、Romance（愛情）、Adventure（冒險）、Thriller（懸疑）、Horror（恐怖）、SciFi（科幻）、Animation（動畫）、Comedy（喜劇）']
+  rating string [note: '電影分級（英文枚舉值）：G（普遍級）、P（保護級）、PG（輔導級）、R（限制級）']
   director string [note: '導演']
   cast string [note: '演員']
   poster_url string [note: '海報 URL，非必填']
@@ -49,7 +49,7 @@ Table Movie {
   end_date string [note: '電影下映日期，格式 YYYY-MM-DD。規則：end_date >= release_date；場次排片日期必須在 [release_date, end_date] 範圍內']
   can_carousel bool [note: '是否加入輪播']
   
-  Note: '電影：系統中的電影資訊。上映狀態動態計算（無 release_status 欄位）：即將上映 (release_date > 今天)、正在上映 (release_date <= 今天 <= end_date)、已下映 (end_date < 今天)。電影可標籤為：本週前十（週內銷售最多前10部）、即將上映。重映策略：若電影下映後需重映，建立新電影記錄（如「電影名 - 重映版」），而不修改原電影的 release_date / end_date。刪除規則：電影不能被刪除，僅能透過上架/下架控制顯示狀態。關聯：Movie 1:N MovieShowTime'
+  Note: '電影：系統中的電影資訊。上映狀態動態計算（無 release_status 欄位，英文枚舉值）：ComingSoon（即將上映，release_date > 今天）、NowShowing（正在上映，release_date <= 今天 <= end_date）、OffScreen（已下映，end_date < 今天）。電影可標籤為：本週前十（週內銷售最多前10部）、即將上映。重映策略：若電影下映後需重映，建立新電影記錄（如「電影名 - 重映版」），而不修改原電影的 release_date / end_date。刪除規則：電影不能被刪除，僅能透過上架/下架控制顯示狀態。關聯：Movie 1:N MovieShowTime'
 }
 
 Table MovieShowTime {
@@ -65,7 +65,7 @@ Table MovieShowTime {
 Table DailySchedule {
   id int [pk, note: '每日時刻表 ID']
   schedule_date string [unique, note: '日期，格式 YYYY-MM-DD，必須唯一']
-  status string [note: '狀態：Draft（草稿）、OnSale（販售中）。規則：新建時預設為 Draft；確認販售後轉為 OnSale；OnSale 狀態絕對不可逆轉回 Draft（無例外），緊急情況需透過取消訂單等其他方式處理']
+  status string [note: '狀態（英文枚舉值）：Draft（草稿）、OnSale（販售中）。規則：新建時預設為 Draft；確認販售後轉為 OnSale；OnSale 狀態絕對不可逆轉回 Draft（無例外），緊急情況需透過取消訂單等其他方式處理']
   created_at string [note: '建立時間']
   updated_at string [note: '最後更新時間']
   
@@ -80,7 +80,7 @@ Table Order {
   payment_transaction_id string [note: '第三方支付交易序號（如 LINE Pay Transaction ID），用於對帳與退款']
   created_at string [note: '訂單建立時間']
   expires_at string [note: '付款期限，訂單建立後 5 分鐘自動過期']
-  status string [note: '訂單狀態（三態設計）：未付款 → 已付款 → 已取消。規則：訂單建立後進入「未付款」狀態；使用者完成支付後轉為「已付款」；超過 5 分鐘未付款或使用者取消訂單時轉為「已取消」。備註：目前系統無退票功能，訂單一旦付款即為最終狀態']
+  status string [note: '訂單狀態（英文枚舉值，三態設計）：Pending（未付款）→ Paid（已付款）→ Cancelled（已取消）。規則：訂單建立後進入 Pending 狀態；使用者完成支付後轉為 Paid；超過 5 分鐘未付款或使用者取消訂單時轉為 Cancelled。備註：目前系統無退票功能，訂單一旦付款即為最終狀態']
   total_price float [note: '訂單總金額 = Σ(Ticket.price)，根據影廳類型動態計算。必須 >= 0']
   ticket_count int [note: '票券數量。規則：每張 Order 最多可訂 6 張票']
   
@@ -94,8 +94,8 @@ Table Ticket {
   show_time_id int [ref: > MovieShowTime.id, note: '場次 ID']
   seat_id int [ref: > Seat.id, note: '座位 ID']
   qr_code string [note: 'QR Code，包含電影日期、影廳、座位、時間、影廳類型']
-  status string [note: '票券狀態（四態設計）：待支付 → 未使用 → 已使用 / 已過期。規則：確認票券時進入「待支付」狀態，座位立即鎖定；支付成功轉為「未使用」；掃 QR code 驗票成功轉為「已使用」；5 分鐘未付款或電影結束時轉為「已過期」，座位自動釋放。座位鎖定狀態由 Ticket.status 決定：待支付/未使用/已使用 = 鎖定；已過期 = 釋放']
-  price float [note: '票價，根據該場次所屬影廳類型決定：一般數位 300 元、4DX 380 元、IMAX 380 元']
+  status string [note: '票券狀態（英文枚舉值，四態設計）：Pending（待支付）→ Unused（未使用）→ Used（已使用）/ Expired（已過期）。規則：確認票券時進入 Pending 狀態，座位立即鎖定；支付成功轉為 Unused；掃 QR code 驗票成功轉為 Used；5 分鐘未付款或電影結束時轉為 Expired，座位自動釋放。座位鎖定狀態由 Ticket.status 決定：Pending/Unused/Used = 鎖定；Expired = 釋放']
+  price float [note: '票價，根據該場次所屬影廳類型決定：Digital（一般數位）300 元、4DX 380 元、IMAX 380 元']
   
   Note: '票券：使用者購買後產生的票券，包含場次、座位資訊。關聯：Ticket N:1 Order, Ticket N:1 MovieShowTime, Ticket N:1 Seat。跨屬性不變條件：同一個 seat_id 在同一個 show_time_id 只能有一張有效票券（需 DB Unique Constraint）'
 }

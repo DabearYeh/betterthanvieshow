@@ -22,6 +22,68 @@ public class DailySchedulesController : ControllerBase
     }
 
     /// <summary>
+    /// /api/admin/daily-schedules/month-overview 獲取月曆概覽
+    /// </summary>
+    /// <remarks>
+    /// 查詢指定月份中所有有時刻表記錄的日期及其狀態。
+    /// 
+    /// **用途**：
+    /// - 前端顯示月曆介面，標註不同狀態的日期
+    /// - 黃點：狀態為 OnSale（販售中）
+    /// - 灰點：狀態為 Draft（草稿）
+    /// - 無點：該日期沒有時刻表記錄（不在回傳資料中）
+    /// 
+    /// **回傳資料**：
+    /// - 只返回有 DailySchedule 記錄的日期
+    /// - 沒有記錄的日期不回傳，由前端判斷為無點
+    /// 
+    /// **範例請求**：
+    /// ```
+    /// GET /api/admin/daily-schedules/month-overview?year=2025&amp;month=12
+    /// ```
+    /// 
+    /// **範例回應**：
+    /// ```json
+    /// {
+    ///   "year": 2025,
+    ///   "month": 12,
+    ///   "dates": [
+    ///     { "date": "2025-12-01", "status": "OnSale" },
+    ///     { "date": "2025-12-10", "status": "Draft" },
+    ///     { "date": "2025-12-25", "status": "OnSale" }
+    ///   ]
+    /// }
+    /// ```
+    /// </remarks>
+    /// <param name="year">年份（例如：2025）</param>
+    /// <param name="month">月份（1-12）</param>
+    /// <response code="200">查詢成功</response>
+    /// <response code="400">參數錯誤（年份或月份不合法）</response>
+    /// <response code="401">未授權</response>
+    [HttpGet("month-overview")]
+    [ProducesResponseType(typeof(MonthOverviewResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetMonthOverview(
+        [FromQuery] int year,
+        [FromQuery] int month)
+    {
+        // 參數驗證
+        if (year < 2000 || year > 2100)
+        {
+            return BadRequest(new { message = "年份必須在 2000 到 2100 之間" });
+        }
+
+        if (month < 1 || month > 12)
+        {
+            return BadRequest(new { message = "月份必須在 1 到 12 之間" });
+        }
+
+        var result = await _dailyScheduleService.GetMonthOverviewAsync(year, month);
+        return Ok(result);
+    }
+
+    /// <summary>
     /// /api/admin/daily-schedules/{date} 儲存每日時刻表
     /// </summary>
     /// <remarks>
@@ -55,6 +117,7 @@ public class DailySchedulesController : ControllerBase
     /// <response code="401">未授權</response>
     /// <response code="403">該日期已開始販售，無法修改</response>
     /// <response code="409">場次時間衝突</response>
+
     [HttpPut("{date}")]
     [ProducesResponseType(typeof(DailyScheduleResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -169,6 +232,150 @@ public class DailySchedulesController : ControllerBase
             }
 
             var result = await _dailyScheduleService.PublishDailyScheduleAsync(scheduleDate);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// /api/admin/daily-schedules/{sourceDate}/copy 複製時刻表
+    /// </summary>
+    /// <remarks>
+    /// 將指定來源日期的時刻表複製到目標日期，用於快速排片。
+    /// 
+    /// **商業規則**：
+    /// 1. 只能複製 OnSale（販售中）狀態的時刻表
+    /// 2. 只能複製到 Draft（草稿）狀態的日期
+    /// 3. 覆蓋模式：會先刪除目標日期的所有舊場次，再複製新場次
+    /// 4. 自動略過檔期不符的場次（電影已下映）
+    /// 
+    /// **範例請求**：
+    /// ```json
+    /// {
+    ///   "targetDate": "2025-12-25"
+    /// }
+    /// ```
+    /// 
+    /// **範例回應**：
+    /// ```json
+    /// {
+    ///   "sourceDate": "2025-12-22",
+    ///   "targetDate": "2025-12-25",
+    ///   "copiedCount": 8,
+    ///   "skippedCount": 2,
+    ///   "message": "部分場次因電影檔期已過期未複製",
+    ///   "targetSchedule": {
+    ///     "scheduleDate": "2025-12-25",
+    ///     "status": "Draft",
+    ///     "showtimes": [ ... ]
+    ///   }
+    /// }
+    /// ```
+    /// </remarks>
+    /// <param name="sourceDate">來源日期，格式：YYYY-MM-DD</param>
+    /// <param name="request">複製請求</param>
+    /// <response code="200">複製成功</response>
+    /// <response code="400">參數錯誤（來源時刻表狀態不是 OnSale、目標時刻表狀態不是 Draft 等）</response>
+    /// <response code="404">來源日期沒有時刻表記錄</response>
+    /// <response code="401">未授權</response>
+    [HttpPost("{sourceDate}/copy")]
+    [ProducesResponseType(typeof(CopyDailyScheduleResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> CopyDailySchedule(
+        [FromRoute] string sourceDate,
+        [FromBody] CopyDailyScheduleRequestDto request)
+    {
+        try
+        {
+            // 解析來源日期
+            if (!DateTime.TryParse(sourceDate, out var parsedSourceDate))
+            {
+                return BadRequest(new { message = "來源日期格式錯誤，必須為 YYYY-MM-DD" });
+            }
+
+            var result = await _dailyScheduleService.CopyDailyScheduleAsync(parsedSourceDate, request);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// /api/admin/daily-schedules/{date}/grouped 取得分組時刻表
+    /// </summary>
+    /// <remarks>
+    /// 取得按電影和影廳類型分組的時刻表資料，用於側邊欄顯示。
+    /// 
+    /// **分組邏輯**：
+    /// 1. 第一層：按電影分組
+    /// 2. 第二層：每部電影下，按影廳類型（Digital、4DX、IMAX）分組
+    /// 3. 每個影廳類型組顯示時間範圍和場次列表
+    /// 
+    /// **資料包含**：
+    /// - 電影海報、名稱、分級（0+/12+/18+）、片長
+    /// - 影廳類型中文顯示（數位/4DX/IMAX）及其時間範圍
+    /// - 具體場次時間
+    /// 
+    /// **範例回應**：
+    /// ```json
+    /// {
+    ///   "scheduleDate": "2025-12-01",
+    ///   "status": "OnSale",
+    ///   "movieShowtimes": [
+    ///     {
+    ///       "movieId": 1,
+    ///       "movieTitle": "雲深不知處",
+    ///       "posterUrl": "https://...",
+    ///       "rating": "G",
+    ///       "ratingDisplay": "0+",
+    ///       "duration": 143,
+    ///       "durationDisplay": "2 小時 23 分鐘",
+    ///       "theaterTypeGroups": [
+    ///         {
+    ///           "theaterType": "Digital",
+    ///           "theaterTypeDisplay": "數位",
+    ///           "timeRange": "09:00 09:45",
+    ///           "showtimes": [
+    ///             { "id": 1, "theaterId": 1, "theaterName": "1廳", "startTime": "09:00", "endTime": "11:23" }
+    ///           ]
+    ///         }
+    ///       ]
+    ///     }
+    ///   ]
+    /// }
+    /// ```
+    /// </remarks>
+    /// <param name="date">時刻表日期，格式：YYYY-MM-DD</param>
+    /// <response code="200">查詢成功</response>
+    /// <response code="400">日期格式錯誤</response>
+    /// <response code="404">該日期沒有時刻表記錄</response>
+    /// <response code="401">未授權</response>
+    [HttpGet("{date}/grouped")]
+    [ProducesResponseType(typeof(GroupedDailyScheduleResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetGroupedDailySchedule([FromRoute] string date)
+    {
+        try
+        {
+            if (!DateTime.TryParse(date, out var scheduleDate))
+            {
+                return BadRequest(new { message = "日期格式錯誤，必須為 YYYY-MM-DD" });
+            }
+
+            var result = await _dailyScheduleService.GetGroupedDailyScheduleAsync(scheduleDate);
             return Ok(result);
         }
         catch (KeyNotFoundException ex)

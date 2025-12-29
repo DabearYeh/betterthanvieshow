@@ -46,4 +46,18 @@ public class DailyScheduleRepository : IDailyScheduleRepository
         
         return schedule;
     }
+
+    /// <inheritdoc />
+    public async Task<List<DailySchedule>> GetByMonthAsync(int year, int month)
+    {
+        // 計算該月份的第一天和最後一天
+        var startDate = new DateTime(year, month, 1);
+        var endDate = startDate.AddMonths(1).AddDays(-1);
+
+        return await _context.DailySchedules
+            .Where(ds => ds.ScheduleDate >= startDate && ds.ScheduleDate <= endDate)
+            .OrderBy(ds => ds.ScheduleDate)
+            .ToListAsync();
+    }
+
 }

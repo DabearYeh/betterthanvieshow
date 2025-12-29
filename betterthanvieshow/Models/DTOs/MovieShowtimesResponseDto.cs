@@ -47,7 +47,7 @@ public class ShowtimeListItemDto
     public string TheaterName { get; set; } = string.Empty;
 
     /// <summary>
-    /// 影廳類型（一般數位、4DX、IMAX）
+    /// 影廳類型（Digital、4DX、IMAX）
     /// </summary>
     /// <example>IMAX</example>
     public string TheaterType { get; set; } = string.Empty;

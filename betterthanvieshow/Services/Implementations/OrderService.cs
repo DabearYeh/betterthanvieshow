@@ -224,7 +224,7 @@ public class OrderService : IOrderService
     {
         return theaterType switch
         {
-            "一般數位" => 300m,
+            "Digital" => 300m,
             "4DX" => 380m,
             "IMAX" => 380m,
             _ => throw new InvalidOperationException($"未知的影廳類型: {theaterType}")

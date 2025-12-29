@@ -59,4 +59,10 @@ public interface IShowtimeRepository
     /// <param name="date">日期</param>
     /// <returns>場次列表</returns>
     Task<List<MovieShowTime>> GetShowtimesByMovieAndDateAsync(int movieId, DateTime date);
+
+    /// <summary>
+    /// 取得指定日期的所有場次（包含電影資訊，用於複製時檢查檔期）
+    /// </summary>
+    /// <param name="showDate">放映日期</param>
+    Task<List<MovieShowTime>> GetByDateWithMovieAsync(DateTime showDate);
 }

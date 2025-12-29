@@ -380,10 +380,10 @@ public class MovieService : IMovieService
 
     {
         if (today < releaseDate.Date)
-            return "即將上映";
+            return "ComingSoon";  // 即將上映
         if (today <= endDate.Date)
-            return "上映中";
-        return "已下映";
+            return "NowShowing";  // 上映中
+        return "OffScreen";       // 已下映
     }
 
     /// <summary>
@@ -532,7 +532,7 @@ public class MovieService : IMovieService
     {
         return theaterType switch
         {
-            "一般數位" => 300,
+            "Digital" => 300,
             "4DX" => 380,
             "IMAX" => 380,
             _ => 300 // 預設價格

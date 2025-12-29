@@ -28,4 +28,28 @@ public interface IDailyScheduleService
     /// <param name="date">時刻表日期</param>
     /// <returns>時刻表資訊及所有場次</returns>
     Task<DailyScheduleResponseDto> GetDailyScheduleAsync(DateTime date);
+
+    /// <summary>
+    /// 獲取月曆概覽
+    /// </summary>
+    /// <param name="year">年份</param>
+    /// <param name="month">月份（1-12）</param>
+    /// <returns>該月份的所有日期狀態</returns>
+    Task<MonthOverviewResponseDto> GetMonthOverviewAsync(int year, int month);
+
+    /// <summary>
+    /// 複製時刻表
+    /// </summary>
+    /// <param name="sourceDate">來源日期</param>
+    /// <param name="dto">複製請求</param>
+    /// <returns>複製結果</returns>
+    Task<CopyDailyScheduleResponseDto> CopyDailyScheduleAsync(DateTime sourceDate, CopyDailyScheduleRequestDto dto);
+
+    /// <summary>
+    /// 取得分組時刻表（用於側邊欄顯示）
+    /// </summary>
+    /// <param name="date">時刻表日期</param>
+    /// <returns>按電影和影廳類型分組的時刻表</returns>
+    Task<GroupedDailyScheduleResponseDto> GetGroupedDailyScheduleAsync(DateTime date);
+
 }
