@@ -55,7 +55,7 @@ public class PaymentsController : ControllerBase
                 ? NotFound(new { message = ex.Message })
                 : BadRequest(new { message = ex.Message });
         }
-        catch (UnauthorizedAccessException ex)
+        catch (UnauthorizedAccessException)
         {
             return Forbid();
         }
@@ -103,7 +103,7 @@ public class PaymentsController : ControllerBase
                 ? NotFound(new { message = ex.Message })
                 : BadRequest(new { message = ex.Message });
         }
-        catch (UnauthorizedAccessException ex)
+        catch (UnauthorizedAccessException)
         {
             return Forbid();
         }
