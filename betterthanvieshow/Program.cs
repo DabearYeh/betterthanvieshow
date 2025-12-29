@@ -73,6 +73,21 @@ builder.Services.AddScoped<IShowtimeService, ShowtimeService>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 
+// LINE Pay 基礎設施
+builder.Services.Configure<betterthanvieshow.Infrastructure.LinePay.LinePayOptions>(
+    builder.Configuration.GetSection("LinePay")
+);
+
+builder.Services.AddHttpClient<betterthanvieshow.Infrastructure.LinePay.LinePayHttpClient>((serviceProvider, client) =>
+{
+    var linePayConfig = serviceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<betterthanvieshow.Infrastructure.LinePay.LinePayOptions>>().Value;
+    client.BaseAddress = new Uri(linePayConfig.ApiBaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
+// 註冊 Payment Service
+builder.Services.AddScoped<IPaymentService, LinePayService>();
+
 // 註冊背景服務
 builder.Services.AddHostedService<betterthanvieshow.Services.Background.ExpiredOrderCleanupService>();
 

@@ -34,4 +34,11 @@ public interface IOrderRepository
     /// <param name="orderNumber">訂單編號</param>
     /// <returns>true 表示存在，false 表示不存在</returns>
     Task<bool> OrderNumberExistsAsync(string orderNumber);
+
+    /// <summary>
+    /// 更新訂單資訊
+    /// </summary>
+    /// <param name="order">訂單實體</param>
+    /// <returns>更新後的訂單實體</returns>
+    Task<Order> UpdateAsync(Order order);
 }

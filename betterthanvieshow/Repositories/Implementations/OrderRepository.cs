@@ -59,4 +59,12 @@ public class OrderRepository : IOrderRepository
         return await _context.Orders
             .AnyAsync(o => o.OrderNumber == orderNumber);
     }
+
+    /// <inheritdoc/>
+    public async Task<Order> UpdateAsync(Order order)
+    {
+        _context.Orders.Update(order);
+        await _context.SaveChangesAsync();
+        return order;
+    }
 }

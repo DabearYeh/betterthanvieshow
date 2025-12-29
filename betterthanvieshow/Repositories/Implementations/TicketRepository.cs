@@ -63,4 +63,30 @@ public class TicketRepository : ITicketRepository
         return await _context.Tickets
             .AnyAsync(t => t.TicketNumber == ticketNumber);
     }
+
+    /// <inheritdoc />
+    public async Task<List<Ticket>> GetByOrderIdAsync(int orderId)
+    {
+        return await _context.Tickets
+            .Where(t => t.OrderId == orderId)
+            .ToListAsync();
+    }
+
+    /// <inheritdoc />
+    public async Task<Ticket> UpdateAsync(Ticket ticket)
+    {
+        _context.Tickets.Update(ticket);
+        await _context.SaveChangesAsync();
+        return ticket;
+    }
+
+    /// <inheritdoc />
+    public async Task<Seat?> GetSeatByTicketIdAsync(int ticketId)
+    {
+        var ticket = await _context.Tickets
+            .Include(t => t.Seat)
+            .FirstOrDefaultAsync(t => t.Id == ticketId);
+        
+        return ticket?.Seat;
+    }
 }

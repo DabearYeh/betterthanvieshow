@@ -42,4 +42,24 @@ public interface ITicketRepository
     /// <param name="ticketNumber">票券編號</param>
     /// <returns>true 表示存在，false 表示不存在</returns>
     Task<bool> TicketNumberExistsAsync(string ticketNumber);
+
+    /// <summary>
+    /// 根據訂單 ID 取得所有票券
+    /// </summary>
+    /// <param name="orderId">訂單 ID</param>
+    /// <returns>票券列表</returns>
+    Task<List<Ticket>> GetByOrderIdAsync(int orderId);
+
+    /// <summary>
+    /// 更新票券資訊
+    /// </summary>
+    /// <param name="ticket">票券實體</param>
+    Task<Ticket> UpdateAsync(Ticket ticket);
+
+    /// <summary>
+    /// 根據票券 ID 取得座位資訊
+    /// </summary>
+    /// <param name="ticketId">票券 ID</param>
+    /// <returns>座位實體（可能為 null）</returns>
+    Task<Seat?> GetSeatByTicketIdAsync(int ticketId);
 }
