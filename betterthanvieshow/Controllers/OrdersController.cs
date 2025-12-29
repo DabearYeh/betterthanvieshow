@@ -12,7 +12,7 @@ namespace betterthanvieshow.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-[Tags("Booking - 訂票流程")]
+[Tags("Orders - 訂單管理")]
 public class OrdersController : ControllerBase
 {
     private readonly IOrderService _orderService;
