@@ -102,10 +102,24 @@ jobs:
         $configPath = "${{ secrets.IIS_SITE_PATH }}\appsettings.Production.json"
         if (Test-Path $configPath) {
           $config = Get-Content $configPath -Raw | ConvertFrom-Json
+          
+          # 1. 更新原本有的連線字串與 JWT
           $config.ConnectionStrings.DefaultConnection = "${{ secrets.AZURE_SQL_CONNECTION_STRING }}"
           $config.JwtSettings.SecretKey = "${{ secrets.JWT_SECRET_KEY }}"
+          
+          # 2. 加入或更新 LinePay 區塊
+          if (-not $config.LinePay) { $config | Add-Member -MemberType NoteProperty -Name "LinePay" -Value @{} }
+          $config.LinePay.ChannelId = "${{ secrets.LINEPAY_CHANNEL_ID }}"
+          $config.LinePay.ChannelSecret = "${{ secrets.LINEPAY_CHANNEL_SECRET }}"
+          $config.LinePay.IsSandbox = $true
+          $config.LinePay.ApiBaseUrl = "https://sandbox-api-pay.line.me"
+          $config.LinePay.FrontendBaseUrl = "https://better-than-vieshow-user.vercel.app"
+          $config.LinePay.ConfirmUrlPath = "/checkout/confirm"
+          $config.LinePay.CancelUrlPath = "/checkout/cancel"
+          
+          # 3. 儲存回檔案
           $config | ConvertTo-Json -Depth 10 | Set-Content $configPath
-          Write-Host "生產環境配置已更新"
+          Write-Host "生產環境配置已更新，包含 LINE Pay 設定"
         }
       shell: powershell
       
