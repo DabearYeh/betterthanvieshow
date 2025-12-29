@@ -315,4 +315,125 @@ public class DailyScheduleService : IDailyScheduleService
         };
     }
 
+    /// <inheritdoc />
+    public async Task<CopyDailyScheduleResponseDto> CopyDailyScheduleAsync(DateTime sourceDate, CopyDailyScheduleRequestDto dto)
+    {
+        // 正規化日期
+        var sourceDateNormalized = sourceDate.Date;
+
+        // 解析目標日期
+        if (!DateTime.TryParse(dto.TargetDate, out var targetDate))
+        {
+            throw new ArgumentException("目標日期格式錯誤，必須為 YYYY-MM-DD");
+        }
+        var targetDateNormalized = targetDate.Date;
+
+        // 開啟交易
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            // 1. 驗證來源時刻表
+            var sourceSchedule = await _dailyScheduleRepository.GetByDateAsync(sourceDateNormalized);
+            if (sourceSchedule == null)
+            {
+                throw new KeyNotFoundException($"來源日期 {sourceDateNormalized:yyyy-MM-dd} 的時刻表不存在");
+            }
+
+            if (sourceSchedule.Status != "OnSale")
+            {
+                throw new ArgumentException("只能複製已販售的時刻表");
+            }
+
+            // 2. 驗證/建立目標時刻表
+            var targetSchedule = await _dailyScheduleRepository.GetByDateAsync(targetDateNormalized);
+
+            if (targetSchedule != null && targetSchedule.Status == "OnSale")
+            {
+                throw new ArgumentException("目標日期必須為草稿狀態");
+            }
+
+            if (targetSchedule == null)
+            {
+                // 建立新的 Draft 狀態時刻表
+                targetSchedule = await _dailyScheduleRepository.CreateAsync(new DailySchedule
+                {
+                    ScheduleDate = targetDateNormalized,
+                    Status = "Draft"
+                });
+            }
+
+            // 3. 刪除目標日期的舊場次（覆蓋模式）
+            await _showtimeRepository.DeleteByDateAsync(targetDateNormalized);
+
+            // 4. 取得來源場次（包含電影資訊）
+            var sourceShowtimes = await _showtimeRepository.GetByDateWithMovieAsync(sourceDateNormalized);
+
+            // 5. 檔期檢查並複製
+            var showtimesToCopy = new List<MovieShowTime>();
+            var skippedCount = 0;
+
+            foreach (var sourceShowtime in sourceShowtimes)
+            {
+                // 檢查電影在目標日期是否仍在檔期內
+                if (sourceShowtime.Movie.ReleaseDate.Date <= targetDateNormalized &&
+                    targetDateNormalized <= sourceShowtime.Movie.EndDate.Date)
+                {
+                    // 在檔期內，加入待複製清單
+                    showtimesToCopy.Add(new MovieShowTime
+                    {
+                        MovieId = sourceShowtime.MovieId,
+                        TheaterId = sourceShowtime.TheaterId,
+                        ShowDate = targetDateNormalized,
+                        StartTime = sourceShowtime.StartTime
+                    });
+                }
+                else
+                {
+                    // 檔期已過，略過
+                    skippedCount++;
+                }
+            }
+
+            // 6. 批次建立新場次
+            if (showtimesToCopy.Any())
+            {
+                await _showtimeRepository.CreateBatchAsync(showtimesToCopy);
+            }
+
+            // 7. 更新目標時刻表的 UpdatedAt
+            targetSchedule.UpdatedAt = DateTime.UtcNow;
+            await _dailyScheduleRepository.UpdateAsync(targetSchedule);
+
+            // 8. 提交交易
+            await transaction.CommitAsync();
+
+            // 9. 載入完整的目標時刻表資料
+            var targetShowtimesWithDetails = await _showtimeRepository.GetByDateWithDetailsAsync(targetDateNormalized);
+            var targetScheduleResponse = BuildDailyScheduleResponse(targetSchedule, targetShowtimesWithDetails);
+
+            // 10. 建立回應
+            var response = new CopyDailyScheduleResponseDto
+            {
+                SourceDate = sourceDateNormalized,
+                TargetDate = targetDateNormalized,
+                CopiedCount = showtimesToCopy.Count,
+                SkippedCount = skippedCount,
+                TargetSchedule = targetScheduleResponse
+            };
+
+            // 如有場次被略過，加入提示訊息
+            if (skippedCount > 0)
+            {
+                response.Message = "部分場次因電影檔期已過期未複製";
+            }
+
+            return response;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+
 }

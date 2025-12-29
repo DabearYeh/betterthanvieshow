@@ -146,4 +146,16 @@ public class ShowtimeRepository : IShowtimeRepository
             .OrderBy(st => st.StartTime)
             .ToListAsync();
     }
+
+    /// <inheritdoc />
+    public async Task<List<MovieShowTime>> GetByDateWithMovieAsync(DateTime showDate)
+    {
+        return await _context.MovieShowTimes
+            .Include(st => st.Movie)
+            .Include(st => st.Theater)
+            .Where(st => st.ShowDate.Date == showDate.Date)
+            .OrderBy(st => st.TheaterId)
+            .ThenBy(st => st.StartTime)
+            .ToListAsync();
+    }
 }

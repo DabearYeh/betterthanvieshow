@@ -239,4 +239,75 @@ public class DailySchedulesController : ControllerBase
             return NotFound(new { message = ex.Message });
         }
     }
+
+    /// <summary>
+    /// /api/admin/daily-schedules/{sourceDate}/copy 複製時刻表
+    /// </summary>
+    /// <remarks>
+    /// 將指定來源日期的時刻表複製到目標日期，用於快速排片。
+    /// 
+    /// **商業規則**：
+    /// 1. 只能複製 OnSale（販售中）狀態的時刻表
+    /// 2. 只能複製到 Draft（草稿）狀態的日期
+    /// 3. 覆蓋模式：會先刪除目標日期的所有舊場次，再複製新場次
+    /// 4. 自動略過檔期不符的場次（電影已下映）
+    /// 
+    /// **範例請求**：
+    /// ```json
+    /// {
+    ///   "targetDate": "2025-12-25"
+    /// }
+    /// ```
+    /// 
+    /// **範例回應**：
+    /// ```json
+    /// {
+    ///   "sourceDate": "2025-12-22",
+    ///   "targetDate": "2025-12-25",
+    ///   "copiedCount": 8,
+    ///   "skippedCount": 2,
+    ///   "message": "部分場次因電影檔期已過期未複製",
+    ///   "targetSchedule": {
+    ///     "scheduleDate": "2025-12-25",
+    ///     "status": "Draft",
+    ///     "showtimes": [ ... ]
+    ///   }
+    /// }
+    /// ```
+    /// </remarks>
+    /// <param name="sourceDate">來源日期，格式：YYYY-MM-DD</param>
+    /// <param name="request">複製請求</param>
+    /// <response code="200">複製成功</response>
+    /// <response code="400">參數錯誤（來源時刻表狀態不是 OnSale、目標時刻表狀態不是 Draft 等）</response>
+    /// <response code="404">來源日期沒有時刻表記錄</response>
+    /// <response code="401">未授權</response>
+    [HttpPost("{sourceDate}/copy")]
+    [ProducesResponseType(typeof(CopyDailyScheduleResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> CopyDailySchedule(
+        [FromRoute] string sourceDate,
+        [FromBody] CopyDailyScheduleRequestDto request)
+    {
+        try
+        {
+            // 解析來源日期
+            if (!DateTime.TryParse(sourceDate, out var parsedSourceDate))
+            {
+                return BadRequest(new { message = "來源日期格式錯誤，必須為 YYYY-MM-DD" });
+            }
+
+            var result = await _dailyScheduleService.CopyDailyScheduleAsync(parsedSourceDate, request);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
 }

@@ -37,4 +37,12 @@ public interface IDailyScheduleService
     /// <returns>該月份的所有日期狀態</returns>
     Task<MonthOverviewResponseDto> GetMonthOverviewAsync(int year, int month);
 
+    /// <summary>
+    /// 複製時刻表
+    /// </summary>
+    /// <param name="sourceDate">來源日期</param>
+    /// <param name="dto">複製請求</param>
+    /// <returns>複製結果</returns>
+    Task<CopyDailyScheduleResponseDto> CopyDailyScheduleAsync(DateTime sourceDate, CopyDailyScheduleRequestDto dto);
+
 }
