@@ -1,0 +1,16 @@
+### 刪除影廳 ID 12 (太陽廳)
+
+# 1. 首先登入取得 Admin Token
+POST https://localhost:7032/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@test.com",
+  "password": "Admin123!"
+}
+
+###
+
+# 2. 刪除影廳 ID 12
+DELETE https://localhost:7032/api/admin/theaters/12
+Authorization: Bearer {{$dotenv ADMIN_TOKEN}}
