@@ -152,7 +152,7 @@ public class OrderService : IOrderService
                 status = "sold" // 在前台視為鎖定
             });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // 廣播失敗不應影響訂單建立
             // TODO: Log error
