@@ -230,4 +230,78 @@ public class OrderService : IOrderService
             _ => throw new InvalidOperationException($"未知的影廳類型: {theaterType}")
         };
     }
+
+    /// <inheritdoc/>
+    public async Task<OrderDetailResponseDto?> GetOrderDetailAsync(int orderId, int userId)
+    {
+        // 取得完整訂單資料
+        var order = await _orderRepository.GetByIdAsync(orderId);
+
+        //檢查訂單是否存在
+        if (order == null)
+        {
+            return null;
+        }
+
+        // 權限驗證：使用者只能查看自己的訂單
+        if (order.UserId != userId)
+        {
+            return null;
+        }
+
+        // 組裝 DTO
+        var response = new OrderDetailResponseDto
+        {
+            OrderId = order.Id,
+            OrderNumber = order.OrderNumber,
+            Status = order.Status,
+            ExpiresAt = order.ExpiresAt,
+            Movie = new OrderMovieInfoDto
+            {
+                Title = order.ShowTime.Movie.Title,
+                Rating = order.ShowTime.Movie.Rating,
+                Duration = order.ShowTime.Movie.Duration,
+                PosterUrl = order.ShowTime.Movie.PosterUrl
+            },
+            Showtime = new OrderShowtimeInfoDto
+            {
+                Date = order.ShowTime.ShowDate.ToString("yyyy-MM-dd"),
+                StartTime = order.ShowTime.StartTime.ToString(@"hh\:mm"),
+                DayOfWeek = GetChineseDayOfWeek(order.ShowTime.ShowDate)
+            },
+            Theater = new OrderTheaterInfoDto
+            {
+                Name = order.ShowTime.Theater.Name,
+                Type = order.ShowTime.Theater.Type
+            },
+            Seats = order.Tickets.Select(t => new SeatInfoDto
+            {
+                SeatId = t.Seat.Id,
+                RowName = t.Seat.RowName,
+                ColumnNumber = t.Seat.ColumnNumber,
+                TicketNumber = t.TicketNumber
+            }).ToList(),
+            TotalAmount = order.TotalPrice
+        };
+
+        return response;
+    }
+
+    /// <summary>
+    /// 取得中文星期幾
+    /// </summary>
+    private string GetChineseDayOfWeek(DateTime date)
+    {
+        return date.DayOfWeek switch
+        {
+            DayOfWeek.Sunday => "日",
+            DayOfWeek.Monday => "一",
+            DayOfWeek.Tuesday => "二",
+            DayOfWeek.Wednesday => "三",
+            DayOfWeek.Thursday => "四",
+            DayOfWeek.Friday => "五",
+            DayOfWeek.Saturday => "六",
+            _ => ""
+        };
+    }
 }

@@ -192,4 +192,70 @@ public class OrdersController : ControllerBase
             ));
         }
     }
+
+    /// <summary>
+    /// GET /api/orders/{id} 取得訂單詳情
+    /// </summary>
+    /// <remarks>
+    /// 此端點用於訂票流程的第五步：訂單確認與支付選擇頁面。
+    /// 
+    /// 使用者在完成訂位後將跳轉至此頁面，顯示完整訂單資訊、倒數計時與支付方式選擇。
+    /// 
+    /// **安全性**：
+    /// - 需要 JWT Token 認證
+    /// - 使用者只能查詢自己的訂單
+    /// 
+    /// **回應資料包含**：
+    /// - 訂單基本資訊（訂單編號、狀態、過期時間）
+    /// - 電影資訊（片名、分級、片長、海報）
+    /// - 場次資訊（日期、時間、星期幾）
+    /// - 影廳資訊（影廳名稱、類型）
+    /// - 座位與票券列表
+    /// - 應付總額
+    /// </remarks>
+    /// <param name="id">訂單 ID</param>
+    /// <response code="200">成功取得訂單詳情</response>
+    /// <response code="401">未登入</response>
+    /// <response code="403">無權查看此訂單（不是自己的訂單）</response>
+    /// <response code="404">訂單不存在</response>
+    /// <response code="500">伺服器內部錯誤</response>
+    [HttpGet("{id}")]
+    [Authorize]
+    [ProducesResponseType(typeof(ApiResponse<OrderDetailResponseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetOrderDetail(int id)
+    {
+        try
+        {
+            // 從 JWT Token 取得使用者 ID
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+            {
+                return Unauthorized(ApiResponse<object>.FailureResponse("無效的使用者身份"));
+            }
+
+            // 取得訂單詳情
+            var orderDetail = await _orderService.GetOrderDetailAsync(id, userId);
+
+            if (orderDetail == null)
+            {
+                // Service 回傳 null 可能是訂單不存在或無權查看
+                // 為了安全性，統一回傳 404（避免透露訂單是否存在）
+                return NotFound(ApiResponse<object>.FailureResponse("找不到指定的訂單"));
+            }
+
+            return Ok(ApiResponse<OrderDetailResponseDto>.SuccessResponse(
+                orderDetail,
+                "成功取得訂單詳情"
+            ));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "取得訂單 {OrderId} 詳情時發生錯誤", id);
+            return StatusCode(500, ApiResponse<object>.FailureResponse("伺服器錯誤，請稍後再試"));
+        }
+    }
 }
