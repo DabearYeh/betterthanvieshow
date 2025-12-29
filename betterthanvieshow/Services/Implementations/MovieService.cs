@@ -532,7 +532,7 @@ public class MovieService : IMovieService
     {
         return theaterType switch
         {
-            "一般數位" => 300,
+            "Digital" => 300,
             "4DX" => 380,
             "IMAX" => 380,
             _ => 300 // 預設價格

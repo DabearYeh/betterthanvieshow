@@ -24,7 +24,7 @@ public class Theater
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
-    /// 影廳類型：一般數位（300元）、4DX（380元）、IMAX（380元）
+    /// 影廳類型：Digital（300元）、4DX（380元）、IMAX（380元）
     /// </summary>
     [Required]
     [MaxLength(50)]

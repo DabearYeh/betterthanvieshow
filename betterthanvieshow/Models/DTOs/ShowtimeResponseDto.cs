@@ -43,7 +43,7 @@ public class ShowtimeResponseDto
     /// <summary>
     /// 影廳類型
     /// </summary>
-    /// <example>一般數位</example>
+    /// <example>Digital</example>
     public string TheaterType { get; set; } = string.Empty;
 
     /// <summary>

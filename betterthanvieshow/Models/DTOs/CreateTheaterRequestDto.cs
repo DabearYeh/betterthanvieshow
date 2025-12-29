@@ -16,7 +16,7 @@ public class CreateTheaterRequestDto
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
-    /// 影廳類型：一般數位、4DX、IMAX
+    /// 影廳類型:Digital、4DX、IMAX
     /// </summary>
     /// <example>IMAX</example>
     [Required(ErrorMessage = "影廳類型為必填")]

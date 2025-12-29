@@ -20,7 +20,7 @@ public class TheaterResponseDto
     /// <summary>
     /// 影廳類型
     /// </summary>
-    /// <example>一般數位</example>
+    /// <example>Digital</example>
     public string Type { get; set; } = string.Empty;
 
     /// <summary>
