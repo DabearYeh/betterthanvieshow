@@ -26,4 +26,12 @@ public class SeatRepository : ISeatRepository
             .ThenBy(s => s.ColumnNumber)
             .ToListAsync();
     }
+
+    /// <inheritdoc />
+    public async Task<List<Seat>> GetByIdsAsync(List<int> seatIds)
+    {
+        return await _context.Seats
+            .Where(s => seatIds.Contains(s.Id))
+            .ToListAsync();
+    }
 }

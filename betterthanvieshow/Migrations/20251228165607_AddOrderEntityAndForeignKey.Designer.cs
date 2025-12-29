@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using betterthanvieshow.Data;
 
@@ -11,9 +12,11 @@ using betterthanvieshow.Data;
 namespace betterthanvieshow.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251228165607_AddOrderEntityAndForeignKey")]
+    partial class AddOrderEntityAndForeignKey
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -204,7 +207,7 @@ namespace betterthanvieshow.Migrations
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)")
-                        .HasDefaultValue("Pending");
+                        .HasDefaultValue("未付款");
 
                     b.Property<int>("TicketCount")
                         .HasColumnType("int");
@@ -227,7 +230,7 @@ namespace betterthanvieshow.Migrations
 
                     b.ToTable("Order", t =>
                         {
-                            t.HasCheckConstraint("CHK_Order_Status", "[Status] IN ('Pending', 'Paid', 'Cancelled')");
+                            t.HasCheckConstraint("CHK_Order_Status", "[Status] IN ('未付款', '已付款', '已取消')");
 
                             t.HasCheckConstraint("CHK_Order_TicketCount", "[TicketCount] >= 1 AND [TicketCount] <= 6");
 
@@ -341,7 +344,7 @@ namespace betterthanvieshow.Migrations
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)")
-                        .HasDefaultValue("Pending");
+                        .HasDefaultValue("待支付");
 
                     b.Property<string>("TicketNumber")
                         .IsRequired()
@@ -363,7 +366,7 @@ namespace betterthanvieshow.Migrations
 
                     b.ToTable("Ticket", t =>
                         {
-                            t.HasCheckConstraint("CHK_Ticket_Status", "[Status] IN ('Pending', 'Unused', 'Used', 'Expired')");
+                            t.HasCheckConstraint("CHK_Ticket_Status", "[Status] IN ('待支付', '未使用', '已使用', '已過期')");
                         });
                 });
 

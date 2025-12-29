@@ -52,7 +52,7 @@ public class Ticket
     /// </summary>
     [Required]
     [MaxLength(20)]
-    public string Status { get; set; } = "待支付";
+    public string Status { get; set; } = "Pending";
 
     /// <summary>
     /// 票價，根據該場次所屬影廳類型決定
@@ -61,6 +61,12 @@ public class Ticket
     public decimal Price { get; set; }
 
     // Navigation Properties
+
+    /// <summary>
+    /// 關聯的訂單
+    /// </summary>
+    [ForeignKey("OrderId")]
+    public virtual Order Order { get; set; } = null!;
 
     /// <summary>
     /// 關聯的場次

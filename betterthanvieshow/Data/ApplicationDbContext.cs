@@ -48,6 +48,11 @@ public class ApplicationDbContext : DbContext
     /// </summary>
     public DbSet<Ticket> Tickets { get; set; }
 
+    /// <summary>
+    /// 訂單資料集
+    /// </summary>
+    public DbSet<Order> Orders { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -213,6 +218,12 @@ public class ApplicationDbContext : DbContext
                 .IsUnique()
                 .HasDatabaseName("IX_Ticket_TicketNumber");
 
+            // 外鍵設定 - 訂單
+            entity.HasOne(e => e.Order)
+                .WithMany(o => o.Tickets)
+                .HasForeignKey(e => e.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             // 外鍵設定 - 場次
             entity.HasOne(e => e.ShowTime)
                 .WithMany()
@@ -227,18 +238,68 @@ public class ApplicationDbContext : DbContext
 
             // 狀態預設值
             entity.Property(e => e.Status)
-                .HasDefaultValue("待支付");
+                .HasDefaultValue("Pending");
 
             // 狀態檢查約束
             entity.ToTable(t => t.HasCheckConstraint(
                 "CHK_Ticket_Status",
-                "[Status] IN ('待支付', '未使用', '已使用', '已過期')"
+                "[Status] IN ('Pending', 'Unused', 'Used', 'Expired')"
             ));
 
             // 唯一約束：同一場次同一座位只能有一張有效票券
             // 注意：這個約束可能需要在應用層實作，因為「有效」的定義包含多個狀態
             entity.HasIndex(e => new { e.ShowTimeId, e.SeatId })
                 .HasDatabaseName("IX_Ticket_ShowTime_Seat");
+        });
+
+        // Order 實體配置
+        modelBuilder.Entity<Order>(entity =>
+        {
+            // 主鍵
+            entity.HasKey(e => e.Id);
+
+            // 訂單編號唯一索引
+            entity.HasIndex(e => e.OrderNumber)
+                .IsUnique()
+                .HasDatabaseName("IX_Order_OrderNumber");
+
+            // 外鍵設定 - 使用者
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // 外鍵設定 - 場次
+            entity.HasOne(e => e.ShowTime)
+                .WithMany()
+                .HasForeignKey(e => e.ShowTimeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // 建立時間預設值
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("GETDATE()");
+
+            // 狀態預設值
+            entity.Property(e => e.Status)
+                .HasDefaultValue("Pending");
+
+            // 狀態檢查約束
+            entity.ToTable(t => t.HasCheckConstraint(
+                "CHK_Order_Status",
+                "[Status] IN ('Pending', 'Paid', 'Cancelled')"
+            ));
+
+            // 票券數量檢查約束
+            entity.ToTable(t => t.HasCheckConstraint(
+                "CHK_Order_TicketCount",
+                "[TicketCount] >= 1 AND [TicketCount] <= 6"
+            ));
+
+            // 總金額檢查約束
+            entity.ToTable(t => t.HasCheckConstraint(
+                "CHK_Order_TotalPrice",
+                "[TotalPrice] >= 0"
+            ));
         });
 
     }
