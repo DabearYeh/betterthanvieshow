@@ -57,6 +57,13 @@ public interface ITheaterRepository
     Task<bool> ExistsAsync(int id);
 
     /// <summary>
+    /// 檢查影廳是否有關聯的場次
+    /// </summary>
+    /// <param name="id">影廳 ID</param>
+    /// <returns>有場次回傳 true，否則回傳 false</returns>
+    Task<bool> HasShowtimesAsync(int id);
+
+    /// <summary>
     /// 刪除影廳及其所有座位
     /// </summary>
     /// <param name="id">影廳 ID</param>

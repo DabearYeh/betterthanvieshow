@@ -195,15 +195,14 @@ public class TheaterService : ITheaterService
                 );
             }
 
-            // TODO: 未來需要檢查是否有關聯的場次 (MovieShowTime)
-            // 當 MovieShowTime 實體建立後，添加以下檢查：
-            // var hasShowtimes = await _showtimeRepository.HasTheaterShowtimesAsync(id);
-            // if (hasShowtimes)
-            // {
-            //     return ApiResponse<object>.FailureResponse(
-            //         "影廳目前有場次安排，無法刪除"
-            //     );
-            // }
+            // 檢查是否有關聯的場次 (MovieShowTime)
+            var hasShowtimes = await _theaterRepository.HasShowtimesAsync(id);
+            if (hasShowtimes)
+            {
+                return ApiResponse<object>.FailureResponse(
+                    "影廳目前有場次安排，無法刪除"
+                );
+            }
 
             // 刪除影廳及其座位
             await _theaterRepository.DeleteAsync(id);
