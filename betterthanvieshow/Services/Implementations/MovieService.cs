@@ -380,10 +380,10 @@ public class MovieService : IMovieService
 
     {
         if (today < releaseDate.Date)
-            return "即將上映";
+            return "ComingSoon";  // 即將上映
         if (today <= endDate.Date)
-            return "上映中";
-        return "已下映";
+            return "NowShowing";  // 上映中
+        return "OffScreen";       // 已下映
     }
 
     /// <summary>

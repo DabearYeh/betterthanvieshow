@@ -49,8 +49,11 @@ public class MovieListItemDto
     public DateTime EndDate { get; set; }
 
     /// <summary>
-    /// 上映狀態：即將上映、上映中、已下映
+    /// 上映狀態：
+    /// - ComingSoon（即將上映）
+    /// - NowShowing（上映中）
+    /// - OffScreen（已下映）
     /// </summary>
-    /// <example>上映中</example>
+    /// <example>NowShowing</example>
     public string Status { get; set; } = string.Empty;
 }
