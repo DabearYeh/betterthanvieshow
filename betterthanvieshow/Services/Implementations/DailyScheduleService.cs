@@ -474,8 +474,8 @@ public class DailyScheduleService : IDailyScheduleService
                             .ToList();
 
                         // 計算時間範圍
-                        var minStartTime = showtimesList.Min(s => s.StartTime);
-                        var maxEndTime = showtimesList.Max(s => s.EndTime);
+                        var minStartTime = showtimesList.Min(s => s.StartTime) ?? string.Empty;
+                        var maxEndTime = showtimesList.Max(s => s.EndTime) ?? string.Empty;
                         var timeRange = minStartTime == maxEndTime ? minStartTime : $"{minStartTime} {maxEndTime}";
 
                         return new TheaterTypeGroupDto
