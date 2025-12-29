@@ -41,9 +41,18 @@ public class ShowtimesController : ControllerBase
     /// - 已售出座位包含「待支付」狀態的票券，表示該座位已被鎖定
     /// 
     /// **WebSocket 整合**：
-    /// - 前端在進入此頁面後應連接到 SignalR Hub (`/hub/showtime`)
-    /// - 加入場次房間以接收即時座位狀態更新
-    /// - 當其他用戶訂票時會收到 `SeatStatusChanged` 事件
+    /// - 前端在進入此頁面後應連接到 SignalR Hub (`/hub/showtime`)。
+    /// - 連線後呼叫 `JoinShowtime(showtimeId)` 加入該場次的即時更新群組。
+    /// - 當座位狀態變更（有人訂位或訂位過期釋放）時，會收到 `SeatStatusChanged` 事件。
+    /// 
+    /// **事件資料格式**：
+    /// ```json
+    /// {
+    ///   "showtimeId": 7,
+    ///   "seatIds": [1, 2],
+    ///   "status": "sold"  // 或 "available"
+    /// }
+    /// ```
     /// 
     /// **回應資料包含**：
     /// - 場次和電影資訊

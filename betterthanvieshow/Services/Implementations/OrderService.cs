@@ -3,6 +3,8 @@ using betterthanvieshow.Models.Entities;
 using betterthanvieshow.Repositories.Interfaces;
 using betterthanvieshow.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.SignalR;
+using betterthanvieshow.Hubs;
 
 namespace betterthanvieshow.Services.Implementations;
 
@@ -16,19 +18,22 @@ public class OrderService : IOrderService
     private readonly IShowtimeRepository _showtimeRepository;
     private readonly IDailyScheduleRepository _dailyScheduleRepository;
     private readonly ISeatRepository _seatRepository;
+    private readonly IHubContext<ShowtimeHub> _hubContext;
 
     public OrderService(
         IOrderRepository orderRepository,
         ITicketRepository ticketRepository,
         IShowtimeRepository showtimeRepository,
         IDailyScheduleRepository dailyScheduleRepository,
-        ISeatRepository seatRepository)
+        ISeatRepository seatRepository,
+        IHubContext<ShowtimeHub> hubContext)
     {
         _orderRepository = orderRepository;
         _ticketRepository = ticketRepository;
         _showtimeRepository = showtimeRepository;
         _dailyScheduleRepository = dailyScheduleRepository;
         _seatRepository = seatRepository;
+        _hubContext = hubContext;
     }
 
     /// <inheritdoc/>
@@ -135,7 +140,24 @@ public class OrderService : IOrderService
                 };
             }).ToList()
         };
-
+        
+        // 11. 廣播座位狀態更新 (SignalR)
+        try
+        {
+            var roomName = $"showtime_{request.ShowTimeId}";
+            await _hubContext.Clients.Group(roomName).SendAsync("SeatStatusChanged", new
+            {
+                showtimeId = request.ShowTimeId,
+                seatIds = request.SeatIds,
+                status = "sold" // 在前台視為鎖定
+            });
+        }
+        catch (Exception ex)
+        {
+            // 廣播失敗不應影響訂單建立
+            // TODO: Log error
+        }
+        
         return response;
     }
 

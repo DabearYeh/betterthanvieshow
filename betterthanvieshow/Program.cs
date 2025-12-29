@@ -73,6 +73,10 @@ builder.Services.AddScoped<IShowtimeService, ShowtimeService>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 
+// 註冊背景服務
+builder.Services.AddHostedService<betterthanvieshow.Services.Background.ExpiredOrderCleanupService>();
+
+
 
 // 配置 SignalR
 builder.Services.AddSignalR();

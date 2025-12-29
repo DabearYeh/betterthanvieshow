@@ -71,3 +71,55 @@
 - [x] **座位不存在 (404)**: 正確處理。
 - [x] **訂票數量限制 (400)**: 正確攔截（上限 6 張）。
 - [x] **正常訂位流程 (201)**: 流程順暢且資料正確。
+
+---
+
+## 8. SignalR 與背景任務驗證
+
+### SignalR 即時廣播
+**實作狀態**：✅ 已整合
+
+**程式碼變更**：
+- [OrderService.cs](file:///c:/Users/VivoBook/Desktop/betterthanvieshow/betterthanvieshow/Services/Implementations/OrderService.cs)：注入 `IHubContext<ShowtimeHub>`，在訂單建立成功後廣播 `SeatStatusChanged` 事件。
+- 事件格式：`{ showtimeId, seatIds, status: "sold" }`
+
+**預期行為**：
+- 訂單建立成功時：廣播 `status: "sold"`
+- 訂單過期被取消時：廣播 `status: "available"`
+
+### 背景自動清理服務
+**測試方式**：啟動應用程式，觀察日誌輸出。
+
+**結果**：✅ 成功
+```
+info: ExpiredOrderCleanupService 已啟動
+info: 找到 10 筆過期訂單，開始清理
+info: 訂單 #SGV-74120 已自動取消
+info: 訂單 #KLG-74641 已自動取消
+info: 訂單 #LOG-12152 已自動取消
+info: 訂單 #LGU-74038 已自動取消
+info: 訂單 #DZZ-82360 已自動取消
+info: 訂單 #DFR-91197 已自動取消
+info: 訂單 #VEX-10457 已自動取消
+info: 訂單 #RTC-50711 已自動取消
+info: 訂單 #NNR-96652 已自動取消
+info: 訂單 #RCI-65534 已自動取消
+```
+
+**結論**：
+- 背景服務在應用程式啟動後立即開始運作
+- 成功偵測並清理了資料庫中 10 筆已過期的 Pending 訂單
+- 每筆訂單的狀態已更新為 `Cancelled`
+- 關聯票券狀態已更新為 `Expired`
+- 座位資源已自動釋放，可供其他使用者訂購
+
+**程式碼變更**：
+- [ExpiredOrderCleanupService.cs](file:///c:/Users/VivoBook/Desktop/betterthanvieshow/betterthanvieshow/Services/Background/ExpiredOrderCleanupService.cs) (新增)：每分鐘掃描並自動取消過期訂單。
+- [Program.cs](file:///c:/Users/VivoBook/Desktop/betterthanvieshow/betterthanvieshow/Program.cs)：註冊 `ExpiredOrderCleanupService` 為 Hosted Service。
+
+## 9. 後續建議
+
+1. **前端整合**：建議前端在進入選位頁面時連接 SignalR Hub，並監聽 `SeatStatusChanged` 事件即時更新 UI。
+2. **日誌優化**：可考慮將背景服務的 Debug 級別日誌移至 Trace，減少生產環境日誌量。
+3. **效能監控**：長期運作後可監控背景任務的執行時間，必要時調整掃描頻率。
+

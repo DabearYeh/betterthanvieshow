@@ -28,6 +28,7 @@ public class OrdersController : ControllerBase
     /// /api/orders 創建訂單
     /// </summary>
     /// <remarks>
+    /// 此端點用於訂票流程的第四步：創建訂單。
     /// 使用者選擇座位後，點擊「確認訂單」按鈕創建訂單。系統將鎖定座位並開始 5 分鐘倒計時。
     /// 
     /// **前置條件**：
@@ -35,6 +36,9 @@ public class OrdersController : ControllerBase
     /// - 場次日期的時刻表狀態必須為 OnSale
     /// - 座位必須存在且未被訂購
     /// - 座位數量必須在 1-6 範圍內
+    /// 
+    /// **即時更新**：
+    /// - 訂單建立成功後，系統會透過 SignalR 廣播 `SeatStatusChanged` 事件給同場次的所有使用者，將狀態更新為 `sold`。
     /// 
     /// **請求範例 (JSON)**：
     /// ```json
