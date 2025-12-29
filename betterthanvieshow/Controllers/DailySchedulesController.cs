@@ -22,6 +22,68 @@ public class DailySchedulesController : ControllerBase
     }
 
     /// <summary>
+    /// /api/admin/daily-schedules/month-overview 獲取月曆概覽
+    /// </summary>
+    /// <remarks>
+    /// 查詢指定月份中所有有時刻表記錄的日期及其狀態。
+    /// 
+    /// **用途**：
+    /// - 前端顯示月曆介面，標註不同狀態的日期
+    /// - 黃點：狀態為 OnSale（販售中）
+    /// - 灰點：狀態為 Draft（草稿）
+    /// - 無點：該日期沒有時刻表記錄（不在回傳資料中）
+    /// 
+    /// **回傳資料**：
+    /// - 只返回有 DailySchedule 記錄的日期
+    /// - 沒有記錄的日期不回傳，由前端判斷為無點
+    /// 
+    /// **範例請求**：
+    /// ```
+    /// GET /api/admin/daily-schedules/month-overview?year=2025&amp;month=12
+    /// ```
+    /// 
+    /// **範例回應**：
+    /// ```json
+    /// {
+    ///   "year": 2025,
+    ///   "month": 12,
+    ///   "dates": [
+    ///     { "date": "2025-12-01", "status": "OnSale" },
+    ///     { "date": "2025-12-10", "status": "Draft" },
+    ///     { "date": "2025-12-25", "status": "OnSale" }
+    ///   ]
+    /// }
+    /// ```
+    /// </remarks>
+    /// <param name="year">年份（例如：2025）</param>
+    /// <param name="month">月份（1-12）</param>
+    /// <response code="200">查詢成功</response>
+    /// <response code="400">參數錯誤（年份或月份不合法）</response>
+    /// <response code="401">未授權</response>
+    [HttpGet("month-overview")]
+    [ProducesResponseType(typeof(MonthOverviewResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetMonthOverview(
+        [FromQuery] int year,
+        [FromQuery] int month)
+    {
+        // 參數驗證
+        if (year < 2000 || year > 2100)
+        {
+            return BadRequest(new { message = "年份必須在 2000 到 2100 之間" });
+        }
+
+        if (month < 1 || month > 12)
+        {
+            return BadRequest(new { message = "月份必須在 1 到 12 之間" });
+        }
+
+        var result = await _dailyScheduleService.GetMonthOverviewAsync(year, month);
+        return Ok(result);
+    }
+
+    /// <summary>
     /// /api/admin/daily-schedules/{date} 儲存每日時刻表
     /// </summary>
     /// <remarks>
@@ -55,6 +117,7 @@ public class DailySchedulesController : ControllerBase
     /// <response code="401">未授權</response>
     /// <response code="403">該日期已開始販售，無法修改</response>
     /// <response code="409">場次時間衝突</response>
+
     [HttpPut("{date}")]
     [ProducesResponseType(typeof(DailyScheduleResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

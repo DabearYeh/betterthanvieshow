@@ -28,4 +28,13 @@ public interface IDailyScheduleService
     /// <param name="date">時刻表日期</param>
     /// <returns>時刻表資訊及所有場次</returns>
     Task<DailyScheduleResponseDto> GetDailyScheduleAsync(DateTime date);
+
+    /// <summary>
+    /// 獲取月曆概覽
+    /// </summary>
+    /// <param name="year">年份</param>
+    /// <param name="month">月份（1-12）</param>
+    /// <returns>該月份的所有日期狀態</returns>
+    Task<MonthOverviewResponseDto> GetMonthOverviewAsync(int year, int month);
+
 }

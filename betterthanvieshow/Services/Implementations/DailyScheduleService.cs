@@ -293,4 +293,26 @@ public class DailyScheduleService : IDailyScheduleService
         // 3. 建立並返回回應
         return BuildDailyScheduleResponse(dailySchedule, showtimes);
     }
+
+    /// <inheritdoc />
+    public async Task<MonthOverviewResponseDto> GetMonthOverviewAsync(int year, int month)
+    {
+        // 從 Repository 獲取該月份的所有時刻表
+        var schedules = await _dailyScheduleRepository.GetByMonthAsync(year, month);
+
+        // 轉換為 DTO
+        var dates = schedules.Select(s => new DailyScheduleStatusDto
+        {
+            Date = s.ScheduleDate.ToString("yyyy-MM-dd"),
+            Status = s.Status
+        }).ToList();
+
+        return new MonthOverviewResponseDto
+        {
+            Year = year,
+            Month = month,
+            Dates = dates
+        };
+    }
+
 }

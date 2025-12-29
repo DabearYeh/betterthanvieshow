@@ -1,0 +1,130 @@
+@baseUrl = http://localhost:5041
+
+### ========================================
+### 前置作業：取得 Admin Token
+### ========================================
+
+### 1. Admin 登入取得 Token
+# @name adminLogin
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "Admin123456!"
+}
+
+###
+
+@adminToken = {{adminLogin.response.body.data.token}}
+
+### ========================================
+### API: GET /api/admin/daily-schedules/month-overview
+### 測試月曆概覽 API
+### ========================================
+
+### 測試案例 1：查詢有資料的月份（成功）
+# @name getMonthOverviewSuccess
+# 預期結果：
+# - Status: 200 OK
+# - 回傳該月份所有有時刻表的日期及狀態
+GET {{baseUrl}}/api/admin/daily-schedules/month-overview?year=2025&month=12
+Authorization: Bearer {{adminToken}}
+
+###
+
+### 測試案例 2：查詢沒有資料的月份（空資料）
+# @name getMonthOverviewEmpty
+# 預期結果：
+# - Status: 200 OK
+# - dates 為空陣列
+GET {{baseUrl}}/api/admin/daily-schedules/month-overview?year=2026&month=1
+Authorization: Bearer {{adminToken}}
+
+###
+
+### 測試案例 3：參數驗證 - 非法年份（應返回 400）
+# @name getMonthOverviewInvalidYear
+# 預期結果：
+# - Status: 400 Bad Request
+# - message: "年份必須在 2000 到 2100 之間"
+GET {{baseUrl}}/api/admin/daily-schedules/month-overview?year=1999&month=12
+Authorization: Bearer {{adminToken}}
+
+###
+
+### 測試案例 4：參數驗證 - 年份超出上限（應返回 400）
+# @name getMonthOverviewYearTooLarge
+# 預期結果：
+# - Status: 400 Bad Request
+# - message: "年份必須在 2000 到 2100 之間"
+GET {{baseUrl}}/api/admin/daily-schedules/month-overview?year=2101&month=12
+Authorization: Bearer {{adminToken}}
+
+###
+
+### 測試案例 5：參數驗證 - 非法月份（應返回 400）
+# @name getMonthOverviewInvalidMonth
+# 預期結果：
+# - Status: 400 Bad Request
+# - message: "月份必須在 1 到 12 之間"
+GET {{baseUrl}}/api/admin/daily-schedules/month-overview?year=2025&month=13
+Authorization: Bearer {{adminToken}}
+
+###
+
+### 測試案例 6：參數驗證 - 月份為 0（應返回 400）
+# @name getMonthOverviewMonthZero
+# 預期結果：
+# - Status: 400 Bad Request
+# - message: "月份必須在 1 到 12 之間"
+GET {{baseUrl}}/api/admin/daily-schedules/month-overview?year=2025&month=0
+Authorization: Bearer {{adminToken}}
+
+###
+
+### 測試案例 7：未授權訪問（應返回 401）
+# @name getMonthOverviewUnauthorized
+# 預期結果：
+# - Status: 401 Unauthorized
+GET {{baseUrl}}/api/admin/daily-schedules/month-overview?year=2025&month=12
+
+###
+
+### 測試案例 8：查詢當前月份
+# @name getMonthOverviewCurrentMonth
+# 預期結果：
+# - Status: 200 OK
+# - 回傳當前月份的時刻表資料
+GET {{baseUrl}}/api/admin/daily-schedules/month-overview?year=2025&month=12
+Authorization: Bearer {{adminToken}}
+
+###
+
+### 測試案例 9：查詢特定月份並驗證日期排序
+# @name getMonthOverviewOrdering
+# 預期結果：
+# - Status: 200 OK
+# - dates 按日期升序排列
+GET {{baseUrl}}/api/admin/daily-schedules/month-overview?year=2025&month=12
+Authorization: Bearer {{adminToken}}
+
+###
+
+### 測試案例 10：查詢邊界月份（1月）
+# @name getMonthOverviewJanuary
+# 預期結果：
+# - Status: 200 OK
+GET {{baseUrl}}/api/admin/daily-schedules/month-overview?year=2025&month=1
+Authorization: Bearer {{adminToken}}
+
+###
+
+### 測試案例 11：查詢邊界月份（12月）
+# @name getMonthOverviewDecember
+# 預期結果：
+# - Status: 200 OK
+GET {{baseUrl}}/api/admin/daily-schedules/month-overview?year=2025&month=12
+Authorization: Bearer {{adminToken}}
+
+###

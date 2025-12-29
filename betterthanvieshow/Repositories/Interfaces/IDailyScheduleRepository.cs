@@ -22,4 +22,13 @@ public interface IDailyScheduleRepository
     /// 更新每日時刻表
     /// </summary>
     Task<DailySchedule> UpdateAsync(DailySchedule schedule);
+
+    /// <summary>
+    /// 獲取指定月份的所有時刻表
+    /// </summary>
+    /// <param name="year">年份</param>
+    /// <param name="month">月份（1-12）</param>
+    /// <returns>該月份的所有時刻表記錄</returns>
+    Task<List<DailySchedule>> GetByMonthAsync(int year, int month);
+
 }
