@@ -480,8 +480,8 @@ public class DailyScheduleService : IDailyScheduleService
 
                         return new TheaterTypeGroupDto
                         {
-                            TheaterType = typeGroup.Key,
-                            TheaterTypeDisplay = ConvertTheaterTypeToDisplay(typeGroup.Key),
+                            TheaterType = typeGroup.Key ?? string.Empty,
+                            TheaterTypeDisplay = ConvertTheaterTypeToDisplay(typeGroup.Key ?? string.Empty),
                             TimeRange = timeRange,
                             Showtimes = showtimesList
                         };
