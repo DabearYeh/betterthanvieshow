@@ -300,7 +300,7 @@ public class OrdersController : ControllerBase
     }
 
     /// <summary>
-    /// GET /api/orders/mine 取得我的訂單（歷史紀錄）
+    /// GET /api/orders 取得所有訂單
     /// </summary>
     /// <remarks>
     /// 取得當前使用者的所有訂單，包含未付款、已付款、已取消的訂單。
@@ -334,7 +334,7 @@ public class OrdersController : ControllerBase
     /// <response code="200">成功取得訂單列表</response>
     /// <response code="401">未登入</response>
     /// <response code="500">伺服器內部錯誤</response>
-    [HttpGet("mine")]
+    [HttpGet]
     [Authorize]
     [ProducesResponseType(typeof(ApiResponse<List<OrderHistoryResponseDto>>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]

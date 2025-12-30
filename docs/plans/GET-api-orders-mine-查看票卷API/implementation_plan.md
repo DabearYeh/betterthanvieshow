@@ -1,7 +1,7 @@
 # 查看票卷 API (My Tickets) 實作計畫
 
 ## 目標
-實作 `GET /api/orders/mine` API，允許使用者查詢自己的訂單歷史紀錄（我的票卷）。
+實作 `GET /api/orders` API，允許使用者查詢自己的訂單歷史紀錄（我的票卷）。
 
 ## 實作細節
 
@@ -33,7 +33,7 @@
 
 ### 4. Controller 層
 - **OrdersController**:
-    - 新增 `GET /api/orders/mine` 端點。
+    - 新增 `GET /api/orders` 端點。
     - 設定 `[Authorize]` 確保僅登入使用者可存取。
     - 從使用者 Token 解析 `OrderId` 並呼叫 Service。
 

@@ -5,7 +5,7 @@
 ## 功能概述
 此功能允許使用者查看他們購買過的所有電影票卷訂單，包含未付款、已付款及已取消的紀錄。
 
-- **API 路徑**: `GET /api/orders/mine`
+- **API 路徑**: `GET /api/orders`
 - **權限**: 需要登入 (Bearer Token)
 
 ## 測試步驟
@@ -25,7 +25,7 @@
     - 執行 `POST /api/auth/login` 取得 Access Token (`customerToken`)。
 
 2.  **查詢訂單 (Get My Orders) - 初始狀態**:
-    - 執行 `GET /api/orders/mine`。
+    - 執行 `GET /api/orders`。
     - **預期結果**: 回傳 `200 OK`，且 `data` 為空陣列 `[]` (如果是新帳號)。
 
 3.  **建立訂單 (Create Order)**:
@@ -33,7 +33,7 @@
     - **預期結果**: 回傳 `201 Created`。
 
 4.  **查詢訂單 (Get My Orders) - 有資料**:
-    - 再次執行 `GET /api/orders/mine`。
+    - 再次執行 `GET /api/orders`。
     - **預期結果**: 回傳 `200 OK`，且 `data` 陣列中包含剛才建立的訂單資訊。
     - **驗證點**:
         - `movieTitle`: 是否正確顯示電影名稱。

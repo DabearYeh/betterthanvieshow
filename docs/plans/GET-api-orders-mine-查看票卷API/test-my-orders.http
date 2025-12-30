@@ -37,7 +37,7 @@ Content-Type: application/json
 
 ### 測試 1: 成功取得訂單列表 (初始應該為空，或如果有創建訂單則有資料)
 # @name getMyOrders
-GET {{baseUrl}}/api/orders/mine
+GET {{baseUrl}}/api/orders
 Authorization: Bearer {{customerToken}}
 
 ###
@@ -59,11 +59,11 @@ Content-Type: application/json
 
 ### 測試 2: 再次取得訂單列表 (應該包含剛創建的訂單)
 # @name getMyOrdersAfterCreate
-GET {{baseUrl}}/api/orders/mine
+GET {{baseUrl}}/api/orders
 Authorization: Bearer {{customerToken}}
 
 ###
 
 ### 測試 3: 未登入 (預期 401)
 # @name getMyOrdersUnauthorized
-GET {{baseUrl}}/api/orders/mine
+GET {{baseUrl}}/api/orders
