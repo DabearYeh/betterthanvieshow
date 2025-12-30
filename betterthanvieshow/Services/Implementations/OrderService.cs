@@ -281,6 +281,7 @@ public class OrderService : IOrderService
                 ColumnNumber = t.Seat.ColumnNumber,
                 TicketNumber = t.TicketNumber
             }).ToList(),
+            PaymentMethod = !string.IsNullOrEmpty(order.PaymentTransactionId) ? "Line Pay" : null,
             TotalAmount = order.TotalPrice
         };
 

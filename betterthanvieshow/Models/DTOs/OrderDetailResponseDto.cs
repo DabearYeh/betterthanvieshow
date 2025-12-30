@@ -46,6 +46,11 @@ public class OrderDetailResponseDto
     public List<SeatInfoDto> Seats { get; set; } = new();
 
     /// <summary>
+    /// 付款方式（如：Line Pay、未付款）
+    /// </summary>
+    public string? PaymentMethod { get; set; }
+
+    /// <summary>
     /// 應付總額
     /// </summary>
     public decimal TotalAmount { get; set; }
