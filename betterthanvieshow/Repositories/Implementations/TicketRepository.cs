@@ -101,4 +101,11 @@ public class TicketRepository : ITicketRepository
                 .ThenInclude(st => st.Theater)
             .FirstOrDefaultAsync(t => t.TicketNumber == ticketNumber);
     }
+
+    /// <inheritdoc />
+    public async Task<Ticket?> GetByIdAsync(int ticketId)
+    {
+        return await _context.Tickets
+            .FirstOrDefaultAsync(t => t.Id == ticketId);
+    }
 }

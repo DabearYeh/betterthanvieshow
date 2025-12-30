@@ -13,4 +13,11 @@ public interface ITicketService
     /// <param name="qrCode">QR Code 內容（票券編號）</param>
     /// <returns>票券詳細資訊</returns>
     Task<TicketScanResponseDto> ScanTicketByQrCodeAsync(string qrCode);
+
+    /// <summary>
+    /// 執行驗票
+    /// </summary>
+    /// <param name="ticketId">票券 ID</param>
+    /// <param name="validatedBy">驗票人員 ID（管理者）</param>
+    Task ValidateTicketAsync(int ticketId, int validatedBy);
 }

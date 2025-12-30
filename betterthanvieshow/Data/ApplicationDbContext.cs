@@ -53,6 +53,11 @@ public class ApplicationDbContext : DbContext
     /// </summary>
     public DbSet<Order> Orders { get; set; }
 
+    /// <summary>
+    /// 驗票記錄資料集
+    /// </summary>
+    public DbSet<TicketValidateLog> TicketValidateLogs { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -302,5 +307,30 @@ public class ApplicationDbContext : DbContext
             ));
         });
 
+        // 配置 TicketValidateLog 實體
+        modelBuilder.Entity<TicketValidateLog>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            // 外鍵 - Ticket
+            entity.HasOne(e => e.Ticket)
+                .WithMany()
+                .HasForeignKey(e => e.TicketId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // 外鍵 - User (驗票人員)
+            entity.HasOne(e => e.Validator)
+                .WithMany()
+                .HasForeignKey(e => e.ValidatedBy)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // 驗票時間預設值
+            entity.Property(e => e.ValidatedAt)
+                .HasDefaultValueSql("GETDATE()");
+
+            // ValidationResult 必填
+            entity.Property(e => e.ValidationResult)
+                .IsRequired();
+        });
     }
 }

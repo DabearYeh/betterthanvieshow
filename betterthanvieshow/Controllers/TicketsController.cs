@@ -112,4 +112,86 @@ public class TicketsController : ControllerBase
             return StatusCode(500, new { message = $"系統錯誤: {ex.Message}" });
         }
     }
+
+    /// <summary>
+    /// POST /api/admin/tickets/{ticketId}/validate 執行驗票
+    /// </summary>
+    /// <remarks>
+    /// 此端點用於執行票券驗票，將票券狀態從 Unused 更新為 Used。
+    /// 
+    /// **功能說明**：
+    /// - 管理者執行驗票動作
+    /// - 系統檢查票券狀態是否允許驗票
+    /// - 驗票成功後更新票券狀態為 Used
+    /// - 建立驗票記錄（無論成功或失敗）
+    /// - 驗票人員 ID 自動從 JWT Token 取得
+    /// 
+    /// **業務規則**：
+    /// - Unused → 允許驗票 → 更新為 Used
+    /// - Used → 拒絕驗票 → 回傳「票券已使用」
+    /// - Expired → 拒絕驗票 → 回傳「票券已過期」
+    /// - Pending → 拒絕驗票 → 回傳「票券未支付」
+    /// - 不存在 → 拒絕驗票 → 回傳「票券不存在」
+    /// 
+    /// **範例**：
+    /// ```
+    /// POST /api/admin/tickets/52/validate
+    /// Authorization: Bearer {admin_token}
+    /// ```
+    /// 
+    /// **成功回應範例**：
+    /// ```json
+    /// {
+    ///   "message": "驗票成功"
+    /// }
+    /// ```
+    /// 
+    /// **失敗回應範例**：
+    /// ```json
+    /// {
+    ///   "message": "票券已使用"
+    /// }
+    /// ```
+    /// </remarks>
+    /// <param name="ticketId">票券 ID</param>
+    /// <returns>驗票結果</returns>
+    /// <response code="200">驗票成功，票券狀態已更新為 Used</response>
+    /// <response code="400">票券狀態不允許驗票（已使用/已過期/未支付）</response>
+    /// <response code="401">未登入</response>
+    /// <response code="403">非管理者角色</response>
+    /// <response code="404">票券不存在</response>
+    /// <response code="500">伺服器內部錯誤</response>
+    [HttpPost("{ticketId}/validate")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(500)]
+    public async Task<IActionResult> ValidateTicket(int ticketId)
+    {
+        try
+        {
+            // 從 JWT Token 取得管理者 ID
+            var validatedBy = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!);
+
+            // 執行驗票
+            await _ticketService.ValidateTicketAsync(ticketId, validatedBy);
+
+            return Ok(new { message = "驗票成功" });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "驗票時發生錯誤: {TicketId}", ticketId);
+            return StatusCode(500, new { message = $"系統錯誤: {ex.Message}" });
+        }
+    }
 }

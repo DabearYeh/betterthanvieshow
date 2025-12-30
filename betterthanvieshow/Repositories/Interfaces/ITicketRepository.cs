@@ -69,4 +69,11 @@ public interface ITicketRepository
     /// <param name="ticketNumber">票券編號</param>
     /// <returns>票券實體（可能為 null）</returns>
     Task<Ticket?> GetByTicketNumberWithDetailsAsync(string ticketNumber);
+
+    /// <summary>
+    /// 根據票券 ID 取得票券（不含關聯資料）
+    /// </summary>
+    /// <param name="ticketId">票券 ID</param>
+    /// <returns>票券實體（可能為 null）</returns>
+    Task<Ticket?> GetByIdAsync(int ticketId);
 }

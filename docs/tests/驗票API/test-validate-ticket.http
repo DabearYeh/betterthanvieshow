@@ -1,0 +1,129 @@
+### 執行驗票 API 測試腳本
+
+# 變數設定
+@baseUrl = http://localhost:5041
+@adminEmail = admin1234@gmail.com
+@adminPassword = Admin@123
+
+### 1. 管理者登入
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}"
+}
+
+### 儲存 Admin Token (複製上面回應的 token)
+@adminToken = YOUR_ADMIN_TOKEN_HERE
+
+###############################################################################
+# 測試案例 1: 驗票成功（Unused 票券）
+###############################################################################
+
+### 2. 先掃描票券，確認狀態為 Unused
+GET {{baseUrl}}/api/admin/tickets/scan?qrCode=32826902
+Authorization: Bearer {{adminToken}}
+
+### 3. 執行驗票（使用 TicketId: 53，對應票券編號 32826902）
+# 預期: 200 OK，回傳「驗票成功」
+POST {{baseUrl}}/api/admin/tickets/53/validate
+Authorization: Bearer {{adminToken}}
+
+### 4. 再次掃描同一票券，確認狀態已變為 Used
+GET {{baseUrl}}/api/admin/tickets/scan?qrCode=32826902
+Authorization: Bearer {{adminToken}}
+
+##############################################################################
+# 測試案例 2: 重複驗票（已使用票券）
+###############################################################################
+
+### 5. 再次嘗試驗票同一張票券
+# 預期: 400 Bad Request，回傳「票券已使用」
+POST {{baseUrl}}/api/admin/tickets/53/validate
+Authorization: Bearer {{adminToken}}
+
+###############################################################################
+# 測試案例 3: 驗票已過期票券
+###############################################################################
+
+### 6. 掃描已過期票券
+GET {{baseUrl}}/api/admin/tickets/scan?qrCode=86648489
+Authorization: Bearer {{adminToken}}
+
+### 7. 嘗試驗票已過期票券（TicketId: 51）
+# 預期: 400 Bad Request，回傳「票券已過期」
+POST {{baseUrl}}/api/admin/tickets/51/validate
+Authorization: Bearer {{adminToken}}
+
+###############################################################################
+# 測試案例 4: 驗票不存在的票券
+###############################################################################
+
+### 8. 嘗試驗票不存在的票券
+# 預期: 404 Not Found，回傳「票券不存在」
+POST {{baseUrl}}/api/admin/tickets/99999/validate
+Authorization: Bearer {{adminToken}}
+
+###############################################################################
+# 測試案例 5: 未授權訪問測試
+###############################################################################
+
+### 9. 未登入訪問
+# 預期: 401 Unauthorized
+POST {{baseUrl}}/api/admin/tickets/53/validate
+
+###############################################################################
+# 測試案例 6: 顧客角色訪問測試
+###############################################################################
+
+### 10. 顧客登入
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "customer@test.com",
+  "password": "Customer@123"
+}
+
+### 儲存 Customer Token (複製上面回應的 token)
+@customerToken = YOUR_CUSTOMER_TOKEN_HERE
+
+### 11. 顧客嘗試訪問管理者 API
+# 預期: 403 Forbidden
+POST {{baseUrl}}/api/admin/tickets/53/validate
+Authorization: Bearer {{customerToken}}
+
+###############################################################################
+# 資料庫驗證查詢（完成測試後執行）
+###############################################################################
+
+# 查詢驗票記錄是否正確建立
+# SELECT * FROM TicketValidateLog WHERE TicketId = 53 ORDER BY ValidatedAt DESC;
+
+# 查詢票券狀態是否正確更新為 Used
+# SELECT Id, TicketNumber, Status FROM Ticket WHERE Id = 53;
+
+###############################################################################
+# 回應範例說明
+###############################################################################
+
+# 成功回應範例 (200 OK):
+# {
+#   "message": "驗票成功"
+# }
+
+# 錯誤回應範例 (400 Bad Request - 已使用):
+# {
+#   "message": "票券已使用"
+# }
+
+# 錯誤回應範例 (400 Bad Request - 已過期):
+# {
+#   "message": "票券已過期"
+# }
+
+# 錯誤回應範例 (404 Not Found):
+# {
+#   "message": "票券不存在"
+# }
