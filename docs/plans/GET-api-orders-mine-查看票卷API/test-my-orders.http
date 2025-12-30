@@ -1,0 +1,69 @@
+@baseUrl = http://localhost:5041
+
+### ========================================
+### 前置作業：取得 JWT Token
+### ========================================
+
+### 1. 註冊測試用客戶帳號 (確保已註冊)
+# @name register
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "test.customer.myorders@example.com",
+  "password": "Test123456!",
+  "name": "測試 MyOrders 客戶"
+}
+
+###
+
+### 2. 登入取得 Token
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test.customer.myorders@example.com",
+  "password": "Test123456!"
+}
+
+###
+
+@customerToken = {{login.response.body.data.token}}
+
+### ========================================
+### API: GET /api/orders/mine - 取得我的訂單
+### ========================================
+
+### 測試 1: 成功取得訂單列表 (初始應該為空，或如果有創建訂單則有資料)
+# @name getMyOrders
+GET {{baseUrl}}/api/orders
+Authorization: Bearer {{customerToken}}
+
+###
+
+### 預備工作：創建一筆訂單以便測試列表顯示
+# @name createOrderForTest
+# 前置條件：假設 ShowTimeId 7 存在且可以訂購 (需要視實際 DB 資料而定)
+# 若失敗，請確認 DB 資料（例如 ShowTimeId=7 是否 OnSale, SeatId 是否可用）
+POST {{baseUrl}}/api/orders
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "showTimeId": 7,
+  "seatIds": [1, 2]
+}
+
+###
+
+### 測試 2: 再次取得訂單列表 (應該包含剛創建的訂單)
+# @name getMyOrdersAfterCreate
+GET {{baseUrl}}/api/orders
+Authorization: Bearer {{customerToken}}
+
+###
+
+### 測試 3: 未登入 (預期 401)
+# @name getMyOrdersUnauthorized
+GET {{baseUrl}}/api/orders

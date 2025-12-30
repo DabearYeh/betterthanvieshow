@@ -298,4 +298,68 @@ public class OrdersController : ControllerBase
             return StatusCode(500, ApiResponse<object>.FailureResponse("伺服器錯誤，請稍後再試"));
         }
     }
+
+    /// <summary>
+    /// GET /api/orders 取得所有訂單
+    /// </summary>
+    /// <remarks>
+    /// 取得當前使用者的所有訂單，包含未付款、已付款、已取消的訂單。
+    /// 
+    /// **排序**：按場次時間倒序排列（最新的場次在最前面）。
+    /// 
+    /// **IsUsed 判定**：
+    /// - 若場次時間已過，`isUsed` 為 true。
+    /// - 若訂單狀態為 Cancelled，`isUsed` 根據時間判定（但前端可依 status 顯示取消樣式）。
+    /// 
+    /// **成功回應範例 (200 OK)**：
+    /// ```json
+    /// {
+    ///   "success": true,
+    ///   "message": "成功取得訂單列表",
+    ///   "data": [
+    ///     {
+    ///       "orderId": 1,
+    ///       "movieTitle": "黑豹",
+    ///       "posterUrl": "https://example.com/poster.jpg",
+    ///       "showTime": "2025-12-15T16:30:00",
+    ///       "ticketCount": 3,
+    ///       "durationMinutes": 135,
+    ///       "status": "Paid",
+    ///       "isUsed": true
+    ///     }
+    ///   ]
+    /// }
+    /// ```
+    /// </remarks>
+    /// <response code="200">成功取得訂單列表</response>
+    /// <response code="401">未登入</response>
+    /// <response code="500">伺服器內部錯誤</response>
+    [HttpGet]
+    [Authorize]
+    [ProducesResponseType(typeof(ApiResponse<List<OrderHistoryResponseDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetMyOrders()
+    {
+        try
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+            {
+                return Unauthorized(ApiResponse<object>.FailureResponse("無效的使用者身份"));
+            }
+
+            var orders = await _orderService.GetMyOrdersAsync(userId);
+
+            return Ok(ApiResponse<List<OrderHistoryResponseDto>>.SuccessResponse(
+                orders,
+                "成功取得訂單列表"
+            ));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "取得使用者訂單列表時發生錯誤");
+            return StatusCode(500, ApiResponse<object>.FailureResponse("伺服器錯誤，請稍後再試"));
+        }
+    }
 }

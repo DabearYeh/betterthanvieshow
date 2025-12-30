@@ -1,0 +1,42 @@
+@baseUrl = http://localhost:5041
+
+### ========================================
+### API: GET /api/orders/{id} - 訂單詳情 (v2: 含票卷細節)
+### ========================================
+
+### 1. 登入取得 Token (使用測試帳號)
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test.customer.myorders@example.com",
+  "password": "Test123456!"
+}
+
+###
+
+@customerToken = {{login.response.body.data.token}}
+
+
+### 2. 建立新訂單以獲取 ID
+# @name createOrder
+# 備註: 若發生座位衝突，請修改 seatIds
+POST {{baseUrl}}/api/orders
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "showTimeId": 7,
+  "seatIds": [5, 6]
+}
+
+###
+
+@orderId = {{createOrder.response.body.data.orderId}}
+
+### 3. 查詢訂單詳情
+# 預期：回傳的 `seats` 陣列中應包含 `qrCodeContent` 和 `status` 欄位
+# @name getOrderDetail
+GET {{baseUrl}}/api/orders/{{orderId}}
+Authorization: Bearer {{customerToken}}

@@ -41,9 +41,9 @@ public class OrderDetailResponseDto
     public OrderTheaterInfoDto Theater { get; set; } = null!;
 
     /// <summary>
-    /// 座位列表
+    /// 票卷列表 (包含座位、狀態、QR Code)
     /// </summary>
-    public List<SeatInfoDto> Seats { get; set; } = new();
+    public List<TicketDetailDto> Seats { get; set; } = new();
 
     /// <summary>
     /// 付款方式（如：Line Pay、未付款）

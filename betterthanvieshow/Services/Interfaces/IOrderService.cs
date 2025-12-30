@@ -22,4 +22,11 @@ public interface IOrderService
     /// <param name="userId">使用者 ID（用於權限驗證）</param>
     /// <returns>訂單詳情，若訂單不存在或無權查看則為 null</returns>
     Task<OrderDetailResponseDto?> GetOrderDetailAsync(int orderId, int userId);
+
+    /// <summary>
+    /// 取得使用者的所有訂單
+    /// </summary>
+    /// <param name="userId">使用者 ID</param>
+    /// <returns>訂單列表</returns>
+    Task<List<OrderHistoryResponseDto>> GetMyOrdersAsync(int userId);
 }
