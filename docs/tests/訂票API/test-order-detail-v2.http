@@ -1,0 +1,47 @@
+@baseUrl = http://localhost:5041
+
+### ========================================
+### API: GET /api/orders/{id} - 訂單詳情 (含票卷細節)
+### ========================================
+
+### 1. 登入取得 Token (使用已存在的測試帳號)
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test.customer.myorders@example.com",
+  "password": "Test123456!"
+}
+
+###
+
+@customerToken = {{login.response.body.data.token}}
+
+
+### 2. 建立新訂單以獲取 ID
+# @name createOrder
+# 嘗試購買座位 3, 4 (若失敗可能是已被買走，請更換座位 ID)
+POST {{baseUrl}}/api/orders
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "showTimeId": 7,
+  "seatIds": [3, 4]
+}
+
+###
+
+@orderId = {{createOrder.response.body.data.orderId}}
+
+### 3. 查詢訂單詳情
+# 預期：回傳的 `seats` 陣列中應包含 `qrCodeContent` 和 `status` 欄位
+# @name getOrderDetail
+GET {{baseUrl}}/api/orders/{{orderId}}
+Authorization: Bearer {{customerToken}}
+
+###
+
+### 4. 驗證 QR Code 內容格式
+# 手動檢查 JSON 回應中的 qrCodeContent 是否為類似 {"ticketNumber":"...","showTimeId":7,"seatId":...} 的 JSON 字串

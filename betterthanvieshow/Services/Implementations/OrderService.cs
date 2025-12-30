@@ -274,12 +274,22 @@ public class OrderService : IOrderService
                 Name = order.ShowTime.Theater.Name,
                 Type = order.ShowTime.Theater.Type
             },
-            Seats = order.Tickets.Select(t => new SeatInfoDto
+            Seats = order.Tickets.Select(t => new TicketDetailDto
             {
+                TicketId = t.Id,
+                TicketNumber = t.TicketNumber,
                 SeatId = t.Seat.Id,
                 RowName = t.Seat.RowName,
                 ColumnNumber = t.Seat.ColumnNumber,
-                TicketNumber = t.TicketNumber
+                Status = t.Status,
+                // QR Code 內容格式：{"ticketNumber":"123","showTimeId":7,"seatId":10}
+                // 這是一個簡單的 JSON 字串，前端可以將其轉為 QR Code 圖片
+                QrCodeContent = System.Text.Json.JsonSerializer.Serialize(new 
+                { 
+                    ticketNumber = t.TicketNumber,
+                    showTimeId = t.ShowTimeId,
+                    seatId = t.SeatId
+                })
             }).ToList(),
             PaymentMethod = !string.IsNullOrEmpty(order.PaymentTransactionId) ? "Line Pay" : null,
             TotalAmount = order.TotalPrice
