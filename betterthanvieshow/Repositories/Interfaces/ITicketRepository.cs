@@ -62,4 +62,11 @@ public interface ITicketRepository
     /// <param name="ticketId">票券 ID</param>
     /// <returns>座位實體（可能為 null）</returns>
     Task<Seat?> GetSeatByTicketIdAsync(int ticketId);
+
+    /// <summary>
+    /// 根據票券編號查詢票券及完整關聯資料（包含 Seat, ShowTime, Movie, Theater）
+    /// </summary>
+    /// <param name="ticketNumber">票券編號</param>
+    /// <returns>票券實體（可能為 null）</returns>
+    Task<Ticket?> GetByTicketNumberWithDetailsAsync(string ticketNumber);
 }

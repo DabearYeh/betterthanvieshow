@@ -89,4 +89,16 @@ public class TicketRepository : ITicketRepository
         
         return ticket?.Seat;
     }
+
+    /// <inheritdoc />
+    public async Task<Ticket?> GetByTicketNumberWithDetailsAsync(string ticketNumber)
+    {
+        return await _context.Tickets
+            .Include(t => t.Seat)
+            .Include(t => t.ShowTime)
+                .ThenInclude(st => st.Movie)
+            .Include(t => t.ShowTime)
+                .ThenInclude(st => st.Theater)
+            .FirstOrDefaultAsync(t => t.TicketNumber == ticketNumber);
+    }
 }

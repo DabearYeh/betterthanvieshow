@@ -73,6 +73,9 @@ builder.Services.AddScoped<IShowtimeService, ShowtimeService>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 
+// 註冊票券相關服務
+builder.Services.AddScoped<ITicketService, TicketService>();
+
 // LINE Pay 基礎設施
 builder.Services.Configure<betterthanvieshow.Infrastructure.LinePay.LinePayOptions>(
     builder.Configuration.GetSection("LinePay")

@@ -1,0 +1,120 @@
+### 掃描票券 API 測試腳本
+
+# 變數設定
+@baseUrl = https://betterthanvieshow.azurewebsites.net
+@adminEmail = admin@betterthanvieshow.com
+@adminPassword = Admin@123
+
+### 1. 管理者登入
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}"
+}
+
+### 儲存 Admin Token (複製上面回應的 token)
+@adminToken = YOUR_ADMIN_TOKEN_HERE
+
+###############################################################################
+# 測試案例 1: 掃描有效票券（狀態為 Unused）
+###############################################################################
+
+### 2. 掃描有效票券
+# 預期: 200 OK，返回票券詳細資訊
+GET {{baseUrl}}/api/admin/tickets/scan?qrCode=VALID_TICKET_NUMBER
+Authorization: Bearer {{adminToken}}
+
+###############################################################################
+# 測試案例 2: 掃描不存在的票券
+###############################################################################
+
+### 3. 掃描不存在的票券
+# 預期: 404 Not Found
+GET {{baseUrl}}/api/admin/tickets/scan?qrCode=INVALID_TICKET_12345
+Authorization: Bearer {{adminToken}}
+
+###############################################################################
+# 測試案例 3: 掃描已使用的票券（驗證是否仍能查詢）
+###############################################################################
+
+### 4. 掃描已使用的票券
+# 預期: 200 OK，返回票券資訊（包含 status="Used"）
+GET {{baseUrl}}/api/admin/tickets/scan?qrCode=USED_TICKET_NUMBER
+Authorization: Bearer {{adminToken}}
+
+###############################################################################
+# 測試案例 4: 掃描已過期的票券（驗證是否仍能查詢）
+###############################################################################
+
+### 5. 掃描已過期的票券
+# 預期: 200 OK，返回票券資訊（包含 status="Expired"）
+GET {{baseUrl}}/api/admin/tickets/scan?qrCode=EXPIRED_TICKET_NUMBER
+Authorization: Bearer {{adminToken}}
+
+###############################################################################
+# 測試案例 5: 無效參數測試
+###############################################################################
+
+### 6. 空白 QR Code
+# 預期: 400 Bad Request
+GET {{baseUrl}}/api/admin/tickets/scan?qrCode=
+Authorization: Bearer {{adminToken}}
+
+###############################################################################
+# 測試案例 6: 未授權訪問測試
+###############################################################################
+
+### 7. 未登入訪問
+# 預期: 401 Unauthorized
+GET {{baseUrl}}/api/admin/tickets/scan?qrCode=VALID_TICKET_NUMBER
+
+###############################################################################
+# 測試案例 7: 顧客角色訪問測試
+###############################################################################
+
+### 8. 顧客登入
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "customer@test.com",
+  "password": "Customer@123"
+}
+
+### 儲存 Customer Token (複製上面回應的 token)
+@customerToken = YOUR_CUSTOMER_TOKEN_HERE
+
+### 9. 顧客嘗試訪問管理者 API
+# 預期: 403 Forbidden
+GET {{baseUrl}}/api/admin/tickets/scan?qrCode=VALID_TICKET_NUMBER
+Authorization: Bearer {{customerToken}}
+
+###############################################################################
+# 回應範例說明
+###############################################################################
+
+# 成功回應範例 (200 OK):
+# {
+#   "success": true,
+#   "message": "成功取得票券資訊",
+#   "data": {
+#     "ticketId": 1,
+#     "ticketNumber": "TKT-12345678",
+#     "status": "Unused",
+#     "movieTitle": "蝙蝠俠：黑暗騎士",
+#     "showDate": "2025-12-31",
+#     "showTime": "14:30",
+#     "seatRow": "D",
+#     "seatColumn": 12,
+#     "seatLabel": "D 排 12 號",
+#     "theaterName": "2A",
+#     "theaterType": "Digital"
+#   }
+# }
+
+# 錯誤回應範例 (404 Not Found):
+# {
+#   "message": "票券不存在"
+# }
