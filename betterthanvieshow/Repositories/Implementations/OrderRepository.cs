@@ -67,4 +67,16 @@ public class OrderRepository : IOrderRepository
         await _context.SaveChangesAsync();
         return order;
     }
+
+    /// <inheritdoc/>
+    public async Task<List<Order>> GetByUserIdAsync(int userId)
+    {
+        return await _context.Orders
+            .Include(o => o.ShowTime)
+                .ThenInclude(s => s.Movie)
+            .Where(o => o.UserId == userId)
+            .OrderByDescending(o => o.ShowTime.ShowDate)
+            .ThenByDescending(o => o.ShowTime.StartTime)
+            .ToListAsync();
+    }
 }

@@ -41,4 +41,11 @@ public interface IOrderRepository
     /// <param name="order">訂單實體</param>
     /// <returns>更新後的訂單實體</returns>
     Task<Order> UpdateAsync(Order order);
+
+    /// <summary>
+    /// 根據使用者 ID 查詢訂單列表
+    /// </summary>
+    /// <param name="userId">使用者 ID</param>
+    /// <returns>訂單列表</returns>
+    Task<List<Order>> GetByUserIdAsync(int userId);
 }

@@ -288,6 +288,42 @@ public class OrderService : IOrderService
         return response;
     }
 
+    /// <inheritdoc/>
+    public async Task<List<OrderHistoryResponseDto>> GetMyOrdersAsync(int userId)
+    {
+        var orders = await _orderRepository.GetByUserIdAsync(userId);
+        
+        // 假設伺服器時間為 UTC，而電影場次時間為當地時間 (GMT+8)
+        // 為了簡單起見，這裡我們假設 ShowDate + StartTime 是當地時間
+        // 若要精確比較，建議統一轉為 UTC 或使用 DateTimeOffset
+        // 這裡暫時使用 DateTime.Now (系統時間) 進行比較
+        var now = DateTime.Now;
+
+        return orders.Select(o =>
+        {
+            var showTime = o.ShowTime.ShowDate.Date.Add(o.ShowTime.StartTime);
+            var endTime = showTime.AddMinutes(o.ShowTime.Movie.Duration);
+            
+            // 判斷是否已使用：場次已結束 或 狀態為已取消 (雖然已取消不等於已使用，但在列表顯示邏輯中可能需要區分)
+            // 根據需求圖片，這裡 "已使用" 主要是針對 "已過期/已觀看" 的票
+            // 但如果訂單已取消，也算是一種 terminal state
+            // 這裡我們先單純以時間判斷 "IsUsed" (已播映)，狀態另外由 Status 欄位控制
+            bool isUsed = endTime < now;
+
+            return new OrderHistoryResponseDto
+            {
+                OrderId = o.Id,
+                MovieTitle = o.ShowTime.Movie.Title,
+                PosterUrl = o.ShowTime.Movie.PosterUrl ?? "",
+                ShowTime = showTime,
+                TicketCount = o.TicketCount,
+                DurationMinutes = o.ShowTime.Movie.Duration,
+                Status = o.Status,
+                IsUsed = isUsed
+            };
+        }).ToList();
+    }
+
     /// <summary>
     /// 取得中文星期幾
     /// </summary>
