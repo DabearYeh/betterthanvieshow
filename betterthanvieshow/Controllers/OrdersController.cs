@@ -25,7 +25,7 @@ public class OrdersController : ControllerBase
     }
 
     /// <summary>
-    /// /api/orders 創建訂單
+    /// POST /api/orders 創建訂單
     /// </summary>
     /// <remarks>
     /// 此端點用於訂票流程的第四步：創建訂單。

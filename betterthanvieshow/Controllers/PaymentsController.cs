@@ -22,7 +22,7 @@ public class PaymentsController : ControllerBase
     }
 
     /// <summary>
-    /// 發起 LINE Pay 付款請求
+    /// POST /api/payments/line-pay/request 發起 LINE Pay 付款請求
     /// </summary>
     /// <param name="request">付款請求資訊</param>
     /// <returns>付款頁面網址與交易 ID</returns>
@@ -66,7 +66,7 @@ public class PaymentsController : ControllerBase
     }
 
     /// <summary>
-    /// 確認 LINE Pay 付款完成
+    /// POST /api/payments/line-pay/confirm 確認 LINE Pay 付款完成
     /// </summary>
     /// <param name="request">付款確認資訊（含交易 ID 與訂單 ID）</param>
     /// <returns>付款結果與票券資訊</returns>
@@ -114,7 +114,7 @@ public class PaymentsController : ControllerBase
     }
 
     /// <summary>
-    /// 處理 LINE Pay 付款取消（使用者在 LINE Pay 頁面點選取消）
+    /// GET /api/payments/line-pay/cancel 處理 LINE Pay 付款取消
     /// </summary>
     /// <param name="orderId">訂單 ID（從 query string 取得）</param>
     /// <returns>跳轉至前端取消頁面</returns>

@@ -25,7 +25,7 @@ public class ShowtimesController : ControllerBase
     }
 
     /// <summary>
-    /// /api/showtimes/{id}/seats 取得場次的座位配置
+    /// GET /api/showtimes/{id}/seats 取得場次的座位配置
     /// </summary>
     /// <remarks>
     /// 此端點用於訂票流程的第三步：選擇座位。

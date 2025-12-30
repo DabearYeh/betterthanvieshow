@@ -27,7 +27,7 @@ public class TheatersController : ControllerBase
     }
 
     /// <summary>
-    /// /api/admin/theaters 取得所有影廳
+    /// GET /api/admin/theaters 取得所有影廳
     /// </summary>
     /// <remarks>
     /// 取得系統內所有影廳的摘要清單。
@@ -64,7 +64,7 @@ public class TheatersController : ControllerBase
     }
 
     /// <summary>
-    /// /api/admin/theaters/{id} 根據 ID 取得影廳詳細資訊（含座位表）
+    /// GET /api/admin/theaters/{id} 取得影廳詳細資訊（含座位表）
     /// </summary>
     /// <param name="id">影廳 ID</param>
     /// <remarks>
@@ -110,7 +110,7 @@ public class TheatersController : ControllerBase
     }
 
     /// <summary>
-    /// /api/admin/theaters 建立新影廳
+    /// POST /api/admin/theaters 建立新影廳
     /// </summary>
     /// <remarks>
     /// 建立一個新影廳，包含名稱、類型、樓層和座位配置。
@@ -215,7 +215,7 @@ public class TheatersController : ControllerBase
     }
 
     /// <summary>
-    /// /api/admin/theaters/{id} 刪除影廳
+    /// DELETE /api/admin/theaters/{id} 刪除影廳
     /// </summary>
     /// <param name="id">影廳 ID</param>
     /// <remarks>

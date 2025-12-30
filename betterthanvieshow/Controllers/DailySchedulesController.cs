@@ -22,7 +22,7 @@ public class DailySchedulesController : ControllerBase
     }
 
     /// <summary>
-    /// /api/admin/daily-schedules/month-overview 獲取月曆概覽
+    /// GET /api/admin/daily-schedules/month-overview 獲取月曆概覽
     /// </summary>
     /// <remarks>
     /// 查詢指定月份中所有有時刻表記錄的日期及其狀態。
@@ -84,7 +84,7 @@ public class DailySchedulesController : ControllerBase
     }
 
     /// <summary>
-    /// /api/admin/daily-schedules/{date} 儲存每日時刻表
+    /// PUT /api/admin/daily-schedules/{date} 儲存每日時刻表
     /// </summary>
     /// <remarks>
     /// 用來新增或修改特定日期的時刻表。
@@ -156,7 +156,7 @@ public class DailySchedulesController : ControllerBase
 
 
     /// <summary>
-    /// /api/admin/daily-schedules/{date} 查詢每日時刻表
+    /// GET /api/admin/daily-schedules/{date} 查詢每日時刻表
     /// </summary>
     /// <remarks>
     /// 查詢指定日期的時刻表及所有場次資料。
@@ -199,7 +199,7 @@ public class DailySchedulesController : ControllerBase
     }
 
     /// <summary>
-    /// /api/admin/daily-schedules/{date}/publish 開始販售時刻表
+    /// POST /api/admin/daily-schedules/{date}/publish 開始販售時刻表
     /// </summary>
     /// <remarks>
     /// 將指定日期的時刻表狀態從 Draft 轉為 OnSale。
@@ -241,7 +241,7 @@ public class DailySchedulesController : ControllerBase
     }
 
     /// <summary>
-    /// /api/admin/daily-schedules/{sourceDate}/copy 複製時刻表
+    /// POST /api/admin/daily-schedules/{sourceDate}/copy 複製時刻表
     /// </summary>
     /// <remarks>
     /// 將指定來源日期的時刻表複製到目標日期，用於快速排片。
@@ -312,7 +312,7 @@ public class DailySchedulesController : ControllerBase
     }
 
     /// <summary>
-    /// /api/admin/daily-schedules/{date}/grouped 取得分組時刻表
+    /// GET /api/admin/daily-schedules/{date}/grouped 取得分組時刻表
     /// </summary>
     /// <remarks>
     /// 取得按電影和影廳類型分組的時刻表資料，用於側邊欄顯示。
