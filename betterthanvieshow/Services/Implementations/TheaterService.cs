@@ -40,7 +40,8 @@ public class TheaterService : ITheaterService
                 Floor = t.Floor,
                 RowCount = t.RowCount,
                 ColumnCount = t.ColumnCount,
-                TotalSeats = t.TotalSeats
+                RegularSeats = t.Seats.Count(s => s.SeatType == "Regular" && s.IsValid),
+                AccessibleSeats = t.Seats.Count(s => s.SeatType == "Accessible" && s.IsValid)
             }).ToList();
 
             return ApiResponse<List<TheaterResponseDto>>.SuccessResponse(
@@ -151,16 +152,24 @@ public class TheaterService : ITheaterService
             // 重新載入 Theater 以取得更新後的 TotalSeats
             var updatedTheater = await _theaterRepository.GetByIdAsync(createdTheater.Id);
 
+            // 重新載入 Theater 並包含 Seats 資料
+            var theaterWithSeats = await _theaterRepository.GetByIdWithSeatsAsync(createdTheater.Id);
+            if (theaterWithSeats == null)
+            {
+                throw new InvalidOperationException($"無法載入影廳 ID {createdTheater.Id}");
+            }
+
             // 轉換為 DTO
             var theaterDto = new TheaterResponseDto
             {
-                Id = updatedTheater.Id,
-                Name = updatedTheater.Name,
-                Type = updatedTheater.Type,
-                Floor = updatedTheater.Floor,
-                RowCount = updatedTheater.RowCount,
-                ColumnCount = updatedTheater.ColumnCount,
-                TotalSeats = updatedTheater.TotalSeats
+                Id = theaterWithSeats.Id,
+                Name = theaterWithSeats.Name,
+                Type = theaterWithSeats.Type,
+                Floor = theaterWithSeats.Floor,
+                RowCount = theaterWithSeats.RowCount,
+                ColumnCount = theaterWithSeats.ColumnCount,
+                RegularSeats = theaterWithSeats.Seats.Count(s => s.SeatType == "Regular" && s.IsValid),
+                AccessibleSeats = theaterWithSeats.Seats.Count(s => s.SeatType == "Accessible" && s.IsValid)
             };
 
             return ApiResponse<TheaterResponseDto>.SuccessResponse(

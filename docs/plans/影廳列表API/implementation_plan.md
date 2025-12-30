@@ -2,7 +2,19 @@
 
 ## 目標
 
-開發影廳管理 API 的第一支端點：`GET /api/admin/theaters`，讓管理者可以查詢所有影廳資料。
+修改 `GET /api/admin/theaters` API，將座位資訊從「座位總數」改為「一般座位數」和「殘障座位數」分開顯示，以符合前端顯示需求。
+
+## 需求變更說明
+
+根據前端 UI 設計（如下圖所示），影廳資訊需要分別顯示：
+- **一般座位數**（Regular Seats）
+- **殘障座位數**（Accessible Seats）
+
+![前端座位顯示範例](C:/Users/VivoBook/.gemini/antigravity/brain/3e5b67f0-2ae9-498a-9096-500e903c52cb/uploaded_image_1767103332523.png)
+
+因此需要從原本的 `TotalSeats: number` 改為：
+- `RegularSeats: number` - 統計 `SeatType = "Regular"` 且 `IsValid = true` 的座位
+- `AccessibleSeats: number` - 統計 `SeatType = "Accessible"` 且 `IsValid = true` 的座位
 
 ## 需求審查事項
 
@@ -39,35 +51,39 @@
 
 定義影廳資料存取介面，提供 `GetAllAsync()` 方法。
 
-#### [NEW] [TheaterRepository.cs](file:///c:/Users/VivoBook/Desktop/betterthanvieshow/betterthanvieshow/Repositories/Implementations/TheaterRepository.cs)
+#### [MODIFY] [TheaterRepository.cs](file:///c:/Users/VivoBook/Desktop/betterthanvieshow/betterthanvieshow/Repositories/Implementations/TheaterRepository.cs)
 
-實作 `ITheaterRepository`，使用 Entity Framework Core 查詢所有影廳資料。
+更新 `GetAllAsync` 方法，使用 `.Include(t => t.Seats)` 載入座位資料，以便計算一般座位和殘障座位數量。
 
 ---
 
 ### 服務層 (Service & DTO)
 
-#### [NEW] [TheaterResponseDto.cs](file:///c:/Users/VivoBook/Desktop/betterthanvieshow/betterthanvieshow/Models/DTOs/TheaterResponseDto.cs)
+#### [MODIFY] [TheaterResponseDto.cs](file:///c:/Users/VivoBook/Desktop/betterthanvieshow/betterthanvieshow/Models/DTOs/TheaterResponseDto.cs)
 
-定義影廳回應 DTO，包含以下欄位：
+更新影廳回應 DTO，包含以下欄位：
 - `Id`: 影廳 ID
 - `Name`: 影廳名稱
 - `Type`: 影廳類型
 - `Floor`: 樓層
 - `RowCount`: 排數
 - `ColumnCount`: 列數
-- `TotalSeats`: 座位總數
+- `RegularSeats`: 一般座位數（從 Seat 資料表統計 SeatType = "Regular" 且 IsValid = true 的數量）
+- `AccessibleSeats`: 殘障座位數（從 Seat 資料表統計 SeatType = "Accessible" 且 IsValid = true 的數量）
 
 #### [NEW] [ITheaterService.cs](file:///c:/Users/VivoBook/Desktop/betterthanvieshow/betterthanvieshow/Services/Interfaces/ITheaterService.cs)
 
 定義影廳服務介面，提供 `GetAllTheatersAsync()` 方法，回傳 `ApiResponse<List<TheaterResponseDto>>`。
 
-#### [NEW] [TheaterService.cs](file:///c:/Users/VivoBook/Desktop/betterthanvieshow/betterthanvieshow/Services/Implementations/TheaterService.cs)
+#### [MODIFY] [TheaterService.cs](file:///c:/Users/VivoBook/Desktop/betterthanvieshow/betterthanvieshow/Services/Implementations/TheaterService.cs)
 
-實作 `ITheaterService`，負責：
-1. 呼叫 Repository 取得所有影廳
-2. 將 Entity 轉換為 DTO
-3. 包裝成 `ApiResponse` 格式回傳
+更新 `GetAllTheatersAsync` 方法，負責：
+1. 呼叫 Repository 取得所有影廳（使用 `.Include(t => t.Seats)` 載入座位資料）
+2. 對每個影廳統計座位數量：
+   - `RegularSeats`: `Seats.Count(s => s.SeatType == "Regular" && s.IsValid)`
+   - `AccessibleSeats`: `Seats.Count(s => s.SeatType == "Accessible" && s.IsValid)`
+3. 將 Entity 轉換為 DTO
+4. 包裝成 `ApiResponse` 格式回傳
 
 ---
 
@@ -94,7 +110,8 @@
         "floor": 2,
         "rowCount": 10,
         "columnCount": 12,
-        "totalSeats": 120
+        "regularSeats": 48,
+        "accessibleSeats": 4
       }
     ]
   }

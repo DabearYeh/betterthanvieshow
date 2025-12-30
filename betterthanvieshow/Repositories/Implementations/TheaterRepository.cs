@@ -24,6 +24,7 @@ public class TheaterRepository : ITheaterRepository
     public async Task<List<Theater>> GetAllAsync()
     {
         return await _context.Set<Theater>()
+            .Include(t => t.Seats)
             .OrderBy(t => t.Floor)
             .ThenBy(t => t.Name)
             .ToListAsync();

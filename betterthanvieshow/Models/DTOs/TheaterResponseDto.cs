@@ -42,8 +42,14 @@ public class TheaterResponseDto
     public int ColumnCount { get; set; }
 
     /// <summary>
-    /// 座位總數
+    /// 一般座位數
     /// </summary>
-    /// <example>140</example>
-    public int TotalSeats { get; set; }
+    /// <example>48</example>
+    public int RegularSeats { get; set; }
+
+    /// <summary>
+    /// 殘障座位數
+    /// </summary>
+    /// <example>4</example>
+    public int AccessibleSeats { get; set; }
 }
