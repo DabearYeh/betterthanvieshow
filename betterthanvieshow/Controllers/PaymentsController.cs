@@ -40,6 +40,7 @@ public class PaymentsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Tags("Payments - 付款管理")]
     public async Task<ActionResult<PaymentRequestResponseDto>> CreatePaymentRequest(
         [FromBody] PaymentRequestDto request)
     {
@@ -84,6 +85,7 @@ public class PaymentsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Tags("Payments - 付款管理")]
     public async Task<ActionResult<PaymentConfirmResponseDto>> ConfirmPayment(
         [FromBody] PaymentConfirmRequestDto request)
     {
@@ -122,6 +124,7 @@ public class PaymentsController : ControllerBase
     [HttpGet("line-pay/cancel")]
     [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status302Found)]
+    [Tags("Payments - 付款管理")]
     public IActionResult CancelPayment([FromQuery] int orderId)
     {
         // TODO: 可記錄取消事件到 Log
