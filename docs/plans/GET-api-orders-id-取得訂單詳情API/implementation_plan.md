@@ -81,6 +81,7 @@
         "ticketNumber": "23456789"
       }
     ],
+    "paymentMethod": "Line Pay",
     "totalAmount": 1050
   }
 }
@@ -95,6 +96,8 @@
 
 ### OrderDetailResponseDto
 完整的訂單詳情回應，包含所有嵌套資訊。
+**新增欄位**：
+- `PaymentMethod`: 付款方式（如 "Line Pay"，未付款為 null）
 
 ### 內嵌 DTO
 - `OrderMovieInfoDto`: 電影資訊
