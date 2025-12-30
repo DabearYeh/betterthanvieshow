@@ -211,7 +211,47 @@ public class OrdersController : ControllerBase
     /// - 場次資訊（日期、時間、星期幾）
     /// - 影廳資訊（影廳名稱、類型）
     /// - 座位與票券列表
+    /// - 付款方式（如：Line Pay，未付款則為 null）
     /// - 應付總額
+    /// 
+    /// **成功回應範例 (200 OK)**：
+    /// ```json
+    /// {
+    ///   "success": true,
+    ///   "message": "成功取得訂單詳情",
+    ///   "data": {
+    ///     "orderId": 1,
+    ///     "orderNumber": "#BKA-13005",
+    ///     "status": "Paid",
+    ///     "expiresAt": "2025-12-30T10:35:00Z",
+    ///     "movie": {
+    ///       "title": "黑豹",
+    ///       "rating": "PG-13",
+    ///       "duration": 135,
+    ///       "posterUrl": "https://example.com/poster.jpg"
+    ///     },
+    ///     "showtime": {
+    ///       "date": "2025-12-15",
+    ///       "startTime": "16:30",
+    ///       "dayOfWeek": "三"
+    ///     },
+    ///     "theater": {
+    ///       "name": "鳳廳",
+    ///       "type": "Digital"
+    ///     },
+    ///     "seats": [
+    ///       {
+    ///         "seatId": 1,
+    ///         "rowName": "H",
+    ///         "columnNumber": 12,
+    ///         "ticketNumber": "12345678"
+    ///       }
+    ///     ],
+    ///     "paymentMethod": "Line Pay",
+    ///     "totalAmount": 1070
+    ///   }
+    /// }
+    /// ```
     /// </remarks>
     /// <param name="id">訂單 ID</param>
     /// <response code="200">成功取得訂單詳情</response>
