@@ -117,10 +117,10 @@ public class LinePayPayInfo
 public class LinePayRequestBody
 {
     /// <summary>
-    /// 付款金額
+    /// 付款金額（整數，單位：元）
     /// </summary>
     [JsonPropertyName("amount")]
-    public decimal Amount { get; set; }
+    public int Amount { get; set; }
 
     /// <summary>
     /// 幣別 (TWD)
@@ -159,10 +159,10 @@ public class LinePayPackage
     public string Id { get; set; } = "1";
 
     /// <summary>
-    /// Package 總金額
+    /// Package 總金額（整數，單位：元）
     /// </summary>
     [JsonPropertyName("amount")]
-    public decimal Amount { get; set; }
+    public int Amount { get; set; }
 
     /// <summary>
     /// 商品列表
@@ -189,10 +189,10 @@ public class LinePayProduct
     public int Quantity { get; set; }
 
     /// <summary>
-    /// 單價
+    /// 單價（整數，單位：元）
     /// </summary>
     [JsonPropertyName("price")]
-    public decimal Price { get; set; }
+    public int Price { get; set; }
 }
 
 /// <summary>
@@ -219,10 +219,10 @@ public class LinePayRedirectUrls
 public class LinePayConfirmBody
 {
     /// <summary>
-    /// 付款金額 (必須與 Request 時相同)
+    /// 付款金額（整數，必須與 Request 時相同）
     /// </summary>
     [JsonPropertyName("amount")]
-    public decimal Amount { get; set; }
+    public int Amount { get; set; }
 
     /// <summary>
     /// 幣別

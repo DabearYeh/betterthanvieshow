@@ -1,0 +1,160 @@
+### LINE Pay 完整流程測試 (線上伺服器)
+### 此腳本用於測試已部署到生產環境的 LINE Pay API
+
+@baseUrl = https://better-than-vieshow-api.rocket-coding.com
+
+### ========================================
+### 前置作業：登入取得 JWT Token
+### ========================================
+
+### 1. 登入取得 Token
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test.customer@example.com",
+  "password": "Test123456!"
+}
+
+###
+
+@token = {{login.response.body.data.token}}
+
+### ========================================
+### 步驟 1：建立訂單 (POST /api/orders)
+### ========================================
+
+### 建立一筆待付款的訂單
+# @name createOrder
+POST {{baseUrl}}/api/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "showTimeId": 7,
+  "seatIds": [1, 2]
+}
+
+###
+
+@orderId = {{createOrder.response.body.data.id}}
+
+### ========================================
+### 步驟 2：發起 LINE Pay 付款請求
+### ========================================
+
+### 發起付款請求，取得 paymentUrl
+# @name paymentRequest
+POST {{baseUrl}}/api/payments/line-pay/request
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "orderId": {{orderId}}
+}
+
+###
+
+@transactionId = {{paymentRequest.response.body.data.transactionId}}
+@paymentUrl = {{paymentRequest.response.body.data.paymentUrl}}
+
+### ========================================
+### 步驟 3：模擬使用者在 LINE Pay 頁面完成付款
+### ========================================
+### 
+### 在真實情境中，您需要：
+### 1. 複製上方的 paymentUrl
+### 2. 在瀏覽器中開啟該網址
+### 3. 使用 LINE Pay Sandbox 測試帳號登入
+### 4. 完成付款流程
+### 5. LINE Pay 會將使用者導回您設定的 confirmUrl，並帶上 transactionId
+###
+### 在測試環境下，我們直接使用 transactionId 進行確認
+
+### ========================================
+### 步驟 4：確認付款完成
+### ========================================
+
+### 確認付款並更新訂單狀態
+# @name confirmPayment
+POST {{baseUrl}}/api/payments/line-pay/confirm
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "transactionId": {{transactionId}},
+  "orderId": {{orderId}}
+}
+
+###
+
+### ========================================
+### 驗證：查詢訂單狀態
+### ========================================
+
+### 查詢訂單詳情，確認狀態已更新為 Paid
+# @name getOrder
+GET {{baseUrl}}/api/orders/{{orderId}}
+Authorization: Bearer {{token}}
+
+###
+
+### ========================================
+### 錯誤測試：訂單不存在
+### ========================================
+
+### 測試不存在的訂單
+POST {{baseUrl}}/api/payments/line-pay/request
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "orderId": 999999
+}
+
+###
+
+### ========================================
+### 錯誤測試：無權訪問他人訂單
+### ========================================
+
+### 登入另一個帳號
+# @name loginOther
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "other.user@example.com",
+  "password": "Test123456!"
+}
+
+###
+
+@otherToken = {{loginOther.response.body.data.token}}
+
+### 嘗試對他人訂單發起付款
+POST {{baseUrl}}/api/payments/line-pay/request
+Authorization: Bearer {{otherToken}}
+Content-Type: application/json
+
+{
+  "orderId": {{orderId}}
+}
+
+###
+
+### ========================================
+### 錯誤測試：訂單已付款
+### ========================================
+
+### 嘗試對已付款訂單再次發起付款
+POST {{baseUrl}}/api/payments/line-pay/request
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "orderId": {{orderId}}
+}
+
+###

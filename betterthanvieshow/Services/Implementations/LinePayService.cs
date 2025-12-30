@@ -77,7 +77,7 @@ public class LinePayService : IPaymentService
         // 7. 組裝 LINE Pay Request API 參數
         var requestBody = new LinePayRequestBody
         {
-            Amount = order.TotalPrice,
+            Amount = (int)order.TotalPrice,  // 轉換為整數
             Currency = "TWD",
             OrderId = order.OrderNumber, // 使用 OrderNumber 作為 LINE Pay 的訂單識別
             Packages = new List<LinePayPackage>
@@ -85,14 +85,14 @@ public class LinePayService : IPaymentService
                 new LinePayPackage
                 {
                     Id = "1",
-                    Amount = order.TotalPrice,
+                    Amount = (int)order.TotalPrice,  // 轉換為整數
                     Products = new List<LinePayProduct>
                     {
                         new LinePayProduct
                         {
                             Name = $"{showtime.Movie.Title} - {showtime.Theater.Name}",
                             Quantity = tickets.Count,
-                            Price = tickets.First().Price
+                            Price = (int)tickets.First().Price  // 轉換為整數
                         }
                     }
                 }
@@ -158,7 +158,7 @@ public class LinePayService : IPaymentService
         // 5. 組裝 LINE Pay Confirm API 參數
         var confirmBody = new LinePayConfirmBody
         {
-            Amount = order.TotalPrice,
+            Amount = (int)order.TotalPrice,  // 轉換為整數
             Currency = "TWD"
         };
 
