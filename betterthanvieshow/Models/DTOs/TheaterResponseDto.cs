@@ -45,11 +45,11 @@ public class TheaterResponseDto
     /// 一般座位數
     /// </summary>
     /// <example>48</example>
-    public int RegularSeats { get; set; }
+    public int Standard { get; set; }
 
     /// <summary>
     /// 殘障座位數
     /// </summary>
     /// <example>4</example>
-    public int AccessibleSeats { get; set; }
+    public int Wheelchair { get; set; }
 }
