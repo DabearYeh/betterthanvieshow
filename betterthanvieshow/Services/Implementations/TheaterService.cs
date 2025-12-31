@@ -40,8 +40,8 @@ public class TheaterService : ITheaterService
                 Floor = t.Floor,
                 RowCount = t.RowCount,
                 ColumnCount = t.ColumnCount,
-                RegularSeats = t.Seats.Count(s => s.SeatType == "Standard" && s.IsValid),
-                AccessibleSeats = t.Seats.Count(s => s.SeatType == "Wheelchair" && s.IsValid)
+                Standard = t.Seats.Count(s => s.SeatType == "Standard" && s.IsValid),
+                Wheelchair = t.Seats.Count(s => s.SeatType == "Wheelchair" && s.IsValid)
             }).ToList();
 
             return ApiResponse<List<TheaterResponseDto>>.SuccessResponse(
@@ -168,8 +168,8 @@ public class TheaterService : ITheaterService
                 Floor = theaterWithSeats.Floor,
                 RowCount = theaterWithSeats.RowCount,
                 ColumnCount = theaterWithSeats.ColumnCount,
-                RegularSeats = theaterWithSeats.Seats.Count(s => s.SeatType == "Standard" && s.IsValid),
-                AccessibleSeats = theaterWithSeats.Seats.Count(s => s.SeatType == "Wheelchair" && s.IsValid)
+                Standard = theaterWithSeats.Seats.Count(s => s.SeatType == "Standard" && s.IsValid),
+                Wheelchair = theaterWithSeats.Seats.Count(s => s.SeatType == "Wheelchair" && s.IsValid)
             };
 
             return ApiResponse<TheaterResponseDto>.SuccessResponse(
