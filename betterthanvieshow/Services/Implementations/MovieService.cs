@@ -329,7 +329,10 @@ public class MovieService : IMovieService
             Genre = movie.Genre,
             Rating = movie.Rating,
             ReleaseDate = movie.ReleaseDate,
-            EndDate = movie.EndDate
+            EndDate = movie.EndDate,
+            DaysUntilRelease = movie.ReleaseDate.Date > DateTime.UtcNow.Date 
+                ? (movie.ReleaseDate.Date - DateTime.UtcNow.Date).Days 
+                : null
         };
     }
 
