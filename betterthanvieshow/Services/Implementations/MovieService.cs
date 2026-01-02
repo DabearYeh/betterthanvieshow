@@ -329,7 +329,10 @@ public class MovieService : IMovieService
             Genre = movie.Genre,
             Rating = movie.Rating,
             ReleaseDate = movie.ReleaseDate,
-            EndDate = movie.EndDate
+            EndDate = movie.EndDate,
+            DaysUntilRelease = movie.ReleaseDate.Date > DateTime.UtcNow.Date 
+                ? (movie.ReleaseDate.Date - DateTime.UtcNow.Date).Days 
+                : null
         };
     }
 
@@ -522,6 +525,35 @@ public class MovieService : IMovieService
         {
             _logger.LogError(ex, "取得電影 {MovieId} 在 {Date} 的場次列表時發生錯誤", movieId, date);
             throw;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<ApiResponse<List<SchedulableMovieDto>>> GetSchedulableMoviesAsync(DateTime date)
+    {
+        try
+        {
+            _logger.LogInformation("開始取得 {Date} 可排程的電影列表", date.ToString("yyyy-MM-dd"));
+
+            var movies = await _movieRepository.GetMoviesActiveOnDateAsync(date);
+
+            var dtos = movies.Select(m => new SchedulableMovieDto
+            {
+                Id = m.Id,
+                Title = m.Title,
+                PosterUrl = m.PosterUrl,
+                Duration = m.Duration,
+                Genre = m.Genre
+            }).ToList();
+
+            _logger.LogInformation("成功取得 {Count} 部可排程電影", dtos.Count);
+
+            return ApiResponse<List<SchedulableMovieDto>>.SuccessResponse(dtos, "取得可排程電影列表成功");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "取得可排程電影列表時發生錯誤: {Date}", date);
+            return ApiResponse<List<SchedulableMovieDto>>.FailureResponse($"取得可排程電影列表時發生錯誤: {ex.Message}");
         }
     }
 

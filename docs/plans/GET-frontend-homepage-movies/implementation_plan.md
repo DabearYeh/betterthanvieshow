@@ -52,6 +52,7 @@ public class MovieSimpleDto
     public string Rating { get; set; }
     public DateTime ReleaseDate { get; set; }
     public DateTime EndDate { get; set; }
+    public int? DaysUntilRelease { get; set; } // [NEW] 倒數天數
 }
 ```
 
@@ -165,7 +166,7 @@ public async Task<IActionResult> GetHomepageMovies()
    ```
    - 預期：200 OK
    - 驗證回應包含所有 5 個區塊：`carousel`、`topWeekly`、`comingSoon`、`recommended`、`allMovies`
-   - 驗證每個電影物件包含必要欄位：`id`、`title`、`posterUrl`、`duration`、`rating`、`releaseDate`、`endDate`
+   - 驗證每個電影物件包含必要欄位：`id`、`title`、`posterUrl`、`duration`、`rating`、`releaseDate`、`endDate`、`daysUntilRelease`
 
 2. **驗證輪播電影**
    - 確認 `carousel` 區塊只包含 `CanCarousel = true` 的電影

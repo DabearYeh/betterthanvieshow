@@ -54,4 +54,11 @@ public class MovieSimpleDto
     /// 下映日期
     /// </summary>
     public DateTime EndDate { get; set; }
+
+    /// <summary>
+    /// 距離上映天數（若已上映則為 null，若未上映則為正整數）
+    /// 用於前端顯示「倒數 X 天」
+    /// </summary>
+    /// <example>5</example>
+    public int? DaysUntilRelease { get; set; }
 }

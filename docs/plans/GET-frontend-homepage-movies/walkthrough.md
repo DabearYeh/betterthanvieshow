@@ -14,7 +14,7 @@
 
 ### 1. DTO 層
 創建了以下 DTO：
-- [MovieSimpleDto.cs](file:///c:/Users/VivoBook/Desktop/betterthanvieshow/betterthanvieshow/Models/DTOs/MovieSimpleDto.cs) - 簡化版電影資訊，包含 `id`, `title`, `posterUrl`, `duration`, `genre`, `rating`, `releaseDate`, `endDate`
+- [MovieSimpleDto.cs](file:///c:/Users/VivoBook/Desktop/betterthanvieshow/betterthanvieshow/Models/DTOs/MovieSimpleDto.cs) - 簡化版電影資訊，包含 `id`, `title`, `posterUrl`, `duration`, `genre`, `rating`, `releaseDate`, `endDate`, `daysUntilRelease`
 - 使用現有的 [HomepageMoviesResponseDto.cs](file:///c:/Users/VivoBook/Desktop/betterthanvieshow/betterthanvieshow/Models/DTOs/HomepageMoviesResponseDto.cs) - 首頁回應結構
 
 ### 2. Repository 層
@@ -74,7 +74,8 @@
   "genre": "動作,科幻",
   "rating": "普遍級",
   "releaseDate": "2025-12-30T00:00:00",
-  "endDate": "2026-03-30T00:00:00"
+  "endDate": "2026-03-30T00:00:00",
+  "daysUntilRelease": 10
 }
 ```
 

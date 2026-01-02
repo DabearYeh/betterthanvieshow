@@ -1,0 +1,14 @@
+@baseUrl = http://localhost:5041
+@adminToken = your_admin_token_here
+
+### 成功取得可排程電影列表
+GET {{baseUrl}}/api/admin/movies/schedulable?date=2025-12-31
+Authorization: Bearer {{adminToken}}
+
+### 日期格式錯誤測試
+GET {{baseUrl}}/api/admin/movies/schedulable?date=invalid-date
+Authorization: Bearer {{adminToken}}
+
+### 未授權測試 (無 Token)
+GET {{baseUrl}}/api/admin/movies/schedulable?date=2025-12-31
+
