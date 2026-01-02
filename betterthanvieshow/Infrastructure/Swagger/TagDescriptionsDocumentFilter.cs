@@ -16,7 +16,9 @@ public class TagDescriptionsDocumentFilter : IDocumentFilter
             new OpenApiTag { Name = "Movies - 電影資訊", Description = "提供前台展示所需的電影列表、搜尋、以及詳細資訊查詢 API。" },
             new OpenApiTag { Name = "Booking - 訂票流程", Description = "訂票核心流程，包含快速查詢可訂票日期、特定日期場次、影廳座位配置。" },
             new OpenApiTag { Name = "Orders - 訂單管理", Description = "處理訂單的建立、詳情查詢以及後續狀態管理。" },
-            new OpenApiTag { Name = "Payments - 付款管理", Description = "整合第三方金流（如 LINE Pay），處理付款請求、確認與取消流程。" }
+            new OpenApiTag { Name = "Payments - 付款管理", Description = "整合第三方金流（如 LINE Pay），處理付款請求、確認與取消流程。" },
+            new OpenApiTag { Name = "Admin - 驗票管理", Description = "管理者專區，提供票券掃描、驗證與驗票記錄查詢功能。" },
+            new OpenApiTag { Name = "User - 會員管理", Description = "使用者個人資料管理，包含查看與更新個人資訊。" }
         };
     }
 }
