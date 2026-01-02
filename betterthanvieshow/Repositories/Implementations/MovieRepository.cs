@@ -137,5 +137,15 @@ public class MovieRepository : IMovieRepository
             .OrderByDescending(m => m.ReleaseDate)
             .ToListAsync();
     }
+    /// <inheritdoc/>
+    public async Task<List<Movie>> GetMoviesActiveOnDateAsync(DateTime date)
+    {
+        var targetDate = date.Date;
+        
+        return await _context.Movies
+            .Where(m => m.ReleaseDate.Date <= targetDate && m.EndDate.Date >= targetDate)
+            .OrderBy(m => m.Title) // 排程介面通常以片名排序方便查找，或可改為 ReleaseDate
+            .ToListAsync();
+    }
 }
 

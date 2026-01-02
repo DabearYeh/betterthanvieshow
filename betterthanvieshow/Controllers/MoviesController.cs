@@ -579,4 +579,39 @@ public class MoviesController : ControllerBase
 
         return Ok(result);
     }
+    /// <summary>
+    /// GET /api/admin/movies/schedulable 取得可排程電影列表
+    /// </summary>
+    /// <remarks>
+    /// 用於後台排程介面，取得指定日期可供排程的電影列表（即該日期在電影的上映期間內）。
+    /// </remarks>
+    /// <param name="date">查詢日期 (YYYY-MM-DD)</param>
+    /// <response code="200">成功取得列表</response>
+    /// <response code="400">日期格式錯誤</response>
+    /// <response code="401">未授權</response>
+    /// <response code="403">權限不足</response>
+    [HttpGet("schedulable")]
+    [Tags("Admin/Movies - 電影管理")]
+    [ProducesResponseType(typeof(ApiResponse<List<SchedulableMovieDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetSchedulableMovies([FromQuery] string date)
+    {
+        if (!DateTime.TryParseExact(date, "yyyy-MM-dd", null, 
+            System.Globalization.DateTimeStyles.None, out var parsedDate))
+        {
+             return BadRequest(ApiResponse<object>.FailureResponse("日期格式無效，請使用 YYYY-MM-DD 格式"));
+        }
+
+        var result = await _movieService.GetSchedulableMoviesAsync(parsedDate);
+
+        if (!result.Success)
+        {
+            return StatusCode(500, result);
+        }
+
+        return Ok(result);
+    }
 }

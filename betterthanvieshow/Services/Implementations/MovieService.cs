@@ -528,6 +528,35 @@ public class MovieService : IMovieService
         }
     }
 
+    /// <inheritdoc/>
+    public async Task<ApiResponse<List<SchedulableMovieDto>>> GetSchedulableMoviesAsync(DateTime date)
+    {
+        try
+        {
+            _logger.LogInformation("開始取得 {Date} 可排程的電影列表", date.ToString("yyyy-MM-dd"));
+
+            var movies = await _movieRepository.GetMoviesActiveOnDateAsync(date);
+
+            var dtos = movies.Select(m => new SchedulableMovieDto
+            {
+                Id = m.Id,
+                Title = m.Title,
+                PosterUrl = m.PosterUrl,
+                Duration = m.Duration,
+                Genre = m.Genre
+            }).ToList();
+
+            _logger.LogInformation("成功取得 {Count} 部可排程電影", dtos.Count);
+
+            return ApiResponse<List<SchedulableMovieDto>>.SuccessResponse(dtos, "取得可排程電影列表成功");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "取得可排程電影列表時發生錯誤: {Date}", date);
+            return ApiResponse<List<SchedulableMovieDto>>.FailureResponse($"取得可排程電影列表時發生錯誤: {ex.Message}");
+        }
+    }
+
     /// <summary>
     /// 根據影廳類型取得票價
     /// </summary>

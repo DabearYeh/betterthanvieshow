@@ -65,4 +65,11 @@ public interface IMovieRepository
     /// <param name="keyword">搜尋關鍵字</param>
     /// <returns>符合條件的電影列表</returns>
     Task<List<Movie>> SearchMoviesAsync(string keyword);
+
+    /// <summary>
+    /// 取得指定日期處於上映期間的電影
+    /// </summary>
+    /// <param name="date">查詢日期</param>
+    /// <returns>該日期有效的電影列表</returns>
+    Task<List<Movie>> GetMoviesActiveOnDateAsync(DateTime date);
 }

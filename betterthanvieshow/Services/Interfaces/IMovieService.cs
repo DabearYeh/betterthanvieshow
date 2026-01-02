@@ -63,4 +63,11 @@ public interface IMovieService
     /// <param name="date">日期</param>
     /// <returns>場次列表的回應 DTO</returns>
     Task<MovieShowtimesResponseDto?> GetShowtimesByDateAsync(int movieId, DateTime date);
+
+    /// <summary>
+    /// 取得指定日期可供排程的電影列表
+    /// </summary>
+    /// <param name="date">日期</param>
+    /// <returns>可排程電影列表</returns>
+    Task<ApiResponse<List<SchedulableMovieDto>>> GetSchedulableMoviesAsync(DateTime date);
 }
