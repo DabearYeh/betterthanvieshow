@@ -6,7 +6,7 @@ namespace betterthanvieshow.Models.DTOs;
 public class HomepageMoviesResponseDto
 {
     /// <summary>
-    /// 輪播圖電影（CanCarousel = true）
+    /// 輪播圖電影（CanCarousel = true 且未下映）
     /// </summary>
     public List<MovieSimpleDto> Carousel { get; set; } = new();
 

@@ -63,13 +63,14 @@ public class MovieRepository : IMovieRepository
     }
 
     /// <summary>
-    /// 取得輪播電影（CanCarousel = true）
+    /// 取得輪播電影（CanCarousel = true 且未下映）
     /// </summary>
-    /// <returns>輪播電影列表</returns>
+    /// <returns>輪播電影列表（正在上映或即將上映）</returns>
     public async Task<List<Movie>> GetCarouselMoviesAsync()
     {
+        var today = DateTime.Today;
         return await _context.Movies
-            .Where(m => m.CanCarousel)
+            .Where(m => m.CanCarousel && m.EndDate >= today)
             .OrderByDescending(m => m.ReleaseDate)
             .ToListAsync();
     }
