@@ -591,7 +591,7 @@ public class MoviesController : ControllerBase
     /// <response code="401">未授權</response>
     /// <response code="403">權限不足</response>
     [HttpGet("schedulable")]
-    [Tags("Admin/Movies - 電影管理")]
+    [Tags("Admin/DailySchedules - 排程管理")]
     [ProducesResponseType(typeof(ApiResponse<List<SchedulableMovieDto>>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
