@@ -31,7 +31,9 @@ public class MovieResponseDto
 
     /// <summary>
     /// 影片類型：
-    /// - Action (動作), Adventure (冒險), SciFi (科幻)
+    /// - Action (動作), Romance (愛情), Adventure (冒險)
+    /// - Thriller (懸疑), Horror (恐怖), SciFi (科幻)
+    /// - Animation (動畫), Comedy (喜劇)
     /// </summary>
     /// <example>SciFi, Action</example>
     public string Genre { get; set; } = string.Empty;
