@@ -35,9 +35,9 @@ public interface IMovieRepository
     Task<List<Movie>> GetAllAsync();
 
     /// <summary>
-    /// 取得輪播電影（CanCarousel = true）
+    /// 取得輪播電影（CanCarousel = true 且未下映）
     /// </summary>
-    /// <returns>輪播電影列表</returns>
+    /// <returns>輪播電影列表（正在上映或即將上映）</returns>
     Task<List<Movie>> GetCarouselMoviesAsync();
 
     /// <summary>

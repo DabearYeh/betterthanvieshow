@@ -47,9 +47,9 @@ Table Movie {
   trailer_url string [note: '預告片聯結，非必填']
   release_date string [note: '電影上映日期，格式 YYYY-MM-DD']
   end_date string [note: '電影下映日期，格式 YYYY-MM-DD。規則：end_date >= release_date；場次排片日期必須在 [release_date, end_date] 範圍內']
-  can_carousel bool [note: '是否加入輪播']
+  can_carousel bool [note: '是否加入輪播。實際顯示邏輯：只有正在上映或即將上映的電影會出現在輪播圖（end_date >= 今天）']
   
-  Note: '電影：系統中的電影資訊。上映狀態動態計算（無 release_status 欄位，英文枚舉值）：ComingSoon（即將上映，release_date > 今天）、NowShowing（正在上映，release_date <= 今天 <= end_date）、OffScreen（已下映，end_date < 今天）。電影可標籤為：本週前十（週內銷售最多前10部）、即將上映。重映策略：若電影下映後需重映，建立新電影記錄（如「電影名 - 重映版」），而不修改原電影的 release_date / end_date。刪除規則：電影不能被刪除，僅能透過上架/下架控制顯示狀態。關聯：Movie 1:N MovieShowTime'
+  Note: '電影：系統中的電影資訊。上映狀態動態計算（無 release_status 欄位，英文枚舉值）：ComingSoon（即將上映，release_date > 今天）、NowShowing（正在上映，release_date <= 今天 <= end_date）、OffScreen（已下映，end_date < 今天）。電影可標籤為：本週前十（週內銷售最多前10部）、即將上映。輪播顯示邏輯：僅顯示 can_carousel = true 且 end_date >= 今天的電影（排除已下映）。重映策略：若電影下映後需重映，建立新電影記錄（如「電影名 - 重映版」），而不修改原電影的 release_date / end_date。刪除規則：電影不能被刪除，僅能透過上架/下架控制顯示狀態。關聯：Movie 1:N MovieShowTime'
 }
 
 Table MovieShowTime {
