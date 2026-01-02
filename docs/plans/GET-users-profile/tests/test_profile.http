@@ -1,0 +1,29 @@
+@baseUrl = http://localhost:5041
+@email = test_profile_{{$datetime iso8601}}@example.com
+@password = Password123!
+
+### 1. 註冊新使用者
+# @name register
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "測試使用者",
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### 2. 登入 (如果需要重新取得 Token)
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### 3. 取得個人資料
+@token = {{register.response.body.data.token}}
+GET {{baseUrl}}/api/users/profile
+Authorization: Bearer {{token}}
