@@ -1,0 +1,165 @@
+### 測試 Movie API Enum 驗證
+
+@baseUrl = http://localhost:5041
+@token = {{$dotenv ADMIN_TOKEN}}
+
+### 1. ✅ 測試正確的 Rating 和 Genre
+POST {{baseUrl}}/api/admin/movies
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "測試電影 - 正確分級與類型",
+  "description": "這是一部測試電影",
+  "duration": 120,
+  "genre": "Action,SciFi",
+  "rating": "PG",
+  "director": "測試導演",
+  "cast": "演員A, 演員B",
+  "posterUrl": "https://example.com/poster.jpg",
+  "trailerUrl": "https://youtube.com/watch?v=test",
+  "releaseDate": "2026-02-01T00:00:00",
+  "endDate": "2026-04-01T00:00:00",
+  "canCarousel": false
+}
+
+### 2. ✅ 測試所有合法的 Rating 值
+POST {{baseUrl}}/api/admin/movies
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "測試電影 - G 級",
+  "description": "這是一部測試電影",
+  "duration": 120,
+  "genre": "Animation,Comedy",
+  "rating": "G",
+  "director": "測試導演",
+  "cast": "演員A, 演員B",
+  "posterUrl": "https://example.com/poster.jpg",
+  "trailerUrl": "https://youtube.com/watch?v=test",
+  "releaseDate": "2026-02-01T00:00:00",
+  "endDate": "2026-04-01T00:00:00",
+  "canCarousel": false
+}
+
+### 3. ❌ 測試錯誤的 Rating - 中文值 (應回傳 400)
+POST {{baseUrl}}/api/admin/movies
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "測試電影 - 錯誤分級",
+  "description": "這是一部測試電影",
+  "duration": 120,
+  "genre": "Action",
+  "rating": "普遍級",
+  "director": "測試導演",
+  "cast": "演員A, 演員B",
+  "posterUrl": "https://example.com/poster.jpg",
+  "trailerUrl": "https://youtube.com/watch?v=test",
+  "releaseDate": "2026-02-01T00:00:00",
+  "endDate": "2026-04-01T00:00:00",
+  "canCarousel": false
+}
+
+### 4. ❌ 測試錯誤的 Rating - 隨機值 (應回傳 400)
+POST {{baseUrl}}/api/admin/movies
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "測試電影 - 錯誤分級2",
+  "description": "這是一部測試電影",
+  "duration": 120,
+  "genre": "Action",
+  "rating": "X",
+  "director": "測試導演",
+  "cast": "演員A, 演員B",
+  "posterUrl": "https://example.com/poster.jpg",
+  "trailerUrl": "https://youtube.com/watch?v=test",
+  "releaseDate": "2026-02-01T00:00:00",
+  "endDate": "2026-04-01T00:00:00",
+  "canCarousel": false
+}
+
+### 5. ❌ 測試錯誤的 Genre - 中文值 (應回傳 400)
+POST {{baseUrl}}/api/admin/movies
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "測試電影 - 錯誤類型",
+  "description": "這是一部測試電影",
+  "duration": 120,
+  "genre": "動作,科幻",
+  "rating": "PG",
+  "director": "測試導演",
+  "cast": "演員A, 演員B",
+  "posterUrl": "https://example.com/poster.jpg",
+  "trailerUrl": "https://youtube.com/watch?v=test",
+  "releaseDate": "2026-02-01T00:00:00",
+  "endDate": "2026-04-01T00:00:00",
+  "canCarousel": false
+}
+
+### 6. ❌ 測試錯誤的 Genre - 部分錯誤 (應回傳 400)
+POST {{baseUrl}}/api/admin/movies
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "測試電影 - 部分錯誤類型",
+  "description": "這是一部測試電影",
+  "duration": 120,
+  "genre": "Action,InvalidGenre,SciFi",
+  "rating": "PG",
+  "director": "測試導演",
+  "cast": "演員A, 演員B",
+  "posterUrl": "https://example.com/poster.jpg",
+  "trailerUrl": "https://youtube.com/watch?v=test",
+  "releaseDate": "2026-02-01T00:00:00",
+  "endDate": "2026-04-01T00:00:00",
+  "canCarousel": false
+}
+
+### 7. ✅ 測試複雜的 Genre 組合
+POST {{baseUrl}}/api/admin/movies
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "測試電影 - 複雜類型組合",
+  "description": "這是一部測試電影",
+  "duration": 120,
+  "genre": "Action, Romance, Adventure, Thriller",
+  "rating": "R",
+  "director": "測試導演",
+  "cast": "演員A, 演員B",
+  "posterUrl": "https://example.com/poster.jpg",
+  "trailerUrl": "https://youtube.com/watch?v=test",
+  "releaseDate": "2026-02-01T00:00:00",
+  "endDate": "2026-04-01T00:00:00",
+  "canCarousel": false
+}
+
+### 8. ❌ 測試 UPDATE API - 錯誤的 Rating (應回傳 400)
+# 記得替換 {movieId} 為實際的電影 ID
+PUT {{baseUrl}}/api/admin/movies/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "更新測試電影",
+  "description": "這是一部測試電影",
+  "duration": 120,
+  "genre": "Action",
+  "rating": "限制級",
+  "director": "測試導演",
+  "cast": "演員A, 演員B",
+  "posterUrl": "https://example.com/poster.jpg",
+  "trailerUrl": "https://youtube.com/watch?v=test",
+  "releaseDate": "2026-02-01T00:00:00",
+  "endDate": "2026-04-01T00:00:00",
+  "canCarousel": false
+}
