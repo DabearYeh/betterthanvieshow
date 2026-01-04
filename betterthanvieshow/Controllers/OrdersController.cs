@@ -210,7 +210,7 @@ public class OrdersController : ControllerBase
     /// - 電影資訊（片名、分級、片長、海報）
     /// - 場次資訊（日期、時間、星期幾）
     /// - 影廳資訊（影廳名稱、類型）
-    /// - 座位與票券列表
+    /// - 座位與票券列表（包含 QR Code）
     /// - 付款方式（如：Line Pay，未付款則為 null）
     /// - 應付總額
     /// 
@@ -241,17 +241,24 @@ public class OrdersController : ControllerBase
     ///     },
     ///     "seats": [
     ///       {
+    ///         "ticketId": 1,
+    ///         "ticketNumber": "TKT-12345678",
     ///         "seatId": 1,
     ///         "rowName": "H",
     ///         "columnNumber": 12,
-    ///         "ticketNumber": "12345678"
+    ///         "status": "Unused",
+    ///         "qrCodeContent": "VElDS0VUOlRLVC0xMjM0NTY3OA=="
     ///       }
     ///     ],
     ///     "paymentMethod": "Line Pay",
-    ///     "totalAmount": 1070
+    ///     "totalAmount": 300
     ///   }
     /// }
     /// ```
+    /// 
+    /// **注意事項**：
+    /// - `qrCodeContent` 為 Base64 編碼字串，前端可用於生成 QR Code 圖片
+    /// - 只有已付款的訂單才會有 QR Code 內容
     /// </remarks>
     /// <param name="id">訂單 ID</param>
     /// <response code="200">成功取得訂單詳情</response>
