@@ -39,6 +39,29 @@ public class MovieService : IMovieService
         {
             _logger.LogInformation("開始建立電影: {Title}", request.Title);
 
+            // 驗證電影分級 (必須為 English Enum)
+            var allowedRatings = new[] { "G", "P", "PG", "R" };
+            if (!allowedRatings.Contains(request.Rating))
+            {
+                _logger.LogWarning("建立電影失敗: 無效的電影分級 '{Rating}'", request.Rating);
+                return ApiResponse<MovieResponseDto>.FailureResponse(
+                    $"電影分級無效: {request.Rating}。允許的值: {string.Join(", ", allowedRatings)}"
+                );
+            }
+
+            // 驗證電影類型 (Genre 為逗號分隔字串)
+            var allowedGenres = new[] { "Action", "Romance", "Adventure", "Thriller", "Horror", "SciFi", "Animation", "Comedy" };
+            var genres = request.Genre.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            var invalidGenres = genres.Where(g => !allowedGenres.Contains(g)).ToList();
+
+            if (invalidGenres.Any())
+            {
+                _logger.LogWarning("建立電影失敗: 無效的電影類型 '{InvalidGenres}'", string.Join(", ", invalidGenres));
+                return ApiResponse<MovieResponseDto>.FailureResponse(
+                    $"無效的電影類型: {string.Join(", ", invalidGenres)}。允許的值: {string.Join(", ", allowedGenres)}"
+                );
+            }
+
             // 驗證下映日期必須大於等於上映日期
             if (request.EndDate < request.ReleaseDate)
             {
@@ -118,6 +141,29 @@ public class MovieService : IMovieService
             {
                 _logger.LogWarning("找不到電影: ID={Id}", id);
                 return ApiResponse<MovieResponseDto>.FailureResponse("找不到指定的電影");
+            }
+
+            // 驗證電影分級 (必須為 English Enum)
+            var allowedRatings = new[] { "G", "P", "PG", "R" };
+            if (!allowedRatings.Contains(request.Rating))
+            {
+                _logger.LogWarning("更新電影失敗: 無效的電影分級 '{Rating}'", request.Rating);
+                return ApiResponse<MovieResponseDto>.FailureResponse(
+                    $"電影分級無效: {request.Rating}。允許的值: {string.Join(", ", allowedRatings)}"
+                );
+            }
+
+            // 驗證電影類型 (Genre 為逗號分隔字串)
+            var allowedGenres = new[] { "Action", "Romance", "Adventure", "Thriller", "Horror", "SciFi", "Animation", "Comedy" };
+            var genres = request.Genre.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            var invalidGenres = genres.Where(g => !allowedGenres.Contains(g)).ToList();
+
+            if (invalidGenres.Any())
+            {
+                _logger.LogWarning("更新電影失敗: 無效的電影類型 '{InvalidGenres}'", string.Join(", ", invalidGenres));
+                return ApiResponse<MovieResponseDto>.FailureResponse(
+                    $"無效的電影類型: {string.Join(", ", invalidGenres)}。允許的值: {string.Join(", ", allowedGenres)}"
+                );
             }
 
             // 驗證下映日期必須大於等於上映日期

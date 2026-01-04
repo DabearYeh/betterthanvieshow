@@ -67,6 +67,16 @@ public class TheaterService : ITheaterService
     {
         try
         {
+            // 驗證影廳類型 (必須為 English Enum)
+            var allowedTypes = new[] { "Digital", "IMAX", "4DX" };
+            if (!allowedTypes.Contains(request.Type))
+            {
+                _logger.LogWarning("建立影廳失敗: 無效的影廳類型 '{Type}'", request.Type);
+                return ApiResponse<TheaterResponseDto>.FailureResponse(
+                    $"影廳類型無效: {request.Type}。允許的值: {string.Join(", ", allowedTypes)}"
+                );
+            }
+
             // 驗證座位陣列尺寸
             if (request.Seats.Count != request.RowCount)
             {
@@ -82,6 +92,24 @@ public class TheaterService : ITheaterService
                     return ApiResponse<TheaterResponseDto>.FailureResponse(
                         $"座位陣列列數與 ColumnCount ({request.ColumnCount}) 不符"
                     );
+                }
+            }
+
+            // 驗證座位類型 (必須為 English Enum)
+            var allowedSeatTypes = new[] { "Standard", "Wheelchair", "Aisle", "Empty" };
+            for (int row = 0; row < request.RowCount; row++)
+            {
+                for (int col = 0; col < request.ColumnCount; col++)
+                {
+                    string seatType = request.Seats[row][col];
+                    if (!allowedSeatTypes.Contains(seatType))
+                    {
+                        _logger.LogWarning("建立影廳失敗: 無效的座位類型 '{SeatType}' 於位置 ({Row}, {Col})", 
+                            seatType, row + 1, col + 1);
+                        return ApiResponse<TheaterResponseDto>.FailureResponse(
+                            $"無效的座位類型 '{seatType}' 於位置 (Row {row + 1}, Col {col + 1})。允許的值: {string.Join(", ", allowedSeatTypes)}"
+                        );
+                    }
                 }
             }
 

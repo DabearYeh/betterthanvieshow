@@ -198,7 +198,10 @@ public class TheatersController : ControllerBase
             // 如果是業務邏輯驗證錯誤，回傳 400 Bad Request
             if (result.Message?.Contains("座位陣列") == true || 
                 result.Message?.Contains("影廳必須") == true ||
-                result.Message?.Contains("不符") == true)
+                result.Message?.Contains("不符") == true ||
+                result.Message?.Contains("影廳類型無效") == true ||
+                result.Message?.Contains("座位類型") == true ||
+                result.Message?.Contains("無效") == true)
             {
                 return BadRequest(result);
             }

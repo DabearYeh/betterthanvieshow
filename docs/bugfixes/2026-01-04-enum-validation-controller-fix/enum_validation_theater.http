@@ -1,0 +1,106 @@
+### 測試 Theater API Enum 驗證
+
+@baseUrl = http://localhost:5041
+@token = {{$dotenv ADMIN_TOKEN}}
+
+### 1. ✅ 測試正確的 Theater Type - Digital
+POST {{baseUrl}}/api/admin/theaters
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "測試數位廳",
+  "type": "Digital",
+  "floor": 3,
+  "rowCount": 2,
+  "columnCount": 3,
+  "seats": [
+    ["Standard", "Aisle", "Standard"],
+    ["Wheelchair", "Aisle", "Standard"]
+  ]
+}
+
+### 2. ✅ 測試正確的 Theater Type - IMAX
+POST {{baseUrl}}/api/admin/theaters
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "測試IMAX廳",
+  "type": "IMAX",
+  "floor": 5,
+  "rowCount": 2,
+  "columnCount": 3,
+  "seats": [
+    ["Standard", "Aisle", "Standard"],
+    ["Standard", "Aisle", "Standard"]
+  ]
+}
+
+### 3. ❌ 測試錯誤的 Theater Type - 中文值 (應回傳 400)
+POST {{baseUrl}}/api/admin/theaters
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "測試錯誤類型廳",
+  "type": "一般數位",
+  "floor": 3,
+  "rowCount": 2,
+  "columnCount": 3,
+  "seats": [
+    ["Standard", "Aisle", "Standard"],
+    ["Standard", "Aisle", "Standard"]
+  ]
+}
+
+### 4. ❌ 測試錯誤的 Theater Type - 隨機值 (應回傳 400)
+POST {{baseUrl}}/api/admin/theaters
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "測試錯誤類型廳2",
+  "type": "InvalidType",
+  "floor": 3,
+  "rowCount": 2,
+  "columnCount": 3,
+  "seats": [
+    ["Standard", "Aisle", "Standard"],
+    ["Standard", "Aisle", "Standard"]
+  ]
+}
+
+### 5. ❌ 測試錯誤的 Seat Type - 中文值 (應回傳 400)
+POST {{baseUrl}}/api/admin/theaters
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "測試錯誤座位類型廳",
+  "type": "Digital",
+  "floor": 3,
+  "rowCount": 2,
+  "columnCount": 3,
+  "seats": [
+    ["普通", "走道", "Standard"],
+    ["Standard", "Aisle", "Standard"]
+  ]
+}
+
+### 6. ❌ 測試錯誤的 Seat Type - 隨機值 (應回傳 400)
+POST {{baseUrl}}/api/admin/theaters
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "測試錯誤座位類型廳2",
+  "type": "Digital",
+  "floor": 3,
+  "rowCount": 2,
+  "columnCount": 3,
+  "seats": [
+    ["Standard", "InvalidSeat", "Standard"],
+    ["Standard", "Aisle", "Standard"]
+  ]
+}

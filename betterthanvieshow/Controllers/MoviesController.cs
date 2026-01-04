@@ -459,7 +459,10 @@ public class MoviesController : ControllerBase
         if (!result.Success)
         {
             // 如果是業務邏輯驗證錯誤，回傳 400 Bad Request
-            if (result.Message?.Contains("日期") == true)
+            if (result.Message?.Contains("日期") == true ||
+                result.Message?.Contains("分級無效") == true ||
+                result.Message?.Contains("電影類型") == true ||
+                result.Message?.Contains("無效") == true)
             {
                 return BadRequest(result);
             }
@@ -568,7 +571,10 @@ public class MoviesController : ControllerBase
             }
 
             // 如果是業務邏輯驗證錯誤，回傳 400 Bad Request
-            if (result.Message?.Contains("日期") == true)
+            if (result.Message?.Contains("日期") == true ||
+                result.Message?.Contains("分級無效") == true ||
+                result.Message?.Contains("電影類型") == true ||
+                result.Message?.Contains("無效") == true)
             {
                 return BadRequest(result);
             }
