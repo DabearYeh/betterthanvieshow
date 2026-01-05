@@ -20,4 +20,7 @@
 
 ## 目錄
 
-- [2026-01-04 - Enum 驗證錯誤處理修復](./2026-01-04-enum-validation-controller-fix.md)
+- [2026-01-05 - Homepage Carousel Genre 修改為單一類型](./2026-01-05-homepage-carousel-single-genre/README.md)
+- [2026-01-05 - Orders API 修改為只返回已付款訂單](./2026-01-05-orders-paid-only-filter/README.md)
+- [2026-01-05 - Theater API 新增 canDelete 欄位](./2026-01-05-theater-candelete-field/README.md)
+- [2026-01-04 - Enum 驗證錯誤處理修復](./2026-01-04-enum-validation-controller-fix/2026-01-04-enum-validation-controller-fix.md)

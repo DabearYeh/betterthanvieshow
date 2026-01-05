@@ -339,7 +339,7 @@ public class MovieService : IMovieService
             // 轉換為 DTO
             var response = new HomepageMoviesResponseDto
             {
-                Carousel = carouselMovies.Select(MapToSimpleDto).ToList(),
+                Carousel = carouselMovies.Select(MapToCarouselDto).ToList(),
                 TopWeekly = topWeeklyMovies.Select(MapToSimpleDto).ToList(),
                 ComingSoon = comingSoonMovies.Select(MapToSimpleDto).ToList(),
                 Recommended = recommendedMovies.Select(MapToSimpleDto).ToList(),
@@ -373,6 +373,30 @@ public class MovieService : IMovieService
             PosterUrl = movie.PosterUrl,
             Duration = movie.Duration,
             Genre = movie.Genre,
+            Rating = movie.Rating,
+            ReleaseDate = movie.ReleaseDate,
+            EndDate = movie.EndDate,
+            DaysUntilRelease = movie.ReleaseDate.Date > DateTime.UtcNow.Date 
+                ? (movie.ReleaseDate.Date - DateTime.UtcNow.Date).Days 
+                : null
+        };
+    }
+
+    /// <summary>
+    /// 將 Movie 實體轉換為 MovieSimpleDto (用於 Carousel，只返回第一個 Genre)
+    /// </summary>
+    private static MovieSimpleDto MapToCarouselDto(Movie movie)
+    {
+        // 只取第一個類型（例如 "Comedy, Action" 變成 "Comedy"）
+        var firstGenre = movie.Genre.Split(',', StringSplitOptions.TrimEntries).FirstOrDefault() ?? movie.Genre;
+        
+        return new MovieSimpleDto
+        {
+            Id = movie.Id,
+            Title = movie.Title,
+            PosterUrl = movie.PosterUrl,
+            Duration = movie.Duration,
+            Genre = firstGenre,  // 只返回第一個類型
             Rating = movie.Rating,
             ReleaseDate = movie.ReleaseDate,
             EndDate = movie.EndDate,

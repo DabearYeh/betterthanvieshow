@@ -310,13 +310,14 @@ public class OrdersController : ControllerBase
     /// GET /api/orders 取得所有訂單
     /// </summary>
     /// <remarks>
-    /// 取得當前使用者的所有訂單，包含未付款、已付款、已取消的訂單。
+    /// 取得當前使用者的所有「已付款」訂單。
+    /// 
+    /// **過濾條件**：只返回 Status 為 "Paid" 的訂單（已移除未付款和已取消的訂單）。
     /// 
     /// **排序**：按場次時間倒序排列（最新的場次在最前面）。
     /// 
     /// **IsUsed 判定**：
     /// - 若場次時間已過，`isUsed` 為 true。
-    /// - 若訂單狀態為 Cancelled，`isUsed` 根據時間判定（但前端可依 status 顯示取消樣式）。
     /// 
     /// **成功回應範例 (200 OK)**：
     /// ```json
