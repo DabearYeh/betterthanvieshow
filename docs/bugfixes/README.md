@@ -20,4 +20,5 @@
 
 ## 目錄
 
-- [2026-01-04 - Enum 驗證錯誤處理修復](./2026-01-04-enum-validation-controller-fix.md)
+- [2026-01-05 - Theater API 新增 canDelete 欄位](./2026-01-05-theater-candelete-field/README.md)
+- [2026-01-04 - Enum 驗證錯誤處理修復](./2026-01-04-enum-validation-controller-fix/2026-01-04-enum-validation-controller-fix.md)

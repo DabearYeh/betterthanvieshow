@@ -32,17 +32,26 @@ public class TheaterService : ITheaterService
         {
             var theaters = await _theaterRepository.GetAllAsync();
 
-            var theaterDtos = theaters.Select(t => new TheaterResponseDto
+            var theaterDtos = new List<TheaterResponseDto>();
+
+            foreach (var t in theaters)
             {
-                Id = t.Id,
-                Name = t.Name,
-                Type = t.Type,
-                Floor = t.Floor,
-                RowCount = t.RowCount,
-                ColumnCount = t.ColumnCount,
-                Standard = t.Seats.Count(s => s.SeatType == "Standard" && s.IsValid),
-                Wheelchair = t.Seats.Count(s => s.SeatType == "Wheelchair" && s.IsValid)
-            }).ToList();
+                // 檢查影廳是否有關聯的場次
+                var hasShowtimes = await _theaterRepository.HasShowtimesAsync(t.Id);
+
+                theaterDtos.Add(new TheaterResponseDto
+                {
+                    Id = t.Id,
+                    Name = t.Name,
+                    Type = t.Type,
+                    Floor = t.Floor,
+                    RowCount = t.RowCount,
+                    ColumnCount = t.ColumnCount,
+                    Standard = t.Seats.Count(s => s.SeatType == "Standard" && s.IsValid),
+                    Wheelchair = t.Seats.Count(s => s.SeatType == "Wheelchair" && s.IsValid),
+                    CanDelete = !hasShowtimes // 沒有場次時可以刪除
+                });
+            }
 
             return ApiResponse<List<TheaterResponseDto>>.SuccessResponse(
                 theaterDtos,

@@ -52,4 +52,10 @@ public class TheaterResponseDto
     /// </summary>
     /// <example>4</example>
     public int Wheelchair { get; set; }
+
+    /// <summary>
+    /// 是否可以刪除（影廳沒有關聯的場次時為 true）
+    /// </summary>
+    /// <example>true</example>
+    public bool CanDelete { get; set; }
 }
