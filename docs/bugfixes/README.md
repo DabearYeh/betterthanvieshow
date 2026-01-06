@@ -20,6 +20,7 @@
 
 ## 目錄
 
+- [2026-01-06 - 訂單 isUsed 欄位邏輯修改](./2026-01-06-orders-isused-logic/README.md)
 - [2026-01-06 - 密碼驗證規則修改](./2026-01-06-password-validation-rule/README.md)
 - [2026-01-06 - 票券掃描 API 新增電影海報 URL](./2026-01-06-ticket-scan-posterurl/README.md)
 - [2026-01-05 - Homepage Carousel Genre 修改為單一類型](./2026-01-05-homepage-carousel-single-genre/README.md)

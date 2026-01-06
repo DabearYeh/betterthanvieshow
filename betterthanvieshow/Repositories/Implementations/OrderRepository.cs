@@ -74,6 +74,7 @@ public class OrderRepository : IOrderRepository
         return await _context.Orders
             .Include(o => o.ShowTime)
                 .ThenInclude(s => s.Movie)
+            .Include(o => o.Tickets) // 加入 Tickets 以便判斷訂單的 isUsed 狀態
             .Where(o => o.UserId == userId && o.Status == "Paid") // 只返回已付款的訂單
             .OrderByDescending(o => o.ShowTime.ShowDate)
             .ThenByDescending(o => o.ShowTime.StartTime)

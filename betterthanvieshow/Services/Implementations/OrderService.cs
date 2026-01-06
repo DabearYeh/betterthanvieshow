@@ -314,11 +314,9 @@ public class OrderService : IOrderService
             var showTime = o.ShowTime.ShowDate.Date.Add(o.ShowTime.StartTime);
             var endTime = showTime.AddMinutes(o.ShowTime.Movie.Duration);
             
-            // 判斷是否已使用：場次已結束 或 狀態為已取消 (雖然已取消不等於已使用，但在列表顯示邏輯中可能需要區分)
-            // 根據需求圖片，這裡 "已使用" 主要是針對 "已過期/已觀看" 的票
-            // 但如果訂單已取消，也算是一種 terminal state
-            // 這裡我們先單純以時間判斷 "IsUsed" (已播映)，狀態另外由 Status 欄位控制
-            bool isUsed = endTime < now;
+            // 判斷是否已使用：檢查訂單下的所有票券是否都已驗票
+            // 只有當所有 Ticket 的 Status 都是 "Used" 時，訂單才算已使用
+            bool isUsed = o.Tickets.Any() && o.Tickets.All(t => t.Status == "Used");
 
             return new OrderHistoryResponseDto
             {
