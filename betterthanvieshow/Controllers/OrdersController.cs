@@ -317,7 +317,9 @@ public class OrdersController : ControllerBase
     /// **排序**：按場次時間倒序排列（最新的場次在最前面）。
     /// 
     /// **IsUsed 判定**：
-    /// - 若場次時間已過，`isUsed` 為 true。
+    /// - 檢查訂單下的所有票券是否都已驗票（Status = "Used"）
+    /// - 若所有票券都已驗票，`isUsed` 為 true
+    /// - 只要有任何一張票券尚未驗票，`isUsed` 為 false
     /// 
     /// **成功回應範例 (200 OK)**：
     /// ```json
