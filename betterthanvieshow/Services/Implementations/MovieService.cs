@@ -236,17 +236,20 @@ public class MovieService : IMovieService
             var movies = await _movieRepository.GetAllAsync();
             var today = DateTime.UtcNow.Date;
 
-            var movieList = movies.Select(m => new MovieListItemDto
-            {
-                Id = m.Id,
-                Title = m.Title,
-                PosterUrl = m.PosterUrl,
-                Duration = m.Duration,
-                Rating = m.Rating,
-                ReleaseDate = m.ReleaseDate,
-                EndDate = m.EndDate,
-                Status = GetMovieStatus(m.ReleaseDate, m.EndDate, today)
-            }).ToList();
+            // 依照創建時間降序排列，新增的電影會在最前面
+            var movieList = movies
+                .OrderByDescending(m => m.CreatedAt)
+                .Select(m => new MovieListItemDto
+                {
+                    Id = m.Id,
+                    Title = m.Title,
+                    PosterUrl = m.PosterUrl,
+                    Duration = m.Duration,
+                    Rating = m.Rating,
+                    ReleaseDate = m.ReleaseDate,
+                    EndDate = m.EndDate,
+                    Status = GetMovieStatus(m.ReleaseDate, m.EndDate, today)
+                }).ToList();
 
             _logger.LogInformation("成功取得 {Count} 部電影", movieList.Count);
 
