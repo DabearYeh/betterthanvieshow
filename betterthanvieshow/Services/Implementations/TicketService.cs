@@ -45,6 +45,7 @@ public class TicketService : ITicketService
             TicketNumber = ticket.TicketNumber,
             Status = ticket.Status,
             MovieTitle = ticket.ShowTime.Movie.Title,
+            PosterUrl = ticket.ShowTime.Movie.PosterUrl,
             ShowDate = ticket.ShowTime.ShowDate.ToString("yyyy-MM-dd"),
             ShowTime = ticket.ShowTime.StartTime.ToString(@"hh\:mm"),
             SeatRow = ticket.Seat.RowName,

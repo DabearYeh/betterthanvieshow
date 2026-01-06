@@ -20,6 +20,7 @@
 
 ## 目錄
 
+- [2026-01-06 - 票券掃描 API 新增電影海報 URL](./2026-01-06-ticket-scan-posterurl/README.md)
 - [2026-01-05 - Homepage Carousel Genre 修改為單一類型](./2026-01-05-homepage-carousel-single-genre/README.md)
 - [2026-01-05 - Orders API 修改為只返回已付款訂單](./2026-01-05-orders-paid-only-filter/README.md)
 - [2026-01-05 - Theater API 新增 canDelete 欄位](./2026-01-05-theater-candelete-field/README.md)

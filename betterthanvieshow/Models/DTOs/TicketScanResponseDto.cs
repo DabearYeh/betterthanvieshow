@@ -26,6 +26,11 @@ public class TicketScanResponseDto
     public string MovieTitle { get; set; } = string.Empty;
 
     /// <summary>
+    /// 電影海報 URL
+    /// </summary>
+    public string PosterUrl { get; set; } = string.Empty;
+
+    /// <summary>
     /// 場次日期（格式：2025-12-31）
     /// </summary>
     public string ShowDate { get; set; } = string.Empty;
