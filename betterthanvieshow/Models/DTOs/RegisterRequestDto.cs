@@ -27,9 +27,9 @@ public class RegisterRequestDto
     /// <summary>
     /// 密碼
     /// </summary>
-    /// <example>Password123!</example>
+    /// <example>pass12</example>
     [Required(ErrorMessage = "密碼為必填欄位")]
-    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$",
-        ErrorMessage = "密碼至少需 8 字元，包含大小寫字母與數字")]
+    [RegularExpression(@"^[a-zA-Z0-9]{6,}$",
+        ErrorMessage = "密碼至少需 6 字元，且只能包含英文字母與數字")]
     public string Password { get; set; } = string.Empty;
 }
