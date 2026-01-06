@@ -59,6 +59,7 @@ public class TicketsController : ControllerBase
     ///     "ticketNumber": "TKT-12345678",
     ///     "status": "Unused",
     ///     "movieTitle": "蝙蝠俠：黑暗騎士",
+    ///     "posterUrl": "https://example.com/posters/dark-knight.jpg",
     ///     "showDate": "2025-12-31",
     ///     "showTime": "14:30",
     ///     "seatRow": "D",
