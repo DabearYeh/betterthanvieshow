@@ -33,7 +33,7 @@ public class AuthController : ControllerBase
     /// {
     ///   "name": "王小明",
     ///   "email": "wang@example.com",
-    ///   "password": "Password123!"
+    ///   "password": "pass12"
     /// }
     /// ```
     /// 
@@ -60,7 +60,7 @@ public class AuthController : ControllerBase
     ///   "message": "驗證失敗",
     ///   "data": {
     ///     "Email": [ "信箱格式不正確" ],
-    ///     "Password": [ "密碼長度需大於 6 碼" ]
+    ///     "Password": [ "密碼至少需 6 字元，且只能包含英文字母與數字" ]
     ///   }
     /// }
     /// ```
@@ -133,7 +133,7 @@ public class AuthController : ControllerBase
     /// ```json
     /// {
     ///   "email": "wang@example.com",
-    ///   "password": "Password123!"
+    ///   "password": "pass12"
     /// }
     /// ```
     /// 
