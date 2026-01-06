@@ -34,7 +34,8 @@ public class TheaterService : ITheaterService
 
             var theaterDtos = new List<TheaterResponseDto>();
 
-            foreach (var t in theaters)
+            // 依照 ID 降序排列，新增的影廳會在最前面
+            foreach (var t in theaters.OrderByDescending(t => t.Id))
             {
                 // 檢查影廳是否有關聯的場次
                 var hasShowtimes = await _theaterRepository.HasShowtimesAsync(t.Id);
