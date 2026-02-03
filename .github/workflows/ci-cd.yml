@@ -21,7 +21,7 @@ jobs:
       with:
         dotnet-version: '9.0.x'
       env:
-        DOTNET_INSTALL_DIR: "C:\\actions-runner\\.dotnet"
+        DOTNET_INSTALL_DIR: "C:\\GitHubActions\\actions-runner-betterthanvieshow\\.dotnet"
         
     - name: Restore NuGet packages
       run: dotnet restore
