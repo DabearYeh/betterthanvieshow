@@ -81,6 +81,12 @@ jobs:
         Write-Host "Deployment completed"
       shell: powershell
       
+    - name: Install EF Core tools
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      run: |
+        dotnet tool install --global dotnet-ef --version 9.0.0
+      continue-on-error: true
+      
     - name: Ensure EF Core tools in PATH
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       run: |
