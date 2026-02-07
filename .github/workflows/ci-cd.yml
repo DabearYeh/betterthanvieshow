@@ -96,8 +96,8 @@ jobs:
     - name: Run database migrations
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       run: |
-        # 使用 VM 本地的 SQL Server 連線字串（整合 Windows 驗證）
-        dotnet ef database update --connection "Server=localhost;Database=BetterThanVieShowDB;Trusted_Connection=True;TrustServerCertificate=True;"
+        # 使用 VM 本地的 SQL Server 連線字串
+        dotnet ef database update --connection "${{ secrets.AZURE_SQL_CONNECTION_STRING }}"
       working-directory: ./betterthanvieshow
       env:
         ASPNETCORE_ENVIRONMENT: Production
@@ -111,7 +111,7 @@ jobs:
           $config = Get-Content $configPath -Raw | ConvertFrom-Json
           
           # 1. Update connection string to use VM local SQL Server
-          $config.ConnectionStrings.DefaultConnection = "Server=localhost;Database=BetterThanVieShowDB;Trusted_Connection=True;TrustServerCertificate=True;"
+          $config.ConnectionStrings.DefaultConnection = "${{ secrets.AZURE_SQL_CONNECTION_STRING }}"
           $config.JwtSettings.SecretKey = "${{ secrets.JWT_SECRET_KEY }}"
           
           # 2. Add or update LinePay section
